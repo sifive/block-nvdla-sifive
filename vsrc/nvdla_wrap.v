@@ -1,8 +1,8 @@
 // ================================================================
 // NVDLA Open Source Project
-// 
+//
 // Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
-// NVDLA Open Hardware License; Check "LICENSE" which comes with 
+// NVDLA Open Hardware License; Check "LICENSE" which comes with
 // this distribution for more information.
 // ================================================================
 
@@ -14,7 +14,7 @@ module nvdla_wrap
     input csb_clk,
     input rstn,
     input csb_rstn,
-    
+
     output dla_intr,
     // dbb AXI
     output nvdla_core2dbb_aw_awvalid,
@@ -52,13 +52,13 @@ module nvdla_wrap
     output pready
 );
 
-wire        m_csb2nvdla_valid;   
-wire        m_csb2nvdla_ready; 
+wire        m_csb2nvdla_valid;
+wire        m_csb2nvdla_ready;
 wire [15:0] m_csb2nvdla_addr;
 wire [31:0] m_csb2nvdla_wdat;
 wire        m_csb2nvdla_write;
 wire        m_csb2nvdla_nposted;
-wire        m_nvdla2csb_valid; 
+wire        m_nvdla2csb_valid;
 wire [31:0] m_nvdla2csb_data;
 
 

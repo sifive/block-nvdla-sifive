@@ -11,7 +11,7 @@ case object NVDLASmallKey extends Field[Option[NVDLASmallParams]](None)
 case object NVDLASmallFrontBusExtraBuffers extends Field[Int]
 
 trait HasPeripheryNVDLASmall { this: BaseSubsystem =>
-    p(NVDLASmallKey).map { params => 
+    p(NVDLASmallKey).map { params =>
         val nvdla_small = LazyModule(new NVDLASmall(params))
 
         fbus.fromMaster(name = Some("nvdla_dbb"), buffer = BufferParams.default) {

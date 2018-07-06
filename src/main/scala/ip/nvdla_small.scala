@@ -14,7 +14,7 @@ class nvdla_wrap extends BlackBox {
     val csb_clk = Clock(INPUT)
     val rstn = Bool(INPUT)
     val csb_rstn = Bool(INPUT)
-    
+
     val dla_intr = Bool(OUTPUT)
     // dbb AXI
     val nvdla_core2dbb_aw_awvalid = Bool(OUTPUT)
