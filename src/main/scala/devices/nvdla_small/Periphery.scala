@@ -1,5 +1,5 @@
 // See LICENSE for license details.
-package sifive.enterprise.devices.nvdla.nvdla_small
+package sifive.nvdla_blocks.devices.nvdla_small
 
 import Chisel._
 import freechips.rocketchip.config.Field
