@@ -13,7 +13,7 @@ import freechips.rocketchip.subsystem._
 import sifive.nvdla_blocks.ip.nvdla_small._
 
 case class NVDLASmallParams(
-    raddress: BigInt
+  raddress: BigInt
 )
 
 class NVDLASmall(nv_params: NVDLASmallParams)(implicit p: Parameters) extends LazyModule() {
@@ -122,7 +122,6 @@ class NVDLASmall(nv_params: NVDLASmallParams)(implicit p: Parameters) extends La
 
     io_int(0)   := dla_wrap.io.dla_intr
   }
-
 }
 
 

@@ -11,15 +11,15 @@ case object NVDLASmallKey extends Field[Option[NVDLASmallParams]](None)
 case object NVDLASmallFrontBusExtraBuffers extends Field[Int]
 
 trait HasPeripheryNVDLASmall { this: BaseSubsystem =>
-    p(NVDLASmallKey).map { params =>
-        val nvdla_small = LazyModule(new NVDLASmall(params))
+  p(NVDLASmallKey).map { params =>
+    val nvdla_small = LazyModule(new NVDLASmall(params))
 
-        fbus.fromMaster(name = Some("nvdla_dbb"), buffer = BufferParams.default) {
-          TLBuffer.chainNode(p(NVDLASmallFrontBusExtraBuffers))
-        } := nvdla_small.dbb_tl_node
+    fbus.fromMaster(name = Some("nvdla_dbb"), buffer = BufferParams.default) {
+      TLBuffer.chainNode(p(NVDLASmallFrontBusExtraBuffers))
+    } := nvdla_small.dbb_tl_node
 
-        pbus.toFixedWidthSingleBeatSlave(4, Some("nvdla_cfg")) { nvdla_small.cfg_tl_node }
+    pbus.toFixedWidthSingleBeatSlave(4, Some("nvdla_cfg")) { nvdla_small.cfg_tl_node }
 
-        ibus.fromSync := nvdla_small.int_node
-    }
+    ibus.fromSync := nvdla_small.int_node
+  }
 }

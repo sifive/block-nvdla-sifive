@@ -1,5 +1,4 @@
 // See LICENSE for license details.
-
 package sifive.nvdla_blocks.ip.nvdla_small
 
 import Chisel._
@@ -8,7 +7,7 @@ import Chisel._
 //turn off linter: blackbox name must match verilog module
 class nvdla_wrap extends BlackBox {
 
-    val io = new Bundle{
+  val io = new Bundle{
 
     val core_clk = Clock(INPUT)
     val csb_clk = Clock(INPUT)
