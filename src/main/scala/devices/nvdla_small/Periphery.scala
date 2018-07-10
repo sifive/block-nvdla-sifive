@@ -18,7 +18,7 @@ trait HasPeripheryNVDLASmall { this: BaseSubsystem =>
       TLBuffer.chainNode(p(NVDLASmallFrontBusExtraBuffers))
     } := nvdla_small.dbb_tl_node
 
-    pbus.toFixedWidthSingleBeatSlave(4, Some("nvdla_cfg")) { nvdla_small.cfg_tl_node }
+    sbus.control_bus.toFixedWidthSingleBeatSlave(4, Some("nvdla_cfg")) { nvdla_small.cfg_tl_node }
 
     ibus.fromSync := nvdla_small.int_node
   }
