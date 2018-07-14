@@ -17,7 +17,7 @@ case class NVDLAParams(
   raddress: BigInt
 )
 
-class NVDLA(dla_params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
+class NVDLA(nvdla_params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
 
   // DTS
   val dtsdevice = new SimpleDevice("nvdla",Seq("nvidia,nvdla_2"))
@@ -47,13 +47,37 @@ class NVDLA(dla_params: NVDLAParams)(implicit p: Parameters) extends LazyModule(
     := AXI4Buffer()
     := dbb_axi_node)
 
+  // cvsram TL
+  val cvsram_tl_node = TLIdentityNode()
+
+  // cvsram AXI
+  val cvsram_axi_node = AXI4MasterNode(
+    Seq(
+      AXI4MasterPortParameters(
+        masters = Seq(AXI4MasterParameters(
+          name    = "NVDLA CVSRAM",
+          id      = IdRange(0, 256)))
+      )
+    )
+  )
+
+  // TL <-> AXI
+  (cvsram_tl_node
+    := TLBuffer()
+    := TLWidthWidget(8)
+    := AXI4ToTL()
+    := AXI4UserYanker(capMaxFlight=Some(8))
+    := AXI4Fragmenter()
+    := AXI4IdIndexer(idBits=2)
+    := AXI4Buffer()
+    := cvsram_axi_node)
 
   // cfg APB
   val cfg_apb_node = APBSlaveNode(
     Seq(
       APBSlavePortParameters(
         slaves = Seq(APBSlaveParameters(
-          address       = Seq(AddressSet(dla_params.raddress, 0x40000L-1L)), // 256KB
+          address       = Seq(AddressSet(nvdla_params.raddress, 0x40000L-1L)), // 256KB
           resources     = dtsdevice.reg("control"),
           executable    = false,
           supportsWrite = true,
@@ -69,62 +93,93 @@ class NVDLA(dla_params: NVDLAParams)(implicit p: Parameters) extends LazyModule(
 
   lazy val module = new LazyModuleImp(this) {
 
-    val dla_wrap = dla_params.config match {
-      case "small" => Module(new nvdla_small)
-      case "small_256" => Module(new nvdla_small_256)
-    }
+    val u_nvdla = Module(new nvdla(nvdla_params.config))
 
-    dla_wrap.io.core_clk    := clock
-    dla_wrap.io.csb_clk     := clock
-    dla_wrap.io.rstn        := ~reset
-    dla_wrap.io.csb_rstn    := ~reset
+    u_nvdla.io.core_clk    := clock
+    u_nvdla.io.csb_clk     := clock
+    u_nvdla.io.rstn        := ~reset
+    u_nvdla.io.csb_rstn    := ~reset
 
     val (dbb, _) = dbb_axi_node.out(0)
 
-    dbb.aw.valid                            := dla_wrap.io.nvdla_core2dbb_aw_awvalid
-    dla_wrap.io.nvdla_core2dbb_aw_awready   := dbb.aw.ready
-    dbb.aw.bits.id                          := dla_wrap.io.nvdla_core2dbb_aw_awid
-    dbb.aw.bits.len                         := dla_wrap.io.nvdla_core2dbb_aw_awlen
-    dbb.aw.bits.size                        := dla_wrap.io.nvdla_core2dbb_aw_awsize
-    dbb.aw.bits.addr                        := dla_wrap.io.nvdla_core2dbb_aw_awaddr
+    dbb.aw.valid                            := u_nvdla.io.nvdla_core2dbb_aw_awvalid
+    u_nvdla.io.nvdla_core2dbb_aw_awready    := dbb.aw.ready
+    dbb.aw.bits.id                          := u_nvdla.io.nvdla_core2dbb_aw_awid
+    dbb.aw.bits.len                         := u_nvdla.io.nvdla_core2dbb_aw_awlen
+    dbb.aw.bits.size                        := u_nvdla.io.nvdla_core2dbb_aw_awsize
+    dbb.aw.bits.addr                        := u_nvdla.io.nvdla_core2dbb_aw_awaddr
 
-    dbb.w.valid                             := dla_wrap.io.nvdla_core2dbb_w_wvalid
-    dla_wrap.io.nvdla_core2dbb_w_wready     := dbb.w.ready
-    dbb.w.bits.data                         := dla_wrap.io.nvdla_core2dbb_w_wdata
-    dbb.w.bits.strb                         := dla_wrap.io.nvdla_core2dbb_w_wstrb
-    dbb.w.bits.last                         := dla_wrap.io.nvdla_core2dbb_w_wlast
+    dbb.w.valid                             := u_nvdla.io.nvdla_core2dbb_w_wvalid
+    u_nvdla.io.nvdla_core2dbb_w_wready      := dbb.w.ready
+    dbb.w.bits.data                         := u_nvdla.io.nvdla_core2dbb_w_wdata
+    dbb.w.bits.strb                         := u_nvdla.io.nvdla_core2dbb_w_wstrb
+    dbb.w.bits.last                         := u_nvdla.io.nvdla_core2dbb_w_wlast
 
-    dbb.ar.valid                            := dla_wrap.io.nvdla_core2dbb_ar_arvalid
-    dla_wrap.io.nvdla_core2dbb_ar_arready   := dbb.ar.ready
-    dbb.ar.bits.id                          := dla_wrap.io.nvdla_core2dbb_ar_arid
-    dbb.ar.bits.len                         := dla_wrap.io.nvdla_core2dbb_ar_arlen
-    dbb.ar.bits.size                        := dla_wrap.io.nvdla_core2dbb_ar_arsize
-    dbb.ar.bits.addr                        := dla_wrap.io.nvdla_core2dbb_ar_araddr
+    dbb.ar.valid                            := u_nvdla.io.nvdla_core2dbb_ar_arvalid
+    u_nvdla.io.nvdla_core2dbb_ar_arready    := dbb.ar.ready
+    dbb.ar.bits.id                          := u_nvdla.io.nvdla_core2dbb_ar_arid
+    dbb.ar.bits.len                         := u_nvdla.io.nvdla_core2dbb_ar_arlen
+    dbb.ar.bits.size                        := u_nvdla.io.nvdla_core2dbb_ar_arsize
+    dbb.ar.bits.addr                        := u_nvdla.io.nvdla_core2dbb_ar_araddr
 
-    dla_wrap.io.nvdla_core2dbb_b_bvalid     := dbb.b.valid
-    dbb.b.ready                             := dla_wrap.io.nvdla_core2dbb_b_bready
-    dla_wrap.io.nvdla_core2dbb_b_bid        := dbb.b.bits.id
+    u_nvdla.io.nvdla_core2dbb_b_bvalid      := dbb.b.valid
+    dbb.b.ready                             := u_nvdla.io.nvdla_core2dbb_b_bready
+    u_nvdla.io.nvdla_core2dbb_b_bid         := dbb.b.bits.id
 
-    dla_wrap.io.nvdla_core2dbb_r_rvalid     := dbb.r.valid
-    dbb.r.ready                             := dla_wrap.io.nvdla_core2dbb_r_rready
-    dla_wrap.io.nvdla_core2dbb_r_rid        := dbb.r.bits.id
-    dla_wrap.io.nvdla_core2dbb_r_rlast      := dbb.r.bits.last
-    dla_wrap.io.nvdla_core2dbb_r_rdata      := dbb.r.bits.data
+    u_nvdla.io.nvdla_core2dbb_r_rvalid      := dbb.r.valid
+    dbb.r.ready                             := u_nvdla.io.nvdla_core2dbb_r_rready
+    u_nvdla.io.nvdla_core2dbb_r_rid         := dbb.r.bits.id
+    u_nvdla.io.nvdla_core2dbb_r_rlast       := dbb.r.bits.last
+    u_nvdla.io.nvdla_core2dbb_r_rdata       := dbb.r.bits.data
+
+    u_nvdla.io.nvdla_core2cvsram.foreach { u_nvdla_cvsram =>
+      val (cvsram, _) = cvsram_axi_node.out(0)
+
+      cvsram.aw.valid                       := u_nvdla_cvsram.aw_awvalid
+      u_nvdla_cvsram.aw_awready             := cvsram.aw.ready
+      cvsram.aw.bits.id                     := u_nvdla_cvsram.aw_awid
+      cvsram.aw.bits.len                    := u_nvdla_cvsram.aw_awlen
+      cvsram.aw.bits.size                   := u_nvdla_cvsram.aw_awsize
+      cvsram.aw.bits.addr                   := u_nvdla_cvsram.aw_awaddr
+
+      cvsram.w.valid                        := u_nvdla_cvsram.w_wvalid
+      u_nvdla_cvsram.w_wready               := cvsram.w.ready
+      cvsram.w.bits.data                    := u_nvdla_cvsram.w_wdata
+      cvsram.w.bits.strb                    := u_nvdla_cvsram.w_wstrb
+      cvsram.w.bits.last                    := u_nvdla_cvsram.w_wlast
+
+      cvsram.ar.valid                       := u_nvdla_cvsram.ar_arvalid
+      u_nvdla_cvsram.ar_arready             := cvsram.ar.ready
+      cvsram.ar.bits.id                     := u_nvdla_cvsram.ar_arid
+      cvsram.ar.bits.len                    := u_nvdla_cvsram.ar_arlen
+      cvsram.ar.bits.size                   := u_nvdla_cvsram.ar_arsize
+      cvsram.ar.bits.addr                   := u_nvdla_cvsram.ar_araddr
+
+      u_nvdla_cvsram.b_bvalid               := cvsram.b.valid
+      cvsram.b.ready                        := u_nvdla_cvsram.b_bready
+      u_nvdla_cvsram.b_bid                  := cvsram.b.bits.id
+
+      u_nvdla_cvsram.r_rvalid               := cvsram.r.valid
+      cvsram.r.ready                        := u_nvdla_cvsram.r_rready
+      u_nvdla_cvsram.r_rid                  := cvsram.r.bits.id
+      u_nvdla_cvsram.r_rlast                := cvsram.r.bits.last
+      u_nvdla_cvsram.r_rdata                := cvsram.r.bits.data
+    }
 
     val (cfg, _) = cfg_apb_node.in(0)
 
-    dla_wrap.io.psel        := cfg.psel
-    dla_wrap.io.penable     := cfg.penable
-    dla_wrap.io.pwrite      := cfg.pwrite
-    dla_wrap.io.paddr       := cfg.paddr
-    dla_wrap.io.pwdata      := cfg.pwdata
-    cfg.prdata              := dla_wrap.io.prdata
-    cfg.pready              := dla_wrap.io.pready
+    u_nvdla.io.psel         := cfg.psel
+    u_nvdla.io.penable      := cfg.penable
+    u_nvdla.io.pwrite       := cfg.pwrite
+    u_nvdla.io.paddr        := cfg.paddr
+    u_nvdla.io.pwdata       := cfg.pwdata
+    cfg.prdata              := u_nvdla.io.prdata
+    cfg.pready              := u_nvdla.io.pready
     cfg.pslverr             := Bool(false)
 
     val (io_int, _) = int_node.out(0)
 
-    io_int(0)   := dla_wrap.io.dla_intr
+    io_int(0)   := u_nvdla.io.dla_intr
   }
 }
 

@@ -18,6 +18,10 @@ trait HasPeripheryNVDLA { this: BaseSubsystem =>
       TLBuffer.chainNode(p(NVDLAFrontBusExtraBuffers))
     } := nvdla.dbb_tl_node
 
+    fbus.fromMaster(name = Some("nvdla_cvsram"), buffer = BufferParams.default) {
+      TLBuffer.chainNode(p(NVDLAFrontBusExtraBuffers))
+    } := nvdla.cvsram_tl_node
+
     sbus.control_bus.toFixedWidthSingleBeatSlave(4, Some("nvdla_cfg")) { nvdla.cfg_tl_node }
 
     ibus.fromSync := nvdla.int_node
