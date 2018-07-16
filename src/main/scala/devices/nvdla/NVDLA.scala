@@ -14,10 +14,11 @@ import sifive.nvdla_blocks.ip.nvdla._
 
 case class NVDLAParams(
   config: String,
-  raddress: BigInt
+  raddress: BigInt,
+  cvsram_base_addr: BigInt = 0
 )
 
-class NVDLA(nvdla_params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
+class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
 
   // DTS
   val dtsdevice = new SimpleDevice("nvdla",Seq("nvidia,nvdla_2"))
@@ -77,7 +78,7 @@ class NVDLA(nvdla_params: NVDLAParams)(implicit p: Parameters) extends LazyModul
     Seq(
       APBSlavePortParameters(
         slaves = Seq(APBSlaveParameters(
-          address       = Seq(AddressSet(nvdla_params.raddress, 0x40000L-1L)), // 256KB
+          address       = Seq(AddressSet(params.raddress, 0x40000L-1L)), // 256KB
           resources     = dtsdevice.reg("control"),
           executable    = false,
           supportsWrite = true,
@@ -93,7 +94,7 @@ class NVDLA(nvdla_params: NVDLAParams)(implicit p: Parameters) extends LazyModul
 
   lazy val module = new LazyModuleImp(this) {
 
-    val u_nvdla = Module(new nvdla(nvdla_params.config))
+    val u_nvdla = Module(new nvdla(params.config))
 
     u_nvdla.io.core_clk    := clock
     u_nvdla.io.csb_clk     := clock
@@ -140,7 +141,7 @@ class NVDLA(nvdla_params: NVDLAParams)(implicit p: Parameters) extends LazyModul
       cvsram.aw.bits.id                     := u_nvdla_cvsram.aw_awid
       cvsram.aw.bits.len                    := u_nvdla_cvsram.aw_awlen
       cvsram.aw.bits.size                   := u_nvdla_cvsram.aw_awsize
-      cvsram.aw.bits.addr                   := u_nvdla_cvsram.aw_awaddr
+      cvsram.aw.bits.addr                   := u_nvdla_cvsram.aw_awaddr + params.cvsram_base_addr.U
 
       cvsram.w.valid                        := u_nvdla_cvsram.w_wvalid
       u_nvdla_cvsram.w_wready               := cvsram.w.ready
@@ -153,7 +154,7 @@ class NVDLA(nvdla_params: NVDLAParams)(implicit p: Parameters) extends LazyModul
       cvsram.ar.bits.id                     := u_nvdla_cvsram.ar_arid
       cvsram.ar.bits.len                    := u_nvdla_cvsram.ar_arlen
       cvsram.ar.bits.size                   := u_nvdla_cvsram.ar_arsize
-      cvsram.ar.bits.addr                   := u_nvdla_cvsram.ar_araddr
+      cvsram.ar.bits.addr                   := u_nvdla_cvsram.ar_araddr + params.cvsram_base_addr.U
 
       u_nvdla_cvsram.b_bvalid               := cvsram.b.valid
       cvsram.b.ready                        := u_nvdla_cvsram.b_bready
