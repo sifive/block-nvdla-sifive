@@ -15,6 +15,14 @@
 // ================================================================
 // File Name: NV_NVDLA_CDP_define.h
 ///////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_CDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_CDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 module NV_NVDLA_CDP_DP_nan (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -34,7 +42,7 @@ module NV_NVDLA_CDP_DP_nan (
 //////////////////////////////////////////////////////
 input nvdla_core_clk;
 input nvdla_core_rstn;
-input [8*8 +22:0] cdp_rdma2dp_pd;
+input [8*8 +24:0] cdp_rdma2dp_pd;
 input cdp_rdma2dp_valid;
 input dp2reg_done;
 input nan_preproc_prdy;
@@ -44,10 +52,10 @@ input reg2dp_op_en;
 output cdp_rdma2dp_ready;
 output [31:0] dp2reg_inf_input_num;
 output [31:0] dp2reg_nan_input_num;
-output [8*8 +22:0] nan_preproc_pd;
+output [8*8 +24:0] nan_preproc_pd;
 output nan_preproc_pvld;
 //////////////////////////////////////////////////////
-reg [8*8 +22:0] datin_d;
+reg [8*8 +24:0] datin_d;
 reg din_pvld_d1;
 wire [31:0] dp2reg_inf_input_num=0;
 wire [31:0] dp2reg_nan_input_num=0;
@@ -134,7 +142,15 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
 end
 assign op_en_load = reg2dp_op_en & (~op_en_d1);
-assign layer_end = &{cdp_rdma2dp_pd[8*8 +14:8*8 +11],cdp_rdma2dp_pd[8*8 +10:8*8 +8]} & load_din;
+//: my $k = int( log(32/8)/log(2) ) ;
+//: print qq(
+//: assign layer_end = &{cdp_rdma2dp_pd[8*8 +16:8*8 +13],cdp_rdma2dp_pd[8*8 +8+${k}-1:8*8 +8]} & load_din;
+//: );
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+
+assign layer_end = &{cdp_rdma2dp_pd[8*8 +16:8*8 +13],cdp_rdma2dp_pd[8*8 +8+2-1:8*8 +8]} & load_din;
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     waiting_for_op_en <= 1'b1;

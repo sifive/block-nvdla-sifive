@@ -17,12 +17,18 @@
 //#define CDMA_SBUF_SDATA_BITS            256
 //DorisL-S----------------
 //
+// #if ( NVDLA_MEMORY_ATOMIC_SIZE  ==  32 )
+//     #define IMG_LARGE
+// #endif
+// #if ( NVDLA_MEMORY_ATOMIC_SIZE == 8 )
+//     #define IMG_SMALL
+// #endif
 //DorisL-E----------------
 //--------------------------------------------------
 module NV_NVDLA_CDMA_IMG_pack (
    nvdla_core_clk
   ,nvdla_core_rstn
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $atmm = 32*8;
 //: my $atmm_num = ($dmaif / $atmm);
 //: foreach my $i(0..$atmm_num -1) {
@@ -37,10 +43,6 @@ module NV_NVDLA_CDMA_IMG_pack (
 ,img2sbuf_p0_rd_data
 ,img2sbuf_p0_rd_addr
 ,img2sbuf_p0_rd_en
-
-,img2sbuf_p1_rd_data
-,img2sbuf_p1_rd_addr
-,img2sbuf_p1_rd_en
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
   ,is_running
@@ -75,7 +77,7 @@ module NV_NVDLA_CDMA_IMG_pack (
   ,sg2pack_sub_h_mid
   ,sg2pack_sub_h_st
   ,status2dma_wr_idx
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $Bnum = $dmaif / 8;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
@@ -110,6 +112,7 @@ module NV_NVDLA_CDMA_IMG_pack (
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+,img2cvt_dat_wr_sel
 ,img2cvt_dat_wr_addr
 ,img2cvt_dat_wr_data
 ,img2cvt_mn_wr_data
@@ -132,7 +135,7 @@ module NV_NVDLA_CDMA_IMG_pack (
 /////////////////////////////////////////////////////////////
 input nvdla_core_clk;
 input nvdla_core_rstn;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $atmm = 32*8;
 //: my $atmm_num = ($dmaif / $atmm);
 //: foreach my $i(0..$atmm_num -1) {
@@ -147,10 +150,6 @@ input nvdla_core_rstn;
 input [256-1:0] img2sbuf_p0_rd_data;
 output [7:0] img2sbuf_p0_rd_addr;
 output img2sbuf_p0_rd_en;
-
-input [256-1:0] img2sbuf_p1_rd_data;
-output [7:0] img2sbuf_p1_rd_addr;
-output img2sbuf_p1_rd_en;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 input is_running;
@@ -177,7 +176,7 @@ input [3:0] sg2pack_sub_h_end;
 input [3:0] sg2pack_sub_h_mid;
 input [3:0] sg2pack_sub_h_st;
 input [14:0] status2dma_wr_idx;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $Bnum = $dmaif / 8;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
@@ -212,10 +211,11 @@ input [14:0] status2dma_wr_idx;
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+output [1-1:0] img2cvt_dat_wr_sel;
 output [16:0] img2cvt_dat_wr_addr;
-output [512-1:0] img2cvt_dat_wr_data;
-output [64*16-1:0] img2cvt_mn_wr_data;
-output [64-1:0] img2cvt_dat_wr_pad_mask;
+output [256-1:0] img2cvt_dat_wr_data;
+output [32*16-1:0] img2cvt_mn_wr_data;
+output [32-1:0] img2cvt_dat_wr_pad_mask;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////output   [11:0] img2cvt_dat_wr_addr;
@@ -283,25 +283,25 @@ reg [5-1:0] zero_planar1_mask_sft;
 wire [5-1:0] zero_planar1_mask_sft_w;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
-reg [512/8 -1:0] mask_pad_planar0_c0_d1;
-reg [512/8 -1:0] mask_pad_planar1_c0_d1;
-reg [512/8 -1:0] mask_pad_planar1_c1_d1;
-reg [512/8 -1:0] mn_mask_uv_hi_d1;
-reg [512/8 -1:0] mn_mask_uv_lo_d1;
-reg [512/8 -1:0] mn_mask_y_d1;
+reg [256/8 -1:0] mask_pad_planar0_c0_d1;
+reg [256/8 -1:0] mask_pad_planar1_c0_d1;
+reg [256/8 -1:0] mask_pad_planar1_c1_d1;
+reg [256/8 -1:0] mn_mask_uv_hi_d1;
+reg [256/8 -1:0] mn_mask_uv_lo_d1;
+reg [256/8 -1:0] mn_mask_y_d1;
 reg pack_is_done;
 reg [4:0] pad_left_d1;
-//reg [512 -1:0] pk_mn_out_data_h0;
-//reg [512 -1:0] pk_mn_out_data_h1;
+//reg [256 -1:0] pk_mn_out_data_h0;
+//reg [256 -1:0] pk_mn_out_data_h1;
 reg [14:0] pk_out_addr;
 reg [14:0] pk_out_data_entries;
-reg [512 -1:0] pk_out_data_h0;
+reg [256 -1:0] pk_out_data_h0;
 //reg [511:0] pk_out_data_h1;
 reg [3:0] pk_out_data_slices;
 reg pk_out_data_updt;
 reg pk_out_ext128;
 //reg pk_out_ext64;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $Bnum = $dmaif / 8;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
@@ -312,10 +312,12 @@ reg pk_out_ext128;
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+reg [1-1:0] pk_out_hsel;
+
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 reg [3:0] pk_out_mask;
 reg pk_out_mean;
-reg [512/8 -1:0] pk_out_pad_mask_h0;
+reg [256/8 -1:0] pk_out_pad_mask_h0;
 //reg [63:0] pk_out_pad_mask_h1;
 reg [2:0] pk_out_sub_h;
 reg pk_out_uint;
@@ -324,9 +326,9 @@ reg pk_rsp_1st_height_d1;
 reg pk_rsp_layer_end_d1;
 reg pk_rsp_loop_end_d1;
 reg pk_rsp_one_line_end_d1;
-reg [512 -1:0] pk_rsp_planar0_c0_d1;
-reg [512 -1:0] pk_rsp_planar1_c0_d1;
-reg [512 -1:0] pk_rsp_planar1_c1_d1;
+reg [256 -1:0] pk_rsp_planar0_c0_d1;
+reg [256 -1:0] pk_rsp_planar1_c0_d1;
+reg [256 -1:0] pk_rsp_planar1_c1_d1;
 reg [2:0] pk_rsp_sub_h_d1;
 reg pk_rsp_sub_h_end_d1;
 reg pk_rsp_vld_d1;
@@ -372,12 +374,12 @@ reg rd_vld_d1;
 //wire [4:0] zero_planar0_mask_sft_w;
 //reg [4:0] zero_planar1_mask_sft;
 //wire [4:0] zero_planar1_mask_sft_w;
-wire [512 -1:0] dat_l0;
-wire [512*2-1:0] dat_l1;
-wire [512 -1:0] dat_l1_hi;
-wire [512 -1:0] dat_l1_lo;
-wire [512*3-1:0] dat_yuv;
-wire [512*3-1:0] dat_8b_yuv;
+wire [256 -1:0] dat_l0;
+wire [256*2-1:0] dat_l1;
+wire [256 -1:0] dat_l1_hi;
+wire [256 -1:0] dat_l1_lo;
+wire [256*3-1:0] dat_yuv;
+wire [256*3-1:0] dat_8b_yuv;
 wire [5:0] data_planar0_add_w;
 wire [13:0] data_planar0_cur_cnt_w;
 wire data_planar0_en;
@@ -429,13 +431,13 @@ wire is_last_loop;
 wire is_last_pburst;
 wire is_last_planar;
 wire is_last_sub_h;
-wire [512/8 -1:0] mask_pad;
-wire [512/8 -1:0] mask_zero;
+wire [256/8 -1:0] mask_pad;
+wire [256/8 -1:0] mask_zero;
 //wire [511:0] mn_16b_mnorm;
 //wire [1535:0] mn_16b_myuv;
-//wire [512 -1:0] mn_8b_mnorm;
-//wire [512*3-1:0] mn_8b_myuv;
-//: my $mn_bw = int(512 / 8) * 16 ;
+//wire [256 -1:0] mn_8b_mnorm;
+//wire [256*3-1:0] mn_8b_myuv;
+//: my $mn_bw = int(256 / 8) * 16 ;
 //: print qq(
 //: wire [${mn_bw}-1:0] mn_ch1;
 //: wire [${mn_bw}-1:0] mn_ch4;
@@ -449,29 +451,29 @@ wire [512/8 -1:0] mask_zero;
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-wire [1024-1:0] mn_ch1;
-wire [1024-1:0] mn_ch4;
-wire [1024*3-1:0] mn_ch3;
-wire [1024*3-1:0] mn_8b_myuv;
-wire [1024-1:0] mn_ch1_4;
-wire [1024-1:0] mn_8b_mnorm;
-wire [1024-1:0] pk_rsp_mn_data_h0;
-reg [1024-1:0] pk_mn_out_data_h0;
-wire [1024-1:0] pk_mn_out_data;
+wire [512-1:0] mn_ch1;
+wire [512-1:0] mn_ch4;
+wire [512*3-1:0] mn_ch3;
+wire [512*3-1:0] mn_8b_myuv;
+wire [512-1:0] mn_ch1_4;
+wire [512-1:0] mn_8b_mnorm;
+wire [512-1:0] pk_rsp_mn_data_h0;
+reg [512-1:0] pk_mn_out_data_h0;
+wire [512-1:0] pk_mn_out_data;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
-//wire [512 -1:0] mn_ch1;
-//wire [512 -1:0] mn_ch1_4;
-//wire [512*3-1:0] mn_ch3;
-//wire [512 -1:0] mn_ch4;
-wire [(512/8)*2-1:0] mn_mask_uv;
+//wire [256 -1:0] mn_ch1;
+//wire [256 -1:0] mn_ch1_4;
+//wire [256*3-1:0] mn_ch3;
+//wire [256 -1:0] mn_ch4;
+wire [(256/8)*2-1:0] mn_mask_uv;
 wire mn_mask_uv_0_en;
 wire mn_mask_uv_1_en;
-wire [512/8 -1:0] mn_mask_uv_hi;
-wire [512/8 -1:0] mn_mask_uv_lo;
-wire [512/8 -1:0] mn_mask_y;
+wire [256/8 -1:0] mn_mask_uv_hi;
+wire [256/8 -1:0] mn_mask_uv_lo;
+wire [256/8 -1:0] mn_mask_y;
 wire mn_mask_y_en;
-wire [(512/8)*3-1:0] mn_mask_yuv;
+wire [(256/8)*3-1:0] mn_mask_yuv;
 wire mon_data_planar0_p0_cnt_w;
 wire mon_data_planar0_p1_cnt_w;
 wire mon_data_planar1_p0_cnt_w;
@@ -490,18 +492,18 @@ wire [2:0] mon_rp_planar1_mask_sft_w;
 wire [2:0] mon_zero_planar0_mask_sft_w;
 wire [2:0] mon_zero_planar1_mask_sft_w;
 wire pack_is_done_w;
-wire [(512/8)*3-1:0] pad_mask_8b_yuv;
-wire [512/8 -1:0] pad_mask_l0;
-wire [(512/8)*2-1:0] pad_mask_l1;
-wire [512/8 -1:0] pad_mask_l1_hi;
-wire [512/8 -1:0] pad_mask_l1_lo;
-wire [(512/8)*3-1:0] pad_mask_yuv;
-//wire [512 -1:0] pk_mn_out_data;
-wire [512 -1:0] pk_out_data;
+wire [(256/8)*3-1:0] pad_mask_8b_yuv;
+wire [256/8 -1:0] pad_mask_l0;
+wire [(256/8)*2-1:0] pad_mask_l1;
+wire [256/8 -1:0] pad_mask_l1_hi;
+wire [256/8 -1:0] pad_mask_l1_lo;
+wire [(256/8)*3-1:0] pad_mask_yuv;
+//wire [256 -1:0] pk_mn_out_data;
+wire [256 -1:0] pk_out_data;
 wire [11:0] pk_out_info_pd;
 //wire pk_out_interleave;
 //wire [127:0] pk_out_pad_mask;
-wire [512/8 -1:0] pk_out_pad_mask;
+wire [256/8 -1:0] pk_out_pad_mask;
 wire pk_rsp_1st_height;
 wire pk_rsp_cur_1st_height;
 wire pk_rsp_cur_layer_end;
@@ -512,9 +514,9 @@ wire pk_rsp_cur_sub_h_end;
 wire pk_rsp_cur_vld;
 //wire [1023:0] pk_rsp_dat_ergb;
 //wire [1023:0] pk_rsp_dat_mergb;
-wire [512 -1:0] pk_rsp_dat_mnorm;
-wire [512 -1:0] pk_rsp_dat_normal;
-wire [512 -1:0] pk_rsp_data_h0;
+wire [256 -1:0] pk_rsp_dat_mnorm;
+wire [256 -1:0] pk_rsp_dat_normal;
+wire [256 -1:0] pk_rsp_data_h0;
 wire pk_rsp_data_h0_en;
 //wire [511:0] pk_rsp_data_h1;
 //wire pk_rsp_data_h1_en;
@@ -522,7 +524,7 @@ wire pk_rsp_data_updt;
 wire pk_rsp_early_end;
 wire pk_rsp_layer_end;
 wire pk_rsp_loop_end;
-//wire [512 -1:0] pk_rsp_mn_data_h0;
+//wire [256 -1:0] pk_rsp_mn_data_h0;
 wire pk_rsp_mn_data_h0_en;
 //wire [511:0] pk_rsp_mn_data_h1;
 wire pk_rsp_mn_data_h1_en;
@@ -536,9 +538,9 @@ wire [32*8 -1:0] pk_rsp_p1_data;
 wire [32 -1:0] pk_rsp_p1_pad_mask;
 wire [32 -1:0] pk_rsp_p1_zero_mask;
 //wire [127:0] pk_rsp_pad_mask_ergb;
-wire [512/8 -1:0] pk_rsp_pad_mask_h0;
+wire [256/8 -1:0] pk_rsp_pad_mask_h0;
 //wire [63:0] pk_rsp_pad_mask_h1;
-wire [512/8 -1:0] pk_rsp_pad_mask_norm;
+wire [256/8 -1:0] pk_rsp_pad_mask_norm;
 wire pk_rsp_pipe_sel;
 wire pk_rsp_planar;
 wire pk_rsp_planar0_c0_en;
@@ -550,11 +552,11 @@ wire pk_rsp_vld;
 wire pk_rsp_vld_d1_w;
 wire [14:0] pk_rsp_wr_addr;
 wire [16:0] pk_rsp_wr_addr_inc;
-wire [5:0] pk_rsp_wr_addr_wrap;
+wire [14:0] pk_rsp_wr_addr_wrap;
 wire pk_rsp_wr_base_en;
 wire [15:0] pk_rsp_wr_base_inc;
 wire [14:0] pk_rsp_wr_base_w;
-wire [5:0] pk_rsp_wr_base_wrap;
+wire [14:0] pk_rsp_wr_base_wrap;
 wire [1:0] pk_rsp_wr_cnt_w;
 wire [14:0] pk_rsp_wr_entries;
 //wire pk_rsp_wr_ext128;
@@ -606,7 +608,7 @@ wire rd_planar0_burst_end;
 wire rd_planar0_en;
 wire rd_planar0_line_end;
 wire rd_planar0_ori_en;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $atmm = 32*8;
 //: my $atmm_num = ($dmaif / $atmm);
 //: print qq(
@@ -616,9 +618,9 @@ wire rd_planar0_ori_en;
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-wire [2-1:0] rd_planar0_rd_mask;
-wire [2-1:0] rd_planar1_rd_mask;
-wire [2-1:0] rd_rd_mask;
+wire [1-1:0] rd_planar0_rd_mask;
+wire [1-1:0] rd_planar1_rd_mask;
+wire [1-1:0] rd_rd_mask;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 wire rd_planar1_burst_end;
@@ -631,7 +633,7 @@ wire rd_planar_end;
 wire [2:0] rd_sub_h_cnt;
 wire rd_sub_h_end;
 wire rd_vld;
-wire [512 -1:0] rdat;
+wire [256 -1:0] rdat;
 //wire [13:0] z14;
 //wire [5:0] z6;
 ////////////////////////////////////////////////////////////////////////
@@ -891,7 +893,7 @@ assign is_last_sub_h = 1'b1;
 assign rd_sub_h_cnt = 3'b0;
 //////// loop cnt ////////
 // img_p0_burst[3:1],means img_p0_burst/2, 2 means atmm_num/per_dmaif
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $atmm_num = int($dmaif/32/8);
 //: if($atmm_num == 1) {
 //: print qq(
@@ -908,7 +910,7 @@ assign rd_sub_h_cnt = 3'b0;
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign {mon_rd_loop_cnt_limit, rd_loop_cnt_limit} = img_p0_burst[3:1] + img_p0_burst[0];
+assign rd_loop_cnt_limit = img_p0_burst[3:0];
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign {mon_rd_loop_cnt_inc, rd_loop_cnt_inc} = rd_loop_cnt + 1'b1;
@@ -955,7 +957,7 @@ end
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //////// partial burst cnt ////////
 //assign rd_pburst_limit = (rd_planar_cnt & (~is_last_loop | ~img_p0_burst[0])) ? 1'b1 : 1'b0;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $atmm_num = int($dmaif/32/8);
 //: if($atmm_num == 1) {
 //: print qq(
@@ -975,7 +977,8 @@ end
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign rd_pburst_limit = (rd_planar_cnt & (~is_last_loop | ~img_p0_burst[0])) ? 2'b1 : 2'b0;
+//assign rd_pburst_limit = 2'b0;
+assign rd_pburst_limit = (rd_planar_cnt & (~is_last_loop | ~img_p1_burst[0])) ? 2'b1 : 2'b0;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign is_last_pburst = (rd_pburst_cnt == rd_pburst_limit);
@@ -1041,7 +1044,7 @@ end
 // read control logic generator //
 ////////////////////////////////////////////////////////////////////////
 //////// read enalbe mask ////////
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $atmm = 32*8;
 //: my $atmm_num = ($dmaif / $atmm);
 //: if($atmm_num == 1) {
@@ -1085,13 +1088,12 @@ end
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign rd_planar0_rd_mask = (is_last_loop & is_last_pburst & img_p0_burst[0]) ? 2'h1 : 2'h3;
-assign rd_planar1_rd_mask = (is_last_loop & is_last_pburst & img_p1_burst[0]) ? 2'h1 : 2'h3;
+assign rd_planar0_rd_mask = 1'h1;
+assign rd_planar1_rd_mask = 1'h1;
 
 assign rd_p0_vld = rd_vld & rd_rd_mask[0];
-assign rd_p1_vld = rd_vld & rd_rd_mask[1];
 
-assign rd_idx_add = rd_rd_mask[1] ? 3'h2 : 3'h1;
+assign rd_idx_add = 3'h1;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
        rd_p0_vld_d1 <= 1'b0;
@@ -1099,18 +1101,11 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        rd_p0_vld_d1 <= rd_p0_vld;
    end
 end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       rd_p1_vld_d1 <= 1'b0;
-   end else begin
-       rd_p1_vld_d1 <= rd_p1_vld;
-   end
-end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign rd_rd_mask = rd_planar_cnt ? rd_planar1_rd_mask : rd_planar0_rd_mask;
 //////// read address ////////
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $atmm = 32*8;
 //: my $atmm_num = ($dmaif / $atmm);
 //: foreach my $i(0..$atmm_num -1) {
@@ -1205,82 +1200,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    end
 end
 
-assign rd_p1_planar0_idx_inc = rd_p1_planar0_idx + rd_idx_add;
-assign rd_p1_planar1_idx_inc = rd_p1_planar1_idx + rd_idx_add;
-assign rd_p1_planar0_idx_w = is_first_running ? 7'b1 : rd_p1_planar0_idx_inc[8 -2:0];
-assign rd_p1_planar1_idx_w = is_first_running ? 7'b1 : rd_p1_planar1_idx_inc[8 -2:0];
-assign rd_p1_addr = (~rd_planar_cnt) ? {1'b0, rd_p1_planar0_idx[0], rd_p1_planar0_idx[8 -2:1]} : {1'b1, rd_p1_planar1_idx[0], rd_p1_planar1_idx[8 -2:1]};
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       rd_p1_planar0_idx <= {7{1'b0}};
-   end else begin
-       if ((rd_planar0_en) == 1'b1) begin
-           rd_p1_planar0_idx <= rd_p1_planar0_idx_w;
-       // VCS coverage off
-       end else if ((rd_planar0_en) == 1'b0) begin
-       end else begin
-           rd_p1_planar0_idx <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       rd_p1_planar1_idx <= {7{1'b0}};
-   end else begin
-       if ((rd_planar1_en) == 1'b1) begin
-           rd_p1_planar1_idx <= rd_p1_planar1_idx_w;
-       // VCS coverage off
-       end else if ((rd_planar1_en) == 1'b0) begin
-       end else begin
-           rd_p1_planar1_idx <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       rd_p1_planar0_ori_idx <= {7{1'b0}};
-   end else begin
-       if ((rd_planar0_ori_en) == 1'b1) begin
-           rd_p1_planar0_ori_idx <= rd_p1_planar0_idx_w;
-       // VCS coverage off
-       end else if ((rd_planar0_ori_en) == 1'b0) begin
-       end else begin
-           rd_p1_planar0_ori_idx <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       rd_p1_planar1_ori_idx <= {7{1'b0}};
-   end else begin
-       if ((rd_planar1_ori_en) == 1'b1) begin
-           rd_p1_planar1_ori_idx <= rd_p1_planar1_idx_w;
-       // VCS coverage off
-       end else if ((rd_planar1_ori_en) == 1'b0) begin
-       end else begin
-           rd_p1_planar1_ori_idx <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       rd_p1_addr_d1 <= {8{1'b0}};
-   end else begin
-       if ((rd_p1_vld) == 1'b1) begin
-           rd_p1_addr_d1 <= rd_p1_addr;
-       // VCS coverage off
-       end else if ((rd_p1_vld) == 1'b0) begin
-       end else begin
-           rd_p1_addr_d1 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 // assign rd_p0_planar0_idx_w = is_first_running ? 7'b0 :
 // //(is_last_loop & is_last_pburst & ~is_last_sub_h) ? rd_p0_planar0_ori_idx :
@@ -1300,7 +1219,7 @@ assign rd_planar1_en = is_first_running | (rd_vld & rd_planar_cnt);
 assign rd_planar0_ori_en = is_first_running;
 assign rd_planar1_ori_en = is_first_running;
 //////// status logic /////////
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $atmm = 32*8;
 //: my $atmm_num = ($dmaif / $atmm);
 //: foreach my $i(0..$atmm_num -1) {
@@ -1317,7 +1236,7 @@ assign rd_planar1_ori_en = is_first_running;
 //:
 //: );
 //: }
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $atmm = 32*8;
 //: my $atmm_num = ($dmaif / $atmm);
 //: if($atmm_num == 1) {
@@ -1355,19 +1274,8 @@ assign data_planar1_p0_cur_flag[1] = (data_planar1_p0_cnt_w > data_width_mark_1)
 assign data_planar1_p0_cur_flag[2] = (data_planar1_p0_cnt_w > data_width_mark_2);
 
 
-assign {mon_data_planar0_p1_cnt_w, data_planar0_p1_cnt_w} = data_planar0_cur_cnt + data_planar0_add * (1+1);
-assign {mon_data_planar1_p1_cnt_w, data_planar1_p1_cnt_w} = data_planar1_cur_cnt + data_planar1_add * (1+1);
-
-assign data_planar0_p1_cur_flag[0] = (data_planar0_p1_cnt_w > data_width_mark_0);
-assign data_planar0_p1_cur_flag[1] = (data_planar0_p1_cnt_w > data_width_mark_1);
-assign data_planar0_p1_cur_flag[2] = (data_planar0_p1_cnt_w > data_width_mark_2);
-assign data_planar1_p1_cur_flag[0] = (data_planar1_p1_cnt_w > data_width_mark_0);
-assign data_planar1_p1_cur_flag[1] = (data_planar1_p1_cnt_w > data_width_mark_1);
-assign data_planar1_p1_cur_flag[2] = (data_planar1_p1_cnt_w > data_width_mark_2);
-
-
-assign data_planar0_cur_cnt_w = (is_first_running | rd_planar0_line_end) ? 14'b0 : (rd_p1_vld) ? data_planar0_p1_cnt_w : data_planar0_p0_cnt_w;
-assign data_planar1_cur_cnt_w = (is_first_running | rd_planar1_line_end) ? 14'b0 : (rd_p1_vld) ? data_planar1_p1_cnt_w : data_planar1_p0_cnt_w;
+assign data_planar0_cur_cnt_w = (is_first_running | rd_planar0_line_end) ? 14'b0 : data_planar0_p0_cnt_w;
+assign data_planar1_cur_cnt_w = (is_first_running | rd_planar1_line_end) ? 14'b0 : data_planar1_p0_cnt_w;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
        data_planar0_cur_cnt <= {14{1'b0}};
@@ -1400,7 +1308,7 @@ end
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ///// assign data_planar0_cur_cnt_w = (is_first_running | rd_planar0_line_end) ? 14'b0 : (rd_p1_vld) ? data_planar0_p1_cnt_w : data_planar0_p0_cnt_w;
 ///// assign data_planar1_cur_cnt_w = (is_first_running | rd_planar1_line_end) ? 14'b0 : (rd_p1_vld) ? data_planar1_p1_cnt_w : data_planar1_p0_cnt_w;
-//: my $dmaif = 512/8;
+//: my $dmaif = 256/8;
 //: my $atmm = 32;
 //: my $atmm_num = ($dmaif / $atmm);
 //: if($atmm_num == 2) {
@@ -1413,40 +1321,9 @@ end
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign data_planar0_p1_flag_w = (is_first_running | rd_planar0_line_end) ? 3'b0 : data_planar0_p1_cur_flag;
-assign data_planar1_p1_flag_w = (is_first_running | rd_planar1_line_end) ? 3'b0 : data_planar1_p1_cur_flag;
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       data_planar0_p1_flag <= {3{1'b0}};
-   end else begin
-       if ((data_planar0_en) == 1'b1) begin
-           data_planar0_p1_flag <= data_planar0_p1_flag_w;
-       // VCS coverage off
-       end else if ((data_planar0_en) == 1'b0) begin
-       end else begin
-           data_planar0_p1_flag <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       data_planar1_p1_flag <= {3{1'b0}};
-   end else begin
-       if ((data_planar1_en) == 1'b1) begin
-           data_planar1_p1_flag <= data_planar1_p1_flag_w;
-       // VCS coverage off
-       end else if ((data_planar1_en) == 1'b0) begin
-       end else begin
-           data_planar1_p1_flag <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ///////////////////////////////
-//: my $dmaif = 512/8;
+//: my $dmaif = 256/8;
 //: my $atmm = 32;
 //: my $atmm_num = ($dmaif / $atmm);
 //: if($atmm_num == 1) {
@@ -1530,35 +1407,36 @@ end
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+wire [1:0] data_planar0_p0_flag_nex;
+wire [1:0] data_planar1_p0_flag_nex;
+wire [13:0] data_planar0_cnt_sub;
+wire mon_data_planar0_cnt_sub;
+assign {mon_data_planar0_cnt_sub,data_planar0_cnt_sub[13:0]} = (data_planar0_p0_cnt_w - {8'd0,data_planar0_add});
+assign data_planar0_p0_flag_nex[0] = data_planar0_cnt_sub > data_width_mark_0;
+assign data_planar0_p0_flag_nex[1] = data_planar0_cnt_sub > data_width_mark_1;
+//assign data_planar0_p0_flag_nex[0] = (data_planar0_p0_cnt_w - data_planar0_add) > data_width_mark_0;
+//assign data_planar0_p0_flag_nex[1] = (data_planar0_p0_cnt_w - data_planar0_add) > data_width_mark_1;
 assign data_planar0_p0_lp_mask = ~data_planar0_p0_cur_flag[0] ? {32{1'b1}} :
-(~data_planar0_p1_flag[0] & data_planar0_p0_cur_flag[0]) ? ~({32{1'b1}} << lp_planar0_mask_sft) : {32{1'b0}};
+~data_planar0_p0_flag_nex[0] ? ~({32{1'b1}} << lp_planar0_mask_sft) : {32{1'b0}};
 assign data_planar0_p0_rp_mask = ~data_planar0_p0_cur_flag[1] ? {32{1'b0}} :
-(~data_planar0_p1_flag[1] & data_planar0_p0_cur_flag[1]) ? ({32{1'b1}} << rp_planar0_mask_sft) : {32{1'b1}};
+~data_planar0_p0_flag_nex[1] ? ({32{1'b1}} << rp_planar0_mask_sft) : {32{1'b1}};
 assign data_planar0_p0_zero_mask = ~data_planar0_p0_cur_flag[2] ? {32{1'b0}} : ({32{1'b1}} << zero_planar0_mask_sft);
 assign data_planar0_p0_pad_mask = (data_planar0_p0_lp_mask | data_planar0_p0_rp_mask) & ~data_planar0_p0_zero_mask;
 
-assign data_planar0_p1_lp_mask = ~data_planar0_p1_cur_flag[0] ? {32{1'b1}} :
-(~data_planar0_p0_cur_flag[0] & data_planar0_p1_cur_flag[0]) ? ~({32{1'b1}} << lp_planar0_mask_sft) : {32{1'b0}};
-assign data_planar0_p1_rp_mask = ~data_planar0_p1_cur_flag[1] ? {32{1'b0}} :
-(~data_planar0_p0_cur_flag[1] & data_planar0_p1_cur_flag[1]) ? ({32{1'b1}} << rp_planar0_mask_sft) : {32{1'b1}};
-assign data_planar0_p1_zero_mask = ~data_planar0_p1_cur_flag[2] ? {32{1'b0}} :
-data_planar0_p0_cur_flag[2] ? {32{1'b1}} : ({32{1'b1}} << zero_planar0_mask_sft);
-assign data_planar0_p1_pad_mask = (data_planar0_p1_lp_mask | data_planar0_p1_rp_mask) & ~data_planar0_p1_zero_mask;
+wire [13:0] data_planar1_cnt_sub;
+wire mon_data_planar1_cnt_sub;
+assign {mon_data_planar1_cnt_sub,data_planar1_cnt_sub[13:0]} = (data_planar1_p0_cnt_w - {8'd0,data_planar1_add});
+assign data_planar1_p0_flag_nex[0] = data_planar1_cnt_sub > data_width_mark_0;
+assign data_planar1_p0_flag_nex[1] = data_planar1_cnt_sub > data_width_mark_1;
+//assign data_planar1_p0_flag_nex[0] = (data_planar1_p0_cnt_w - data_planar1_add) > data_width_mark_0;
+//assign data_planar1_p0_flag_nex[1] = (data_planar1_p0_cnt_w - data_planar1_add) > data_width_mark_1;
 
 assign data_planar1_p0_lp_mask = ~data_planar1_p0_cur_flag[0] ? {32{1'b1}} :
-(~data_planar1_p1_flag[0] ) ? ~({32{1'b1}} << lp_planar1_mask_sft) : {32{1'b0}};
+~data_planar1_p0_flag_nex[0] ? ~({32{1'b1}} << lp_planar1_mask_sft) : {32{1'b0}};
 assign data_planar1_p0_rp_mask = ~data_planar1_p0_cur_flag[1] ? {32{1'b0}} :
-(~data_planar1_p1_flag[1] ) ? ({32{1'b1}} << rp_planar1_mask_sft) : {32{1'b1}};
+~data_planar1_p0_flag_nex[1] ? ({32{1'b1}} << rp_planar1_mask_sft) : {32{1'b1}};
 assign data_planar1_p0_zero_mask = ~data_planar1_p0_cur_flag[2] ? {32{1'b0}} : ({32{1'b1}} << zero_planar1_mask_sft);
 assign data_planar1_p0_pad_mask = (data_planar1_p0_lp_mask | data_planar1_p0_rp_mask) & ~data_planar1_p0_zero_mask;
-
-assign data_planar1_p1_lp_mask = ~data_planar1_p1_cur_flag[0] ? {32{1'b1}} :
-(~data_planar1_p0_cur_flag[0] & data_planar1_p1_cur_flag[0]) ? ~({32{1'b1}} << lp_planar1_mask_sft) : {32{1'b0}};
-assign data_planar1_p1_rp_mask = ~data_planar1_p1_cur_flag[1] ? {32{1'b0}} :
-(~data_planar1_p0_cur_flag[1] & data_planar1_p1_cur_flag[1]) ? ({32{1'b1}} << rp_planar1_mask_sft) : {32{1'b1}};
-assign data_planar1_p1_zero_mask = ~data_planar1_p1_cur_flag[2] ? {32{1'b0}} :
-data_planar1_p0_cur_flag[2] ? {32{1'b1}} : ({32{1'b1}} << zero_planar1_mask_sft);
-assign data_planar1_p1_pad_mask = (data_planar1_p1_lp_mask | data_planar1_p1_rp_mask) & ~data_planar1_p1_zero_mask;
 
 assign rd_p0_pad_mask = ~rd_planar_cnt ? data_planar0_p0_pad_mask : data_planar1_p0_pad_mask;
 assign rd_p0_zero_mask = ~rd_planar_cnt ? data_planar0_p0_zero_mask : data_planar1_p0_zero_mask;
@@ -1584,31 +1462,6 @@ always @(posedge nvdla_core_clk) begin
 end
  //assign img2sbuf_p0_rd_en = rd_p0_vld_d1;  
  //assign img2sbuf_p0_rd_addr = rd_p0_addr_d1;  
-
-assign rd_p1_pad_mask = ~rd_planar_cnt ? data_planar0_p1_pad_mask : data_planar1_p1_pad_mask;
-assign rd_p1_zero_mask = ~rd_planar_cnt ? data_planar0_p1_zero_mask : data_planar1_p1_zero_mask;
-always @(posedge nvdla_core_clk) begin
-       if ((rd_vld) == 1'b1) begin
-           rd_p1_pad_mask_d1 <= rd_p1_pad_mask;
-       // VCS coverage off
-       end else if ((rd_vld) == 1'b0) begin
-       end else begin
-           rd_p1_pad_mask_d1 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((rd_vld) == 1'b1) begin
-           rd_p1_zero_mask_d1 <= rd_p1_zero_mask;
-       // VCS coverage off
-       end else if ((rd_vld) == 1'b0) begin
-       end else begin
-           rd_p1_zero_mask_d1 <= 'bx;
-       // VCS coverage on
-       end
-end
- //assign img2sbuf_p1_rd_en = rd_p1_vld_d1;  
- //assign img2sbuf_p1_rd_addr = rd_p1_addr_d1;  
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign data_planar0_en = is_first_running | (rd_vld & ~rd_planar_cnt);
@@ -1726,7 +1579,7 @@ end
 ////////////////////////////////////////////////////////////////////////
 // connect to shared buffer //
 ////////////////////////////////////////////////////////////////////////
-//: my $dmaif = 512/8;
+//: my $dmaif = 256/8;
 //: my $atmm = 32;
 //: my $atmm_num = ($dmaif / $atmm);
 //: foreach my $i (0..$atmm_num -1) {
@@ -1736,14 +1589,12 @@ end
 //| eperl: generated_beg (DO NOT EDIT BELOW)
  assign img2sbuf_p0_rd_en = rd_p0_vld_d1;  
  assign img2sbuf_p0_rd_addr = rd_p0_addr_d1;  
- assign img2sbuf_p1_rd_en = rd_p1_vld_d1;  
- assign img2sbuf_p1_rd_addr = rd_p1_addr_d1;  
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////////////////////////////////////////////////////////////////////////
 // pipeline register for shared buffer read latency //
 ////////////////////////////////////////////////////////////////////////
-//: my $dmaif = 512/8;
+//: my $dmaif = 256/8;
 //: my $atmm = 32;
 //: my $atmm_num = ($dmaif / $atmm);
 //: my $i;
@@ -1918,28 +1769,6 @@ always @(posedge nvdla_core_clk) begin
        // VCS coverage on
        end
 end
-reg [31:0] rd_p1_pad_mask_d2;
-always @(posedge nvdla_core_clk) begin
-       if ((rd_vld_d1) == 1'b1) begin
-           rd_p1_pad_mask_d2 <= rd_p1_pad_mask_d1;
-       // VCS coverage off
-       end else if ((rd_vld_d1) == 1'b0) begin
-       end else begin
-           rd_p1_pad_mask_d2 <= 'bx;
-       // VCS coverage on
-       end
-end
-reg [31:0] rd_p1_zero_mask_d2;
-always @(posedge nvdla_core_clk) begin
-       if ((rd_vld_d1) == 1'b1) begin
-           rd_p1_zero_mask_d2 <= rd_p1_zero_mask_d1;
-       // VCS coverage off
-       end else if ((rd_vld_d1) == 1'b0) begin
-       end else begin
-           rd_p1_zero_mask_d2 <= 'bx;
-       // VCS coverage on
-       end
-end
 reg  rd_vld_d3;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
@@ -2075,28 +1904,6 @@ always @(posedge nvdla_core_clk) begin
        // VCS coverage on
        end
 end
-reg [31:0] rd_p1_pad_mask_d3;
-always @(posedge nvdla_core_clk) begin
-       if ((rd_vld_d2) == 1'b1) begin
-           rd_p1_pad_mask_d3 <= rd_p1_pad_mask_d2;
-       // VCS coverage off
-       end else if ((rd_vld_d2) == 1'b0) begin
-       end else begin
-           rd_p1_pad_mask_d3 <= 'bx;
-       // VCS coverage on
-       end
-end
-reg [31:0] rd_p1_zero_mask_d3;
-always @(posedge nvdla_core_clk) begin
-       if ((rd_vld_d2) == 1'b1) begin
-           rd_p1_zero_mask_d3 <= rd_p1_zero_mask_d2;
-       // VCS coverage off
-       end else if ((rd_vld_d2) == 1'b0) begin
-       end else begin
-           rd_p1_zero_mask_d3 <= 'bx;
-       // VCS coverage on
-       end
-end
 
 assign pk_rsp_vld = rd_vld_d3;
 assign pk_rsp_planar = rd_planar_d3;
@@ -2109,9 +1916,6 @@ assign pk_rsp_layer_end = rd_layer_end_d3;
 
 assign pk_rsp_p0_pad_mask = rd_p0_pad_mask_d3;
 assign pk_rsp_p0_zero_mask = rd_p0_zero_mask_d3;
-
-assign pk_rsp_p1_pad_mask = rd_p1_pad_mask_d3;
-assign pk_rsp_p1_zero_mask = rd_p1_zero_mask_d3;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign pk_rsp_early_end = pixel_early_end & pk_rsp_one_line_end;
@@ -2220,7 +2024,7 @@ end
 ////////////////////////////////////////////////////////////////////////
 // connect to sbuf ram input //
 ////////////////////////////////////////////////////////////////////////
-//: my $dmaif = 512/8;
+//: my $dmaif = 256/8;
 //: my $atmm = 32;
 //: my $atmm_num = ($dmaif / $atmm);
 //: foreach my $k (0..$atmm_num -1) {
@@ -2231,8 +2035,6 @@ end
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
 assign pk_rsp_p0_data = img2sbuf_p0_rd_data;
-
-assign pk_rsp_p1_data = img2sbuf_p1_rd_data;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////////////////////////////////////////////////////////////////////////
@@ -2270,7 +2072,7 @@ end
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //assign pk_rsp_wr_size_ori = pixel_packed_10b ? 3'h4 : 3'h2;
 //assign pk_rsp_wr_mask = pixel_packed_10b ? 4'hf : 4'h3;
-//: my $dmaif = 512/8;
+//: my $dmaif = 256/8;
 //: my $atmm = 32;
 //: my $atmm_num = ($dmaif / $atmm);
 //: print qq(
@@ -2279,8 +2081,8 @@ end
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign pk_rsp_wr_size_ori = 3'h2;//3'h2
-assign pk_rsp_wr_mask = {{(4-2){1'b0}},{2{1'b1}}};//4'h3;
+assign pk_rsp_wr_size_ori = 3'h1;//3'h2
+assign pk_rsp_wr_mask = {{(4-1){1'b0}},{1{1'b1}}};//4'h3;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////assign pk_rsp_wr_ext64 = (pk_rsp_cur_one_line_end & (pk_rsp_wr_sub_addr == 2'h2) & pixel_data_shrink & ~pixel_packed_10b);
@@ -2370,7 +2172,7 @@ assign pk_out_info_pd[11:9] = pk_out_sub_h[2:0];
 ////////////////////////////////////////////////////////////////////////
 // data output logic //
 ////////////////////////////////////////////////////////////////////////
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $atmm = 32*8;
 //: my $atmm_num = ($dmaif / $atmm);
 //: if($atmm_num == 1) {
@@ -2394,9 +2196,9 @@ assign pk_out_info_pd[11:9] = pk_out_sub_h[2:0];
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign rdat = {pk_rsp_p1_data, pk_rsp_p0_data};
-assign mask_zero = {pk_rsp_p1_zero_mask, pk_rsp_p0_zero_mask};
-assign mask_pad = {pk_rsp_p1_pad_mask, pk_rsp_p0_pad_mask};
+assign rdat = pk_rsp_p0_data;
+assign mask_zero = {pk_rsp_p0_zero_mask};
+assign mask_pad = {pk_rsp_p0_pad_mask};
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //assign z14 = 14'b0;
@@ -2426,7 +2228,7 @@ assign pk_rsp_dat_normal = rdat;
 /////: }
 /////: print "\n\n\n";
 /////: 
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $bpe = 8;
 //: my $ele_num = int($dmaif/$bpe);
 //: for(my $i = 0; $i < $ele_num; $i ++) {
@@ -2468,38 +2270,6 @@ assign pk_rsp_dat_normal = rdat;
  assign pk_rsp_dat_mnorm[239:232] = (pixel_packed_10b | mask_zero[29] | mask_pad[29]) ? 8'b0 : pk_rsp_dat_normal[239:232]; 
  assign pk_rsp_dat_mnorm[247:240] = (pixel_packed_10b | mask_zero[30] | mask_pad[30]) ? 8'b0 : pk_rsp_dat_normal[247:240]; 
  assign pk_rsp_dat_mnorm[255:248] = (pixel_packed_10b | mask_zero[31] | mask_pad[31]) ? 8'b0 : pk_rsp_dat_normal[255:248]; 
- assign pk_rsp_dat_mnorm[263:256] = (pixel_packed_10b | mask_zero[32] | mask_pad[32]) ? 8'b0 : pk_rsp_dat_normal[263:256]; 
- assign pk_rsp_dat_mnorm[271:264] = (pixel_packed_10b | mask_zero[33] | mask_pad[33]) ? 8'b0 : pk_rsp_dat_normal[271:264]; 
- assign pk_rsp_dat_mnorm[279:272] = (pixel_packed_10b | mask_zero[34] | mask_pad[34]) ? 8'b0 : pk_rsp_dat_normal[279:272]; 
- assign pk_rsp_dat_mnorm[287:280] = (pixel_packed_10b | mask_zero[35] | mask_pad[35]) ? 8'b0 : pk_rsp_dat_normal[287:280]; 
- assign pk_rsp_dat_mnorm[295:288] = (pixel_packed_10b | mask_zero[36] | mask_pad[36]) ? 8'b0 : pk_rsp_dat_normal[295:288]; 
- assign pk_rsp_dat_mnorm[303:296] = (pixel_packed_10b | mask_zero[37] | mask_pad[37]) ? 8'b0 : pk_rsp_dat_normal[303:296]; 
- assign pk_rsp_dat_mnorm[311:304] = (pixel_packed_10b | mask_zero[38] | mask_pad[38]) ? 8'b0 : pk_rsp_dat_normal[311:304]; 
- assign pk_rsp_dat_mnorm[319:312] = (pixel_packed_10b | mask_zero[39] | mask_pad[39]) ? 8'b0 : pk_rsp_dat_normal[319:312]; 
- assign pk_rsp_dat_mnorm[327:320] = (pixel_packed_10b | mask_zero[40] | mask_pad[40]) ? 8'b0 : pk_rsp_dat_normal[327:320]; 
- assign pk_rsp_dat_mnorm[335:328] = (pixel_packed_10b | mask_zero[41] | mask_pad[41]) ? 8'b0 : pk_rsp_dat_normal[335:328]; 
- assign pk_rsp_dat_mnorm[343:336] = (pixel_packed_10b | mask_zero[42] | mask_pad[42]) ? 8'b0 : pk_rsp_dat_normal[343:336]; 
- assign pk_rsp_dat_mnorm[351:344] = (pixel_packed_10b | mask_zero[43] | mask_pad[43]) ? 8'b0 : pk_rsp_dat_normal[351:344]; 
- assign pk_rsp_dat_mnorm[359:352] = (pixel_packed_10b | mask_zero[44] | mask_pad[44]) ? 8'b0 : pk_rsp_dat_normal[359:352]; 
- assign pk_rsp_dat_mnorm[367:360] = (pixel_packed_10b | mask_zero[45] | mask_pad[45]) ? 8'b0 : pk_rsp_dat_normal[367:360]; 
- assign pk_rsp_dat_mnorm[375:368] = (pixel_packed_10b | mask_zero[46] | mask_pad[46]) ? 8'b0 : pk_rsp_dat_normal[375:368]; 
- assign pk_rsp_dat_mnorm[383:376] = (pixel_packed_10b | mask_zero[47] | mask_pad[47]) ? 8'b0 : pk_rsp_dat_normal[383:376]; 
- assign pk_rsp_dat_mnorm[391:384] = (pixel_packed_10b | mask_zero[48] | mask_pad[48]) ? 8'b0 : pk_rsp_dat_normal[391:384]; 
- assign pk_rsp_dat_mnorm[399:392] = (pixel_packed_10b | mask_zero[49] | mask_pad[49]) ? 8'b0 : pk_rsp_dat_normal[399:392]; 
- assign pk_rsp_dat_mnorm[407:400] = (pixel_packed_10b | mask_zero[50] | mask_pad[50]) ? 8'b0 : pk_rsp_dat_normal[407:400]; 
- assign pk_rsp_dat_mnorm[415:408] = (pixel_packed_10b | mask_zero[51] | mask_pad[51]) ? 8'b0 : pk_rsp_dat_normal[415:408]; 
- assign pk_rsp_dat_mnorm[423:416] = (pixel_packed_10b | mask_zero[52] | mask_pad[52]) ? 8'b0 : pk_rsp_dat_normal[423:416]; 
- assign pk_rsp_dat_mnorm[431:424] = (pixel_packed_10b | mask_zero[53] | mask_pad[53]) ? 8'b0 : pk_rsp_dat_normal[431:424]; 
- assign pk_rsp_dat_mnorm[439:432] = (pixel_packed_10b | mask_zero[54] | mask_pad[54]) ? 8'b0 : pk_rsp_dat_normal[439:432]; 
- assign pk_rsp_dat_mnorm[447:440] = (pixel_packed_10b | mask_zero[55] | mask_pad[55]) ? 8'b0 : pk_rsp_dat_normal[447:440]; 
- assign pk_rsp_dat_mnorm[455:448] = (pixel_packed_10b | mask_zero[56] | mask_pad[56]) ? 8'b0 : pk_rsp_dat_normal[455:448]; 
- assign pk_rsp_dat_mnorm[463:456] = (pixel_packed_10b | mask_zero[57] | mask_pad[57]) ? 8'b0 : pk_rsp_dat_normal[463:456]; 
- assign pk_rsp_dat_mnorm[471:464] = (pixel_packed_10b | mask_zero[58] | mask_pad[58]) ? 8'b0 : pk_rsp_dat_normal[471:464]; 
- assign pk_rsp_dat_mnorm[479:472] = (pixel_packed_10b | mask_zero[59] | mask_pad[59]) ? 8'b0 : pk_rsp_dat_normal[479:472]; 
- assign pk_rsp_dat_mnorm[487:480] = (pixel_packed_10b | mask_zero[60] | mask_pad[60]) ? 8'b0 : pk_rsp_dat_normal[487:480]; 
- assign pk_rsp_dat_mnorm[495:488] = (pixel_packed_10b | mask_zero[61] | mask_pad[61]) ? 8'b0 : pk_rsp_dat_normal[495:488]; 
- assign pk_rsp_dat_mnorm[503:496] = (pixel_packed_10b | mask_zero[62] | mask_pad[62]) ? 8'b0 : pk_rsp_dat_normal[503:496]; 
- assign pk_rsp_dat_mnorm[511:504] = (pixel_packed_10b | mask_zero[63] | mask_pad[63]) ? 8'b0 : pk_rsp_dat_normal[511:504]; 
 
 
 
@@ -2511,7 +2281,7 @@ assign dat_l1_hi = pk_rsp_planar1_c1_en ? pk_rsp_dat_mnorm : pk_rsp_planar1_c1_d
 assign dat_l1 = {dat_l1_hi, dat_l1_lo};
 assign dat_8b_yuv = {
 //: my $bpe = 8;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $m = ($dmaif/$bpe);
 //: foreach my $i(0..$m -2) {
 //: my $k = $m -$i -1;
@@ -2519,38 +2289,6 @@ assign dat_8b_yuv = {
 //: }
 //: print " dat_l1[2*${bpe}-1:0], dat_l0[${bpe}-1:0]}; \n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
- dat_l1[63*2*8+2*8-1:63*2*8], dat_l0[63*8+8-1:63*8],    
- dat_l1[62*2*8+2*8-1:62*2*8], dat_l0[62*8+8-1:62*8],    
- dat_l1[61*2*8+2*8-1:61*2*8], dat_l0[61*8+8-1:61*8],    
- dat_l1[60*2*8+2*8-1:60*2*8], dat_l0[60*8+8-1:60*8],    
- dat_l1[59*2*8+2*8-1:59*2*8], dat_l0[59*8+8-1:59*8],    
- dat_l1[58*2*8+2*8-1:58*2*8], dat_l0[58*8+8-1:58*8],    
- dat_l1[57*2*8+2*8-1:57*2*8], dat_l0[57*8+8-1:57*8],    
- dat_l1[56*2*8+2*8-1:56*2*8], dat_l0[56*8+8-1:56*8],    
- dat_l1[55*2*8+2*8-1:55*2*8], dat_l0[55*8+8-1:55*8],    
- dat_l1[54*2*8+2*8-1:54*2*8], dat_l0[54*8+8-1:54*8],    
- dat_l1[53*2*8+2*8-1:53*2*8], dat_l0[53*8+8-1:53*8],    
- dat_l1[52*2*8+2*8-1:52*2*8], dat_l0[52*8+8-1:52*8],    
- dat_l1[51*2*8+2*8-1:51*2*8], dat_l0[51*8+8-1:51*8],    
- dat_l1[50*2*8+2*8-1:50*2*8], dat_l0[50*8+8-1:50*8],    
- dat_l1[49*2*8+2*8-1:49*2*8], dat_l0[49*8+8-1:49*8],    
- dat_l1[48*2*8+2*8-1:48*2*8], dat_l0[48*8+8-1:48*8],    
- dat_l1[47*2*8+2*8-1:47*2*8], dat_l0[47*8+8-1:47*8],    
- dat_l1[46*2*8+2*8-1:46*2*8], dat_l0[46*8+8-1:46*8],    
- dat_l1[45*2*8+2*8-1:45*2*8], dat_l0[45*8+8-1:45*8],    
- dat_l1[44*2*8+2*8-1:44*2*8], dat_l0[44*8+8-1:44*8],    
- dat_l1[43*2*8+2*8-1:43*2*8], dat_l0[43*8+8-1:43*8],    
- dat_l1[42*2*8+2*8-1:42*2*8], dat_l0[42*8+8-1:42*8],    
- dat_l1[41*2*8+2*8-1:41*2*8], dat_l0[41*8+8-1:41*8],    
- dat_l1[40*2*8+2*8-1:40*2*8], dat_l0[40*8+8-1:40*8],    
- dat_l1[39*2*8+2*8-1:39*2*8], dat_l0[39*8+8-1:39*8],    
- dat_l1[38*2*8+2*8-1:38*2*8], dat_l0[38*8+8-1:38*8],    
- dat_l1[37*2*8+2*8-1:37*2*8], dat_l0[37*8+8-1:37*8],    
- dat_l1[36*2*8+2*8-1:36*2*8], dat_l0[36*8+8-1:36*8],    
- dat_l1[35*2*8+2*8-1:35*2*8], dat_l0[35*8+8-1:35*8],    
- dat_l1[34*2*8+2*8-1:34*2*8], dat_l0[34*8+8-1:34*8],    
- dat_l1[33*2*8+2*8-1:33*2*8], dat_l0[33*8+8-1:33*8],    
- dat_l1[32*2*8+2*8-1:32*2*8], dat_l0[32*8+8-1:32*8],    
  dat_l1[31*2*8+2*8-1:31*2*8], dat_l0[31*8+8-1:31*8],    
  dat_l1[30*2*8+2*8-1:30*2*8], dat_l0[30*8+8-1:30*8],    
  dat_l1[29*2*8+2*8-1:29*2*8], dat_l0[29*8+8-1:29*8],    
@@ -2593,10 +2331,10 @@ assign pk_rsp_out_sel[3] = (pixel_planar & (pk_rsp_wr_cnt == 2'h1));
 assign pk_rsp_out_sel[4] = (pixel_planar & (pk_rsp_wr_cnt == 2'h2));
 //assign pk_rsp_data_h1 = pk_rsp_dat_mergb[1023:512];
 assign pk_rsp_data_h0 = //({256*2{pk_rsp_out_sel[0]}} & pk_rsp_dat_mergb[511:0]) |
-                        ({512{pk_rsp_out_sel[1]}} & pk_rsp_dat_mnorm) |
-                        ({512{pk_rsp_out_sel[2]}} & dat_yuv[512 -1:0]) |
-                        ({512{pk_rsp_out_sel[3]}} & dat_yuv[512*2-1:512]) |
-                        ({512{pk_rsp_out_sel[4]}} & dat_yuv[512*3-1:512*2]);
+                        ({256{pk_rsp_out_sel[1]}} & pk_rsp_dat_mnorm) |
+                        ({256{pk_rsp_out_sel[2]}} & dat_yuv[256 -1:0]) |
+                        ({256{pk_rsp_out_sel[3]}} & dat_yuv[256*2-1:256]) |
+                        ({256{pk_rsp_out_sel[4]}} & dat_yuv[256*3-1:256*2]);
 assign pk_rsp_pad_mask_norm = mask_pad;
 //assign pk_rsp_pad_mask_ergb = {{2{mask_pad[63]}}, {2{mask_pad[62]}}, {2{mask_pad[61]}}, {2{mask_pad[60]}}, {2{mask_pad[59]}}, {2{mask_pad[58]}}, {2{mask_pad[57]}}, {2{mask_pad[56]}}, {2{mask_pad[55]}}, {2{mask_pad[54]}}, {2{mask_pad[53]}}, {2{mask_pad[52]}}, {2{mask_pad[51]}}, {2{mask_pad[50]}}, {2{mask_pad[49]}}, {2{mask_pad[48]}}, {2{mask_pad[47]}}, {2{mask_pad[46]}}, {2{mask_pad[45]}}, {2{mask_pad[44]}}, {2{mask_pad[43]}}, {2{mask_pad[42]}}, {2{mask_pad[41]}}, {2{mask_pad[40]}}, {2{mask_pad[39]}}, {2{mask_pad[38]}}, {2{mask_pad[37]}}, {2{mask_pad[36]}}, {2{mask_pad[35]}}, {2{mask_pad[34]}}, {2{mask_pad[33]}}, {2{mask_pad[32]}}, {2{mask_pad[31]}}, {2{mask_pad[30]}}, {2{mask_pad[29]}}, {2{mask_pad[28]}}, {2{mask_pad[27]}}, {2{mask_pad[26]}}, {2{mask_pad[25]}}, {2{mask_pad[24]}}, {2{mask_pad[23]}}, {2{mask_pad[22]}}, {2{mask_pad[21]}}, {2{mask_pad[20]}}, {2{mask_pad[19]}}, {2{mask_pad[18]}}, {2{mask_pad[17]}}, {2{mask_pad[16]}}, {2{mask_pad[15]}}, {2{mask_pad[14]}}, {2{mask_pad[13]}}, {2{mask_pad[12]}}, {2{mask_pad[11]}}, {2{mask_pad[10]}}, {2{mask_pad[9]}}, {2{mask_pad[8]}}, {2{mask_pad[7]}}, {2{mask_pad[6]}}, {2{mask_pad[5]}}, {2{mask_pad[4]}}, {2{mask_pad[3]}}, {2{mask_pad[2]}}, {2{mask_pad[1]}}, {2{mask_pad[0]}}};
 assign pad_mask_l0 = mask_pad_planar0_c0_d1;
@@ -2605,7 +2343,7 @@ assign pad_mask_l1_hi = pk_rsp_planar1_c1_en ? mask_pad : mask_pad_planar1_c1_d1
 assign pad_mask_l1 = {pad_mask_l1_hi, pad_mask_l1_lo};
 assign pad_mask_8b_yuv = {
 //: my $bpe = 8;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $m = ($dmaif/$bpe);
 //: my $byte = 8/8;
 //: foreach my $i(0..$m -2) {
@@ -2614,38 +2352,6 @@ assign pad_mask_8b_yuv = {
 //: }
 //: print " {pad_mask_l1[2*${byte}-1:0], pad_mask_l0[${byte}-1:0]}}; \n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
- {pad_mask_l1[63*2*1+2*1-1:63*2*1], pad_mask_l0[63*1+1-1:63*1]},    
- {pad_mask_l1[62*2*1+2*1-1:62*2*1], pad_mask_l0[62*1+1-1:62*1]},    
- {pad_mask_l1[61*2*1+2*1-1:61*2*1], pad_mask_l0[61*1+1-1:61*1]},    
- {pad_mask_l1[60*2*1+2*1-1:60*2*1], pad_mask_l0[60*1+1-1:60*1]},    
- {pad_mask_l1[59*2*1+2*1-1:59*2*1], pad_mask_l0[59*1+1-1:59*1]},    
- {pad_mask_l1[58*2*1+2*1-1:58*2*1], pad_mask_l0[58*1+1-1:58*1]},    
- {pad_mask_l1[57*2*1+2*1-1:57*2*1], pad_mask_l0[57*1+1-1:57*1]},    
- {pad_mask_l1[56*2*1+2*1-1:56*2*1], pad_mask_l0[56*1+1-1:56*1]},    
- {pad_mask_l1[55*2*1+2*1-1:55*2*1], pad_mask_l0[55*1+1-1:55*1]},    
- {pad_mask_l1[54*2*1+2*1-1:54*2*1], pad_mask_l0[54*1+1-1:54*1]},    
- {pad_mask_l1[53*2*1+2*1-1:53*2*1], pad_mask_l0[53*1+1-1:53*1]},    
- {pad_mask_l1[52*2*1+2*1-1:52*2*1], pad_mask_l0[52*1+1-1:52*1]},    
- {pad_mask_l1[51*2*1+2*1-1:51*2*1], pad_mask_l0[51*1+1-1:51*1]},    
- {pad_mask_l1[50*2*1+2*1-1:50*2*1], pad_mask_l0[50*1+1-1:50*1]},    
- {pad_mask_l1[49*2*1+2*1-1:49*2*1], pad_mask_l0[49*1+1-1:49*1]},    
- {pad_mask_l1[48*2*1+2*1-1:48*2*1], pad_mask_l0[48*1+1-1:48*1]},    
- {pad_mask_l1[47*2*1+2*1-1:47*2*1], pad_mask_l0[47*1+1-1:47*1]},    
- {pad_mask_l1[46*2*1+2*1-1:46*2*1], pad_mask_l0[46*1+1-1:46*1]},    
- {pad_mask_l1[45*2*1+2*1-1:45*2*1], pad_mask_l0[45*1+1-1:45*1]},    
- {pad_mask_l1[44*2*1+2*1-1:44*2*1], pad_mask_l0[44*1+1-1:44*1]},    
- {pad_mask_l1[43*2*1+2*1-1:43*2*1], pad_mask_l0[43*1+1-1:43*1]},    
- {pad_mask_l1[42*2*1+2*1-1:42*2*1], pad_mask_l0[42*1+1-1:42*1]},    
- {pad_mask_l1[41*2*1+2*1-1:41*2*1], pad_mask_l0[41*1+1-1:41*1]},    
- {pad_mask_l1[40*2*1+2*1-1:40*2*1], pad_mask_l0[40*1+1-1:40*1]},    
- {pad_mask_l1[39*2*1+2*1-1:39*2*1], pad_mask_l0[39*1+1-1:39*1]},    
- {pad_mask_l1[38*2*1+2*1-1:38*2*1], pad_mask_l0[38*1+1-1:38*1]},    
- {pad_mask_l1[37*2*1+2*1-1:37*2*1], pad_mask_l0[37*1+1-1:37*1]},    
- {pad_mask_l1[36*2*1+2*1-1:36*2*1], pad_mask_l0[36*1+1-1:36*1]},    
- {pad_mask_l1[35*2*1+2*1-1:35*2*1], pad_mask_l0[35*1+1-1:35*1]},    
- {pad_mask_l1[34*2*1+2*1-1:34*2*1], pad_mask_l0[34*1+1-1:34*1]},    
- {pad_mask_l1[33*2*1+2*1-1:33*2*1], pad_mask_l0[33*1+1-1:33*1]},    
- {pad_mask_l1[32*2*1+2*1-1:32*2*1], pad_mask_l0[32*1+1-1:32*1]},    
  {pad_mask_l1[31*2*1+2*1-1:31*2*1], pad_mask_l0[31*1+1-1:31*1]},    
  {pad_mask_l1[30*2*1+2*1-1:30*2*1], pad_mask_l0[30*1+1-1:30*1]},    
  {pad_mask_l1[29*2*1+2*1-1:29*2*1], pad_mask_l0[29*1+1-1:29*1]},    
@@ -2682,7 +2388,7 @@ assign pad_mask_8b_yuv = {
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign pad_mask_yuv = pad_mask_8b_yuv;
 //assign pk_rsp_pad_mask_h1 = pixel_packed_10b ? pk_rsp_pad_mask_ergb[127:64] : 64'b0;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $bpe = 8;
 //: my $ele_num = int( $dmaif/$bpe );
 //: print qq(
@@ -2695,10 +2401,10 @@ assign pad_mask_yuv = pad_mask_8b_yuv;
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
 assign pk_rsp_pad_mask_h0 = //({64{pk_rsp_out_sel[0]}} & pk_rsp_pad_mask_ergb[63:0]) |
-({64{pk_rsp_out_sel[1]}} & pk_rsp_pad_mask_norm) |
-({64{pk_rsp_out_sel[2]}} & pad_mask_yuv[64-1:0]) |
-({64{pk_rsp_out_sel[3]}} & pad_mask_yuv[64*2-1:64]) |
-({64{pk_rsp_out_sel[4]}} & pad_mask_yuv[64*3-1:64*2]);
+({32{pk_rsp_out_sel[1]}} & pk_rsp_pad_mask_norm) |
+({32{pk_rsp_out_sel[2]}} & pad_mask_yuv[32-1:0]) |
+({32{pk_rsp_out_sel[3]}} & pad_mask_yuv[32*2-1:32]) |
+({32{pk_rsp_out_sel[4]}} & pad_mask_yuv[32*3-1:32*2]);
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign pk_rsp_planar0_c0_en = (pk_rsp_vld & pixel_planar & ~pk_rsp_planar);
@@ -2706,7 +2412,7 @@ assign pk_rsp_planar1_c0_en = (pk_rsp_vld & pixel_planar & pk_rsp_planar & (pk_r
 assign pk_rsp_planar1_c1_en = (pk_rsp_vld & pixel_planar & pk_rsp_planar & (pk_rsp_wr_cnt == 2'h1));
 assign pk_rsp_data_h0_en = pk_rsp_wr_vld;
 //assign pk_rsp_data_h1_en = pk_rsp_wr_vld & pixel_packed_10b;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $bpe = 8;
 //: my $ele_num = int($dmaif/$bpe);
 //: &eperl::flop("-nodeclare   -rval \"{${dmaif}{1'b0}}\"  -en \"pk_rsp_planar0_c0_en\" -d \"pk_rsp_dat_mnorm\" -q pk_rsp_planar0_c0_d1");
@@ -2720,7 +2426,7 @@ assign pk_rsp_data_h0_en = pk_rsp_wr_vld;
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       pk_rsp_planar0_c0_d1 <= {512{1'b0}};
+       pk_rsp_planar0_c0_d1 <= {256{1'b0}};
    end else begin
        if ((pk_rsp_planar0_c0_en) == 1'b1) begin
            pk_rsp_planar0_c0_d1 <= pk_rsp_dat_mnorm;
@@ -2734,7 +2440,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       pk_rsp_planar1_c0_d1 <= {512{1'b0}};
+       pk_rsp_planar1_c0_d1 <= {256{1'b0}};
    end else begin
        if ((pk_rsp_planar1_c0_en) == 1'b1) begin
            pk_rsp_planar1_c0_d1 <= pk_rsp_dat_mnorm;
@@ -2748,7 +2454,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       pk_rsp_planar1_c1_d1 <= {512{1'b0}};
+       pk_rsp_planar1_c1_d1 <= {256{1'b0}};
    end else begin
        if ((pk_rsp_planar1_c1_en) == 1'b1) begin
            pk_rsp_planar1_c1_d1 <= pk_rsp_dat_mnorm;
@@ -2762,7 +2468,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       mask_pad_planar0_c0_d1 <= {64{1'b0}};
+       mask_pad_planar0_c0_d1 <= {32{1'b0}};
    end else begin
        if ((pk_rsp_planar0_c0_en) == 1'b1) begin
            mask_pad_planar0_c0_d1 <= mask_pad;
@@ -2776,7 +2482,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       mask_pad_planar1_c0_d1 <= {64{1'b0}};
+       mask_pad_planar1_c0_d1 <= {32{1'b0}};
    end else begin
        if ((pk_rsp_planar1_c0_en) == 1'b1) begin
            mask_pad_planar1_c0_d1 <= mask_pad;
@@ -2790,7 +2496,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       mask_pad_planar1_c1_d1 <= {64{1'b0}};
+       mask_pad_planar1_c1_d1 <= {32{1'b0}};
    end else begin
        if ((pk_rsp_planar1_c1_en) == 1'b1) begin
            mask_pad_planar1_c1_d1 <= mask_pad;
@@ -2814,7 +2520,7 @@ always @(posedge nvdla_core_clk) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       pk_out_pad_mask_h0 <= {64{1'b0}};
+       pk_out_pad_mask_h0 <= {32{1'b0}};
    end else begin
        if ((pk_rsp_data_h0_en) == 1'b1) begin
            pk_out_pad_mask_h0 <= pk_rsp_pad_mask_h0;
@@ -2842,7 +2548,7 @@ assign mn_mask_uv_lo = mn_mask_uv_0_en ? mask_zero : mn_mask_uv_lo_d1;
 assign mn_mask_uv_hi = mn_mask_uv_1_en ? mask_zero : mn_mask_uv_hi_d1;
 assign mn_mask_uv = {mn_mask_uv_hi, mn_mask_uv_lo};
 assign mn_mask_yuv = {
-//: my $dmaif = 512/8;
+//: my $dmaif = 256/8;
 //: my $atmm = 32;
 //: my $atmm_num = ($dmaif / $atmm);
 //: foreach my $i(0..$atmm-2) {
@@ -2854,74 +2560,74 @@ assign mn_mask_yuv = {
 //: print "       mn_mask_uv[2*${atmm_num}-1:0], mn_mask_y[${atmm_num}-1:0]};  \n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-mn_mask_uv[31*2*2+2*2-1:31*2*2], mn_mask_y[31*2+2-1:31*2],
+mn_mask_uv[31*2*1+2*1-1:31*2*1], mn_mask_y[31*1+1-1:31*1],
 
-mn_mask_uv[30*2*2+2*2-1:30*2*2], mn_mask_y[30*2+2-1:30*2],
+mn_mask_uv[30*2*1+2*1-1:30*2*1], mn_mask_y[30*1+1-1:30*1],
 
-mn_mask_uv[29*2*2+2*2-1:29*2*2], mn_mask_y[29*2+2-1:29*2],
+mn_mask_uv[29*2*1+2*1-1:29*2*1], mn_mask_y[29*1+1-1:29*1],
 
-mn_mask_uv[28*2*2+2*2-1:28*2*2], mn_mask_y[28*2+2-1:28*2],
+mn_mask_uv[28*2*1+2*1-1:28*2*1], mn_mask_y[28*1+1-1:28*1],
 
-mn_mask_uv[27*2*2+2*2-1:27*2*2], mn_mask_y[27*2+2-1:27*2],
+mn_mask_uv[27*2*1+2*1-1:27*2*1], mn_mask_y[27*1+1-1:27*1],
 
-mn_mask_uv[26*2*2+2*2-1:26*2*2], mn_mask_y[26*2+2-1:26*2],
+mn_mask_uv[26*2*1+2*1-1:26*2*1], mn_mask_y[26*1+1-1:26*1],
 
-mn_mask_uv[25*2*2+2*2-1:25*2*2], mn_mask_y[25*2+2-1:25*2],
+mn_mask_uv[25*2*1+2*1-1:25*2*1], mn_mask_y[25*1+1-1:25*1],
 
-mn_mask_uv[24*2*2+2*2-1:24*2*2], mn_mask_y[24*2+2-1:24*2],
+mn_mask_uv[24*2*1+2*1-1:24*2*1], mn_mask_y[24*1+1-1:24*1],
 
-mn_mask_uv[23*2*2+2*2-1:23*2*2], mn_mask_y[23*2+2-1:23*2],
+mn_mask_uv[23*2*1+2*1-1:23*2*1], mn_mask_y[23*1+1-1:23*1],
 
-mn_mask_uv[22*2*2+2*2-1:22*2*2], mn_mask_y[22*2+2-1:22*2],
+mn_mask_uv[22*2*1+2*1-1:22*2*1], mn_mask_y[22*1+1-1:22*1],
 
-mn_mask_uv[21*2*2+2*2-1:21*2*2], mn_mask_y[21*2+2-1:21*2],
+mn_mask_uv[21*2*1+2*1-1:21*2*1], mn_mask_y[21*1+1-1:21*1],
 
-mn_mask_uv[20*2*2+2*2-1:20*2*2], mn_mask_y[20*2+2-1:20*2],
+mn_mask_uv[20*2*1+2*1-1:20*2*1], mn_mask_y[20*1+1-1:20*1],
 
-mn_mask_uv[19*2*2+2*2-1:19*2*2], mn_mask_y[19*2+2-1:19*2],
+mn_mask_uv[19*2*1+2*1-1:19*2*1], mn_mask_y[19*1+1-1:19*1],
 
-mn_mask_uv[18*2*2+2*2-1:18*2*2], mn_mask_y[18*2+2-1:18*2],
+mn_mask_uv[18*2*1+2*1-1:18*2*1], mn_mask_y[18*1+1-1:18*1],
 
-mn_mask_uv[17*2*2+2*2-1:17*2*2], mn_mask_y[17*2+2-1:17*2],
+mn_mask_uv[17*2*1+2*1-1:17*2*1], mn_mask_y[17*1+1-1:17*1],
 
-mn_mask_uv[16*2*2+2*2-1:16*2*2], mn_mask_y[16*2+2-1:16*2],
+mn_mask_uv[16*2*1+2*1-1:16*2*1], mn_mask_y[16*1+1-1:16*1],
 
-mn_mask_uv[15*2*2+2*2-1:15*2*2], mn_mask_y[15*2+2-1:15*2],
+mn_mask_uv[15*2*1+2*1-1:15*2*1], mn_mask_y[15*1+1-1:15*1],
 
-mn_mask_uv[14*2*2+2*2-1:14*2*2], mn_mask_y[14*2+2-1:14*2],
+mn_mask_uv[14*2*1+2*1-1:14*2*1], mn_mask_y[14*1+1-1:14*1],
 
-mn_mask_uv[13*2*2+2*2-1:13*2*2], mn_mask_y[13*2+2-1:13*2],
+mn_mask_uv[13*2*1+2*1-1:13*2*1], mn_mask_y[13*1+1-1:13*1],
 
-mn_mask_uv[12*2*2+2*2-1:12*2*2], mn_mask_y[12*2+2-1:12*2],
+mn_mask_uv[12*2*1+2*1-1:12*2*1], mn_mask_y[12*1+1-1:12*1],
 
-mn_mask_uv[11*2*2+2*2-1:11*2*2], mn_mask_y[11*2+2-1:11*2],
+mn_mask_uv[11*2*1+2*1-1:11*2*1], mn_mask_y[11*1+1-1:11*1],
 
-mn_mask_uv[10*2*2+2*2-1:10*2*2], mn_mask_y[10*2+2-1:10*2],
+mn_mask_uv[10*2*1+2*1-1:10*2*1], mn_mask_y[10*1+1-1:10*1],
 
-mn_mask_uv[9*2*2+2*2-1:9*2*2], mn_mask_y[9*2+2-1:9*2],
+mn_mask_uv[9*2*1+2*1-1:9*2*1], mn_mask_y[9*1+1-1:9*1],
 
-mn_mask_uv[8*2*2+2*2-1:8*2*2], mn_mask_y[8*2+2-1:8*2],
+mn_mask_uv[8*2*1+2*1-1:8*2*1], mn_mask_y[8*1+1-1:8*1],
 
-mn_mask_uv[7*2*2+2*2-1:7*2*2], mn_mask_y[7*2+2-1:7*2],
+mn_mask_uv[7*2*1+2*1-1:7*2*1], mn_mask_y[7*1+1-1:7*1],
 
-mn_mask_uv[6*2*2+2*2-1:6*2*2], mn_mask_y[6*2+2-1:6*2],
+mn_mask_uv[6*2*1+2*1-1:6*2*1], mn_mask_y[6*1+1-1:6*1],
 
-mn_mask_uv[5*2*2+2*2-1:5*2*2], mn_mask_y[5*2+2-1:5*2],
+mn_mask_uv[5*2*1+2*1-1:5*2*1], mn_mask_y[5*1+1-1:5*1],
 
-mn_mask_uv[4*2*2+2*2-1:4*2*2], mn_mask_y[4*2+2-1:4*2],
+mn_mask_uv[4*2*1+2*1-1:4*2*1], mn_mask_y[4*1+1-1:4*1],
 
-mn_mask_uv[3*2*2+2*2-1:3*2*2], mn_mask_y[3*2+2-1:3*2],
+mn_mask_uv[3*2*1+2*1-1:3*2*1], mn_mask_y[3*1+1-1:3*1],
 
-mn_mask_uv[2*2*2+2*2-1:2*2*2], mn_mask_y[2*2+2-1:2*2],
+mn_mask_uv[2*2*1+2*1-1:2*2*1], mn_mask_y[2*1+1-1:2*1],
 
-mn_mask_uv[1*2*2+2*2-1:1*2*2], mn_mask_y[1*2+2-1:1*2],
-       mn_mask_uv[2*2-1:0], mn_mask_y[2-1:0]};  
+mn_mask_uv[1*2*1+2*1-1:1*2*1], mn_mask_y[1*1+1-1:1*1],
+       mn_mask_uv[2*1-1:0], mn_mask_y[1-1:0]};  
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //assign mn_ch1 = {64{reg2dp_mean_ry}};
 //assign mn_ch4 = {16{reg2dp_mean_ax, reg2dp_mean_bv, reg2dp_mean_gu, reg2dp_mean_ry}};
 //assign mn_ch3 = {64{reg2dp_mean_bv, reg2dp_mean_gu, reg2dp_mean_ry}};
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $bpe = 8;
 //: my $bpe3 = (8*3);
 //: my $Bnum = int($dmaif/$bpe);
@@ -2942,9 +2648,9 @@ mn_mask_uv[1*2*2+2*2-1:1*2*2], mn_mask_y[1*2+2-1:1*2],
 //: print "\n\n\n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign mn_ch1 = {64{reg2dp_mean_ry[15:0]}};
-assign mn_ch4 = {(64/4){reg2dp_mean_ax[15:0], reg2dp_mean_bv[15:0], reg2dp_mean_gu[15:0], reg2dp_mean_ry[15:0]}};
-assign mn_ch3 = {64{reg2dp_mean_bv[15:0], reg2dp_mean_gu[15:0], reg2dp_mean_ry[15:0]}};
+assign mn_ch1 = {32{reg2dp_mean_ry[15:0]}};
+assign mn_ch4 = {(32/4){reg2dp_mean_ax[15:0], reg2dp_mean_bv[15:0], reg2dp_mean_gu[15:0], reg2dp_mean_ry[15:0]}};
+assign mn_ch3 = {32{reg2dp_mean_bv[15:0], reg2dp_mean_gu[15:0], reg2dp_mean_ry[15:0]}};
 assign mn_ch1_4 = ~(|reg2dp_datain_channel) ? mn_ch1 : mn_ch4;
 assign mn_8b_mnorm[0*16+15:0*16] = mask_zero[0] ? 16'b0 : mn_ch1_4[0*16+15:0*16];
 assign mn_8b_mnorm[1*16+15:1*16] = mask_zero[1] ? 16'b0 : mn_ch1_4[1*16+15:1*16];
@@ -2978,38 +2684,6 @@ assign mn_8b_mnorm[28*16+15:28*16] = mask_zero[28] ? 16'b0 : mn_ch1_4[28*16+15:2
 assign mn_8b_mnorm[29*16+15:29*16] = mask_zero[29] ? 16'b0 : mn_ch1_4[29*16+15:29*16];
 assign mn_8b_mnorm[30*16+15:30*16] = mask_zero[30] ? 16'b0 : mn_ch1_4[30*16+15:30*16];
 assign mn_8b_mnorm[31*16+15:31*16] = mask_zero[31] ? 16'b0 : mn_ch1_4[31*16+15:31*16];
-assign mn_8b_mnorm[32*16+15:32*16] = mask_zero[32] ? 16'b0 : mn_ch1_4[32*16+15:32*16];
-assign mn_8b_mnorm[33*16+15:33*16] = mask_zero[33] ? 16'b0 : mn_ch1_4[33*16+15:33*16];
-assign mn_8b_mnorm[34*16+15:34*16] = mask_zero[34] ? 16'b0 : mn_ch1_4[34*16+15:34*16];
-assign mn_8b_mnorm[35*16+15:35*16] = mask_zero[35] ? 16'b0 : mn_ch1_4[35*16+15:35*16];
-assign mn_8b_mnorm[36*16+15:36*16] = mask_zero[36] ? 16'b0 : mn_ch1_4[36*16+15:36*16];
-assign mn_8b_mnorm[37*16+15:37*16] = mask_zero[37] ? 16'b0 : mn_ch1_4[37*16+15:37*16];
-assign mn_8b_mnorm[38*16+15:38*16] = mask_zero[38] ? 16'b0 : mn_ch1_4[38*16+15:38*16];
-assign mn_8b_mnorm[39*16+15:39*16] = mask_zero[39] ? 16'b0 : mn_ch1_4[39*16+15:39*16];
-assign mn_8b_mnorm[40*16+15:40*16] = mask_zero[40] ? 16'b0 : mn_ch1_4[40*16+15:40*16];
-assign mn_8b_mnorm[41*16+15:41*16] = mask_zero[41] ? 16'b0 : mn_ch1_4[41*16+15:41*16];
-assign mn_8b_mnorm[42*16+15:42*16] = mask_zero[42] ? 16'b0 : mn_ch1_4[42*16+15:42*16];
-assign mn_8b_mnorm[43*16+15:43*16] = mask_zero[43] ? 16'b0 : mn_ch1_4[43*16+15:43*16];
-assign mn_8b_mnorm[44*16+15:44*16] = mask_zero[44] ? 16'b0 : mn_ch1_4[44*16+15:44*16];
-assign mn_8b_mnorm[45*16+15:45*16] = mask_zero[45] ? 16'b0 : mn_ch1_4[45*16+15:45*16];
-assign mn_8b_mnorm[46*16+15:46*16] = mask_zero[46] ? 16'b0 : mn_ch1_4[46*16+15:46*16];
-assign mn_8b_mnorm[47*16+15:47*16] = mask_zero[47] ? 16'b0 : mn_ch1_4[47*16+15:47*16];
-assign mn_8b_mnorm[48*16+15:48*16] = mask_zero[48] ? 16'b0 : mn_ch1_4[48*16+15:48*16];
-assign mn_8b_mnorm[49*16+15:49*16] = mask_zero[49] ? 16'b0 : mn_ch1_4[49*16+15:49*16];
-assign mn_8b_mnorm[50*16+15:50*16] = mask_zero[50] ? 16'b0 : mn_ch1_4[50*16+15:50*16];
-assign mn_8b_mnorm[51*16+15:51*16] = mask_zero[51] ? 16'b0 : mn_ch1_4[51*16+15:51*16];
-assign mn_8b_mnorm[52*16+15:52*16] = mask_zero[52] ? 16'b0 : mn_ch1_4[52*16+15:52*16];
-assign mn_8b_mnorm[53*16+15:53*16] = mask_zero[53] ? 16'b0 : mn_ch1_4[53*16+15:53*16];
-assign mn_8b_mnorm[54*16+15:54*16] = mask_zero[54] ? 16'b0 : mn_ch1_4[54*16+15:54*16];
-assign mn_8b_mnorm[55*16+15:55*16] = mask_zero[55] ? 16'b0 : mn_ch1_4[55*16+15:55*16];
-assign mn_8b_mnorm[56*16+15:56*16] = mask_zero[56] ? 16'b0 : mn_ch1_4[56*16+15:56*16];
-assign mn_8b_mnorm[57*16+15:57*16] = mask_zero[57] ? 16'b0 : mn_ch1_4[57*16+15:57*16];
-assign mn_8b_mnorm[58*16+15:58*16] = mask_zero[58] ? 16'b0 : mn_ch1_4[58*16+15:58*16];
-assign mn_8b_mnorm[59*16+15:59*16] = mask_zero[59] ? 16'b0 : mn_ch1_4[59*16+15:59*16];
-assign mn_8b_mnorm[60*16+15:60*16] = mask_zero[60] ? 16'b0 : mn_ch1_4[60*16+15:60*16];
-assign mn_8b_mnorm[61*16+15:61*16] = mask_zero[61] ? 16'b0 : mn_ch1_4[61*16+15:61*16];
-assign mn_8b_mnorm[62*16+15:62*16] = mask_zero[62] ? 16'b0 : mn_ch1_4[62*16+15:62*16];
-assign mn_8b_mnorm[63*16+15:63*16] = mask_zero[63] ? 16'b0 : mn_ch1_4[63*16+15:63*16];
 assign mn_8b_myuv[0*16+15:0*16] = mn_mask_yuv[0] ? 16'b0 : mn_ch3[0*16+15:0*16];
 assign mn_8b_myuv[1*16+15:1*16] = mn_mask_yuv[1] ? 16'b0 : mn_ch3[1*16+15:1*16];
 assign mn_8b_myuv[2*16+15:2*16] = mn_mask_yuv[2] ? 16'b0 : mn_ch3[2*16+15:2*16];
@@ -3106,102 +2780,6 @@ assign mn_8b_myuv[92*16+15:92*16] = mn_mask_yuv[92] ? 16'b0 : mn_ch3[92*16+15:92
 assign mn_8b_myuv[93*16+15:93*16] = mn_mask_yuv[93] ? 16'b0 : mn_ch3[93*16+15:93*16];
 assign mn_8b_myuv[94*16+15:94*16] = mn_mask_yuv[94] ? 16'b0 : mn_ch3[94*16+15:94*16];
 assign mn_8b_myuv[95*16+15:95*16] = mn_mask_yuv[95] ? 16'b0 : mn_ch3[95*16+15:95*16];
-assign mn_8b_myuv[96*16+15:96*16] = mn_mask_yuv[96] ? 16'b0 : mn_ch3[96*16+15:96*16];
-assign mn_8b_myuv[97*16+15:97*16] = mn_mask_yuv[97] ? 16'b0 : mn_ch3[97*16+15:97*16];
-assign mn_8b_myuv[98*16+15:98*16] = mn_mask_yuv[98] ? 16'b0 : mn_ch3[98*16+15:98*16];
-assign mn_8b_myuv[99*16+15:99*16] = mn_mask_yuv[99] ? 16'b0 : mn_ch3[99*16+15:99*16];
-assign mn_8b_myuv[100*16+15:100*16] = mn_mask_yuv[100] ? 16'b0 : mn_ch3[100*16+15:100*16];
-assign mn_8b_myuv[101*16+15:101*16] = mn_mask_yuv[101] ? 16'b0 : mn_ch3[101*16+15:101*16];
-assign mn_8b_myuv[102*16+15:102*16] = mn_mask_yuv[102] ? 16'b0 : mn_ch3[102*16+15:102*16];
-assign mn_8b_myuv[103*16+15:103*16] = mn_mask_yuv[103] ? 16'b0 : mn_ch3[103*16+15:103*16];
-assign mn_8b_myuv[104*16+15:104*16] = mn_mask_yuv[104] ? 16'b0 : mn_ch3[104*16+15:104*16];
-assign mn_8b_myuv[105*16+15:105*16] = mn_mask_yuv[105] ? 16'b0 : mn_ch3[105*16+15:105*16];
-assign mn_8b_myuv[106*16+15:106*16] = mn_mask_yuv[106] ? 16'b0 : mn_ch3[106*16+15:106*16];
-assign mn_8b_myuv[107*16+15:107*16] = mn_mask_yuv[107] ? 16'b0 : mn_ch3[107*16+15:107*16];
-assign mn_8b_myuv[108*16+15:108*16] = mn_mask_yuv[108] ? 16'b0 : mn_ch3[108*16+15:108*16];
-assign mn_8b_myuv[109*16+15:109*16] = mn_mask_yuv[109] ? 16'b0 : mn_ch3[109*16+15:109*16];
-assign mn_8b_myuv[110*16+15:110*16] = mn_mask_yuv[110] ? 16'b0 : mn_ch3[110*16+15:110*16];
-assign mn_8b_myuv[111*16+15:111*16] = mn_mask_yuv[111] ? 16'b0 : mn_ch3[111*16+15:111*16];
-assign mn_8b_myuv[112*16+15:112*16] = mn_mask_yuv[112] ? 16'b0 : mn_ch3[112*16+15:112*16];
-assign mn_8b_myuv[113*16+15:113*16] = mn_mask_yuv[113] ? 16'b0 : mn_ch3[113*16+15:113*16];
-assign mn_8b_myuv[114*16+15:114*16] = mn_mask_yuv[114] ? 16'b0 : mn_ch3[114*16+15:114*16];
-assign mn_8b_myuv[115*16+15:115*16] = mn_mask_yuv[115] ? 16'b0 : mn_ch3[115*16+15:115*16];
-assign mn_8b_myuv[116*16+15:116*16] = mn_mask_yuv[116] ? 16'b0 : mn_ch3[116*16+15:116*16];
-assign mn_8b_myuv[117*16+15:117*16] = mn_mask_yuv[117] ? 16'b0 : mn_ch3[117*16+15:117*16];
-assign mn_8b_myuv[118*16+15:118*16] = mn_mask_yuv[118] ? 16'b0 : mn_ch3[118*16+15:118*16];
-assign mn_8b_myuv[119*16+15:119*16] = mn_mask_yuv[119] ? 16'b0 : mn_ch3[119*16+15:119*16];
-assign mn_8b_myuv[120*16+15:120*16] = mn_mask_yuv[120] ? 16'b0 : mn_ch3[120*16+15:120*16];
-assign mn_8b_myuv[121*16+15:121*16] = mn_mask_yuv[121] ? 16'b0 : mn_ch3[121*16+15:121*16];
-assign mn_8b_myuv[122*16+15:122*16] = mn_mask_yuv[122] ? 16'b0 : mn_ch3[122*16+15:122*16];
-assign mn_8b_myuv[123*16+15:123*16] = mn_mask_yuv[123] ? 16'b0 : mn_ch3[123*16+15:123*16];
-assign mn_8b_myuv[124*16+15:124*16] = mn_mask_yuv[124] ? 16'b0 : mn_ch3[124*16+15:124*16];
-assign mn_8b_myuv[125*16+15:125*16] = mn_mask_yuv[125] ? 16'b0 : mn_ch3[125*16+15:125*16];
-assign mn_8b_myuv[126*16+15:126*16] = mn_mask_yuv[126] ? 16'b0 : mn_ch3[126*16+15:126*16];
-assign mn_8b_myuv[127*16+15:127*16] = mn_mask_yuv[127] ? 16'b0 : mn_ch3[127*16+15:127*16];
-assign mn_8b_myuv[128*16+15:128*16] = mn_mask_yuv[128] ? 16'b0 : mn_ch3[128*16+15:128*16];
-assign mn_8b_myuv[129*16+15:129*16] = mn_mask_yuv[129] ? 16'b0 : mn_ch3[129*16+15:129*16];
-assign mn_8b_myuv[130*16+15:130*16] = mn_mask_yuv[130] ? 16'b0 : mn_ch3[130*16+15:130*16];
-assign mn_8b_myuv[131*16+15:131*16] = mn_mask_yuv[131] ? 16'b0 : mn_ch3[131*16+15:131*16];
-assign mn_8b_myuv[132*16+15:132*16] = mn_mask_yuv[132] ? 16'b0 : mn_ch3[132*16+15:132*16];
-assign mn_8b_myuv[133*16+15:133*16] = mn_mask_yuv[133] ? 16'b0 : mn_ch3[133*16+15:133*16];
-assign mn_8b_myuv[134*16+15:134*16] = mn_mask_yuv[134] ? 16'b0 : mn_ch3[134*16+15:134*16];
-assign mn_8b_myuv[135*16+15:135*16] = mn_mask_yuv[135] ? 16'b0 : mn_ch3[135*16+15:135*16];
-assign mn_8b_myuv[136*16+15:136*16] = mn_mask_yuv[136] ? 16'b0 : mn_ch3[136*16+15:136*16];
-assign mn_8b_myuv[137*16+15:137*16] = mn_mask_yuv[137] ? 16'b0 : mn_ch3[137*16+15:137*16];
-assign mn_8b_myuv[138*16+15:138*16] = mn_mask_yuv[138] ? 16'b0 : mn_ch3[138*16+15:138*16];
-assign mn_8b_myuv[139*16+15:139*16] = mn_mask_yuv[139] ? 16'b0 : mn_ch3[139*16+15:139*16];
-assign mn_8b_myuv[140*16+15:140*16] = mn_mask_yuv[140] ? 16'b0 : mn_ch3[140*16+15:140*16];
-assign mn_8b_myuv[141*16+15:141*16] = mn_mask_yuv[141] ? 16'b0 : mn_ch3[141*16+15:141*16];
-assign mn_8b_myuv[142*16+15:142*16] = mn_mask_yuv[142] ? 16'b0 : mn_ch3[142*16+15:142*16];
-assign mn_8b_myuv[143*16+15:143*16] = mn_mask_yuv[143] ? 16'b0 : mn_ch3[143*16+15:143*16];
-assign mn_8b_myuv[144*16+15:144*16] = mn_mask_yuv[144] ? 16'b0 : mn_ch3[144*16+15:144*16];
-assign mn_8b_myuv[145*16+15:145*16] = mn_mask_yuv[145] ? 16'b0 : mn_ch3[145*16+15:145*16];
-assign mn_8b_myuv[146*16+15:146*16] = mn_mask_yuv[146] ? 16'b0 : mn_ch3[146*16+15:146*16];
-assign mn_8b_myuv[147*16+15:147*16] = mn_mask_yuv[147] ? 16'b0 : mn_ch3[147*16+15:147*16];
-assign mn_8b_myuv[148*16+15:148*16] = mn_mask_yuv[148] ? 16'b0 : mn_ch3[148*16+15:148*16];
-assign mn_8b_myuv[149*16+15:149*16] = mn_mask_yuv[149] ? 16'b0 : mn_ch3[149*16+15:149*16];
-assign mn_8b_myuv[150*16+15:150*16] = mn_mask_yuv[150] ? 16'b0 : mn_ch3[150*16+15:150*16];
-assign mn_8b_myuv[151*16+15:151*16] = mn_mask_yuv[151] ? 16'b0 : mn_ch3[151*16+15:151*16];
-assign mn_8b_myuv[152*16+15:152*16] = mn_mask_yuv[152] ? 16'b0 : mn_ch3[152*16+15:152*16];
-assign mn_8b_myuv[153*16+15:153*16] = mn_mask_yuv[153] ? 16'b0 : mn_ch3[153*16+15:153*16];
-assign mn_8b_myuv[154*16+15:154*16] = mn_mask_yuv[154] ? 16'b0 : mn_ch3[154*16+15:154*16];
-assign mn_8b_myuv[155*16+15:155*16] = mn_mask_yuv[155] ? 16'b0 : mn_ch3[155*16+15:155*16];
-assign mn_8b_myuv[156*16+15:156*16] = mn_mask_yuv[156] ? 16'b0 : mn_ch3[156*16+15:156*16];
-assign mn_8b_myuv[157*16+15:157*16] = mn_mask_yuv[157] ? 16'b0 : mn_ch3[157*16+15:157*16];
-assign mn_8b_myuv[158*16+15:158*16] = mn_mask_yuv[158] ? 16'b0 : mn_ch3[158*16+15:158*16];
-assign mn_8b_myuv[159*16+15:159*16] = mn_mask_yuv[159] ? 16'b0 : mn_ch3[159*16+15:159*16];
-assign mn_8b_myuv[160*16+15:160*16] = mn_mask_yuv[160] ? 16'b0 : mn_ch3[160*16+15:160*16];
-assign mn_8b_myuv[161*16+15:161*16] = mn_mask_yuv[161] ? 16'b0 : mn_ch3[161*16+15:161*16];
-assign mn_8b_myuv[162*16+15:162*16] = mn_mask_yuv[162] ? 16'b0 : mn_ch3[162*16+15:162*16];
-assign mn_8b_myuv[163*16+15:163*16] = mn_mask_yuv[163] ? 16'b0 : mn_ch3[163*16+15:163*16];
-assign mn_8b_myuv[164*16+15:164*16] = mn_mask_yuv[164] ? 16'b0 : mn_ch3[164*16+15:164*16];
-assign mn_8b_myuv[165*16+15:165*16] = mn_mask_yuv[165] ? 16'b0 : mn_ch3[165*16+15:165*16];
-assign mn_8b_myuv[166*16+15:166*16] = mn_mask_yuv[166] ? 16'b0 : mn_ch3[166*16+15:166*16];
-assign mn_8b_myuv[167*16+15:167*16] = mn_mask_yuv[167] ? 16'b0 : mn_ch3[167*16+15:167*16];
-assign mn_8b_myuv[168*16+15:168*16] = mn_mask_yuv[168] ? 16'b0 : mn_ch3[168*16+15:168*16];
-assign mn_8b_myuv[169*16+15:169*16] = mn_mask_yuv[169] ? 16'b0 : mn_ch3[169*16+15:169*16];
-assign mn_8b_myuv[170*16+15:170*16] = mn_mask_yuv[170] ? 16'b0 : mn_ch3[170*16+15:170*16];
-assign mn_8b_myuv[171*16+15:171*16] = mn_mask_yuv[171] ? 16'b0 : mn_ch3[171*16+15:171*16];
-assign mn_8b_myuv[172*16+15:172*16] = mn_mask_yuv[172] ? 16'b0 : mn_ch3[172*16+15:172*16];
-assign mn_8b_myuv[173*16+15:173*16] = mn_mask_yuv[173] ? 16'b0 : mn_ch3[173*16+15:173*16];
-assign mn_8b_myuv[174*16+15:174*16] = mn_mask_yuv[174] ? 16'b0 : mn_ch3[174*16+15:174*16];
-assign mn_8b_myuv[175*16+15:175*16] = mn_mask_yuv[175] ? 16'b0 : mn_ch3[175*16+15:175*16];
-assign mn_8b_myuv[176*16+15:176*16] = mn_mask_yuv[176] ? 16'b0 : mn_ch3[176*16+15:176*16];
-assign mn_8b_myuv[177*16+15:177*16] = mn_mask_yuv[177] ? 16'b0 : mn_ch3[177*16+15:177*16];
-assign mn_8b_myuv[178*16+15:178*16] = mn_mask_yuv[178] ? 16'b0 : mn_ch3[178*16+15:178*16];
-assign mn_8b_myuv[179*16+15:179*16] = mn_mask_yuv[179] ? 16'b0 : mn_ch3[179*16+15:179*16];
-assign mn_8b_myuv[180*16+15:180*16] = mn_mask_yuv[180] ? 16'b0 : mn_ch3[180*16+15:180*16];
-assign mn_8b_myuv[181*16+15:181*16] = mn_mask_yuv[181] ? 16'b0 : mn_ch3[181*16+15:181*16];
-assign mn_8b_myuv[182*16+15:182*16] = mn_mask_yuv[182] ? 16'b0 : mn_ch3[182*16+15:182*16];
-assign mn_8b_myuv[183*16+15:183*16] = mn_mask_yuv[183] ? 16'b0 : mn_ch3[183*16+15:183*16];
-assign mn_8b_myuv[184*16+15:184*16] = mn_mask_yuv[184] ? 16'b0 : mn_ch3[184*16+15:184*16];
-assign mn_8b_myuv[185*16+15:185*16] = mn_mask_yuv[185] ? 16'b0 : mn_ch3[185*16+15:185*16];
-assign mn_8b_myuv[186*16+15:186*16] = mn_mask_yuv[186] ? 16'b0 : mn_ch3[186*16+15:186*16];
-assign mn_8b_myuv[187*16+15:187*16] = mn_mask_yuv[187] ? 16'b0 : mn_ch3[187*16+15:187*16];
-assign mn_8b_myuv[188*16+15:188*16] = mn_mask_yuv[188] ? 16'b0 : mn_ch3[188*16+15:188*16];
-assign mn_8b_myuv[189*16+15:189*16] = mn_mask_yuv[189] ? 16'b0 : mn_ch3[189*16+15:189*16];
-assign mn_8b_myuv[190*16+15:190*16] = mn_mask_yuv[190] ? 16'b0 : mn_ch3[190*16+15:190*16];
-assign mn_8b_myuv[191*16+15:191*16] = mn_mask_yuv[191] ? 16'b0 : mn_ch3[191*16+15:191*16];
 
 
 
@@ -3220,7 +2798,7 @@ assign pk_rsp_mn_sel[7] = pixel_planar & (pk_rsp_wr_cnt == 2'h2) & (|pixel_preci
 // ({256 *2{pk_rsp_mn_sel[4]}} & mn_8b_myuv[2047:1536]) |
 // ({256 *2{pk_rsp_mn_sel[6]}} & mn_8b_myuv[3071:2560]);
 //
-//: my $mn_bw = int(512 / 8) * 16 ;
+//: my $mn_bw = int(256 / 8) * 16 ;
 //: print qq(
 //: assign pk_rsp_mn_data_h0 = ({${mn_bw}{pk_rsp_mn_sel[0]}} & mn_8b_mnorm) |
 //: ({${mn_bw}{pk_rsp_mn_sel[2]}} & mn_8b_myuv[${mn_bw}-1:0]) |
@@ -3229,10 +2807,10 @@ assign pk_rsp_mn_sel[7] = pixel_planar & (pk_rsp_wr_cnt == 2'h2) & (|pixel_preci
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign pk_rsp_mn_data_h0 = ({1024{pk_rsp_mn_sel[0]}} & mn_8b_mnorm) |
-({1024{pk_rsp_mn_sel[2]}} & mn_8b_myuv[1024-1:0]) |
-({1024{pk_rsp_mn_sel[4]}} & mn_8b_myuv[1024*2-1:1024]) |
-({1024{pk_rsp_mn_sel[6]}} & mn_8b_myuv[1024*3-1:1024*2]);
+assign pk_rsp_mn_data_h0 = ({512{pk_rsp_mn_sel[0]}} & mn_8b_mnorm) |
+({512{pk_rsp_mn_sel[2]}} & mn_8b_myuv[512-1:0]) |
+({512{pk_rsp_mn_sel[4]}} & mn_8b_myuv[512*2-1:512]) |
+({512{pk_rsp_mn_sel[6]}} & mn_8b_myuv[512*3-1:512*2]);
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign mn_mask_y_en = pk_rsp_planar0_c0_en;
@@ -3240,14 +2818,14 @@ assign mn_mask_uv_0_en = pk_rsp_planar1_c0_en;
 assign mn_mask_uv_1_en = pk_rsp_planar1_c1_en;
 assign pk_rsp_mn_data_h0_en = pk_rsp_wr_vld;
 assign pk_rsp_mn_data_h1_en = (pk_rsp_wr_vld & (~(|pixel_precision) | pixel_packed_10b));
-//: my $Bnum = 512/8;
+//: my $Bnum = 256/8;
 //: &eperl::flop("-nodeclare   -rval \"{${Bnum}{1'b0}}\"  -en \"mn_mask_y_en\" -d \"mask_zero\" -q mn_mask_y_d1");
 //: &eperl::flop("-nodeclare   -rval \"{${Bnum}{1'b0}}\"  -en \"mn_mask_uv_0_en\" -d \"mask_zero\" -q mn_mask_uv_lo_d1");
 //: &eperl::flop("-nodeclare   -rval \"{${Bnum}{1'b0}}\"  -en \"mn_mask_uv_1_en\" -d \"mask_zero\" -q mn_mask_uv_hi_d1");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       mn_mask_y_d1 <= {64{1'b0}};
+       mn_mask_y_d1 <= {32{1'b0}};
    end else begin
        if ((mn_mask_y_en) == 1'b1) begin
            mn_mask_y_d1 <= mask_zero;
@@ -3261,7 +2839,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       mn_mask_uv_lo_d1 <= {64{1'b0}};
+       mn_mask_uv_lo_d1 <= {32{1'b0}};
    end else begin
        if ((mn_mask_uv_0_en) == 1'b1) begin
            mn_mask_uv_lo_d1 <= mask_zero;
@@ -3275,7 +2853,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       mn_mask_uv_hi_d1 <= {64{1'b0}};
+       mn_mask_uv_hi_d1 <= {32{1'b0}};
    end else begin
        if ((mn_mask_uv_1_en) == 1'b1) begin
            mn_mask_uv_hi_d1 <= mask_zero;
@@ -3315,9 +2893,22 @@ assign pk_rsp_wr_entries = pk_rsp_cur_1st_height ? sg2pack_entry_st :
 assign pk_rsp_wr_slices = pk_rsp_cur_1st_height ? sg2pack_sub_h_st :
                           pk_rsp_cur_layer_end ? sg2pack_sub_h_end : sg2pack_sub_h_mid;
 assign pk_rsp_wr_base_inc = is_first_running ? {1'b0, status2dma_wr_idx} : (pk_rsp_wr_base + pk_rsp_wr_entries);
-assign is_base_wrap = (pk_rsp_wr_base_inc[15 : 9 ] >= {1'd0,pixel_bank});
-assign {mon_pk_rsp_wr_base_wrap[1:0], pk_rsp_wr_base_wrap} = (pk_rsp_wr_base_inc[15 : 9 ] - {1'b0,pixel_bank});
-assign pk_rsp_wr_base_w = is_base_wrap ? {pk_rsp_wr_base_wrap, pk_rsp_wr_base_inc[8 :0]} : pk_rsp_wr_base_inc[15 -1:0];
+//: my $bank_depth = 9;
+//: print qq(
+//: assign is_base_wrap = (pk_rsp_wr_base_inc[15 : ${bank_depth} ] >= {{(10-${bank_depth}){1'd0}},pixel_bank});
+//: assign {mon_pk_rsp_wr_base_wrap[1:0], pk_rsp_wr_base_wrap} = (pk_rsp_wr_base_inc[15 : 0 ] - {{(10-${bank_depth}){1'b0}},pixel_bank,{${bank_depth}{1'b0}}});
+//: assign pk_rsp_wr_base_w = is_base_wrap ? pk_rsp_wr_base_wrap : pk_rsp_wr_base_inc[15 -1:0];
+//: );
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+
+assign is_base_wrap = (pk_rsp_wr_base_inc[15 : 9 ] >= {{(10-9){1'd0}},pixel_bank});
+assign {mon_pk_rsp_wr_base_wrap[1:0], pk_rsp_wr_base_wrap} = (pk_rsp_wr_base_inc[15 : 0 ] - {{(10-9){1'b0}},pixel_bank,{9{1'b0}}});
+assign pk_rsp_wr_base_w = is_base_wrap ? pk_rsp_wr_base_wrap : pk_rsp_wr_base_inc[15 -1:0];
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
+//assign is_base_wrap = (pk_rsp_wr_base_inc[15 : 9 ] >= {1'd0,pixel_bank});
+//assign {mon_pk_rsp_wr_base_wrap[1:0], pk_rsp_wr_base_wrap} = (pk_rsp_wr_base_inc[15 : 9 ] - {1'b0,pixel_bank});
+//assign pk_rsp_wr_base_w = is_base_wrap ? {pk_rsp_wr_base_wrap, pk_rsp_wr_base_inc[8 :0]} : pk_rsp_wr_base_inc[15 -1:0];
 assign pk_rsp_wr_base_en = is_first_running | (pk_rsp_wr_vld & pk_rsp_cur_one_line_end & pk_rsp_cur_sub_h_end);
 //: &eperl::flop("-nodeclare   -rval \"{15{1'b0}}\"  -en \"pk_rsp_wr_base_en\" -d \"pk_rsp_wr_base_w\" -q pk_rsp_wr_base");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
@@ -3404,7 +2995,7 @@ end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ///////// total_address ////////
-//: my $dmaif = (512/8);
+//: my $dmaif = (256/8);
 //: my $atmc = 64;
 //: my $atmm = 32;
 //: my $Bnum = int( $dmaif/$atmm );
@@ -3443,18 +3034,36 @@ end
 //: }
 //: }
 //: }
+//: my $bank_depth = 9;
+//: print qq(
+//: assign is_addr_wrap = (pk_rsp_wr_addr_inc[15 +1: ${bank_depth} ] >= {{(11-${bank_depth}){1'd0}}, pixel_bank});
+//: assign {mon_pk_rsp_wr_addr_wrap[2:0], pk_rsp_wr_addr_wrap} = pk_rsp_wr_addr_inc[16 : 0] - {{(11-${bank_depth}){1'b0}},pixel_bank,{${bank_depth}{1'b0}}};
+//: assign pk_rsp_wr_addr = is_addr_wrap ? pk_rsp_wr_addr_wrap : pk_rsp_wr_addr_inc[14:0];
+//: );
+//: &eperl::flop("-nodeclare   -rval \"{15{1'b0}}\"  -en \"pk_rsp_wr_vld\" -d \"pk_rsp_wr_addr\" -q pk_out_addr");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
 assign pk_rsp_wr_addr_inc = pk_rsp_wr_base + pk_rsp_wr_h_offset + pk_rsp_wr_w_offset[14:1];
 
 assign pk_rsp_wr_sub_addr = pk_rsp_wr_w_offset[1-1:0];
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       pk_out_hsel <= 1'b0;
+   end else begin
+       if ((pk_rsp_wr_vld) == 1'b1) begin
+           pk_out_hsel <= pk_rsp_wr_sub_addr[0];
+       // VCS coverage off
+       end else if ((pk_rsp_wr_vld) == 1'b0) begin
+       end else begin
+           pk_out_hsel <= 'bx;
+       // VCS coverage on
+       end
+   end
+end
 
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-assign is_addr_wrap = (pk_rsp_wr_addr_inc[15 +1: 9 ] >= {2'd0, pixel_bank});
-assign {mon_pk_rsp_wr_addr_wrap[2:0], pk_rsp_wr_addr_wrap} = (pk_rsp_wr_addr_inc[16 : 9 ] - {2'b0,pixel_bank});
-assign pk_rsp_wr_addr = is_addr_wrap ? {pk_rsp_wr_addr_wrap, pk_rsp_wr_addr_inc[8 :0]} : pk_rsp_wr_addr_inc[14:0];
-//: &eperl::flop("-nodeclare   -rval \"{15{1'b0}}\"  -en \"pk_rsp_wr_vld\" -d \"pk_rsp_wr_addr\" -q pk_out_addr");
-//| eperl: generated_beg (DO NOT EDIT BELOW)
+assign is_addr_wrap = (pk_rsp_wr_addr_inc[15 +1: 9 ] >= {{(11-9){1'd0}}, pixel_bank});
+assign {mon_pk_rsp_wr_addr_wrap[2:0], pk_rsp_wr_addr_wrap} = pk_rsp_wr_addr_inc[16 : 0] - {{(11-9){1'b0}},pixel_bank,{9{1'b0}}};
+assign pk_rsp_wr_addr = is_addr_wrap ? pk_rsp_wr_addr_wrap : pk_rsp_wr_addr_inc[14:0];
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
        pk_out_addr <= {15{1'b0}};
@@ -3529,7 +3138,7 @@ assign img2cvt_dat_wr_en = pk_out_vld;
 //assign img2cvt_dat_wr_pad_mask = pk_out_pad_mask;
 assign img2cvt_dat_wr_info_pd = pk_out_info_pd;
 //assign img2cvt_mn_wr_data = pk_mn_out_data;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $Bnum = $dmaif / 8;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
@@ -3564,7 +3173,8 @@ assign img2cvt_dat_wr_info_pd = pk_out_info_pd;
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign img2cvt_dat_wr_addr = {2'd0,pk_out_addr};
+assign img2cvt_dat_wr_sel = pk_out_hsel;
+assign img2cvt_dat_wr_addr = pk_out_addr;
 assign img2cvt_dat_wr_data = pk_out_data;
 assign img2cvt_mn_wr_data = pk_mn_out_data;
 assign img2cvt_dat_wr_pad_mask = pk_out_pad_mask;

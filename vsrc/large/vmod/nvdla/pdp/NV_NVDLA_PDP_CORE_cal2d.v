@@ -16,6 +16,14 @@
 // File Name: NV_NVDLA_PDP_define.h
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_PDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_PDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 module NV_NVDLA_PDP_CORE_cal2d (
    nvdla_core_clk //|< i
   ,nvdla_core_rstn //|< i
@@ -887,10 +895,10 @@ assign average_pooling_en = (pooling_type_cfg== 2'h0 );
 //////////////////////////////////////////////////////////////////////////////////////
 //: my $m = 32;
 //: my $k = 8;
-//: my $j = int($m / $k);
-//: print "assign data_c_end = (c_cnt == 5'd${j}-1); \n";
+//: my $j = int($m/$k -1);
+//: print "assign data_c_end = (c_cnt == 5'd${j}); \n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-assign data_c_end = (c_cnt == 5'd4-1); 
+assign data_c_end = (c_cnt == 5'd3); 
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin

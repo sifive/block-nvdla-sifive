@@ -135,31 +135,31 @@ input sdp_b2cvif_rd_req_ready;
 output [79 -1:0] sdp_b2cvif_rd_req_pd;
 input cvif2sdp_b_rd_rsp_valid;
 output cvif2sdp_b_rd_rsp_ready;
-input [514 -1:0] cvif2sdp_b_rd_rsp_pd;
+input [257 -1:0] cvif2sdp_b_rd_rsp_pd;
 output sdp_e2cvif_rd_cdt_lat_fifo_pop;
 output sdp_e2cvif_rd_req_valid;
 input sdp_e2cvif_rd_req_ready;
 output [79 -1:0] sdp_e2cvif_rd_req_pd;
 input cvif2sdp_e_rd_rsp_valid;
 output cvif2sdp_e_rd_rsp_ready;
-input [514 -1:0] cvif2sdp_e_rd_rsp_pd;
+input [257 -1:0] cvif2sdp_e_rd_rsp_pd;
 output sdp_n2cvif_rd_cdt_lat_fifo_pop;
 output sdp_n2cvif_rd_req_valid;
 input sdp_n2cvif_rd_req_ready;
 output [79 -1:0] sdp_n2cvif_rd_req_pd;
 input cvif2sdp_n_rd_rsp_valid;
 output cvif2sdp_n_rd_rsp_ready;
-input [514 -1:0] cvif2sdp_n_rd_rsp_pd;
+input [257 -1:0] cvif2sdp_n_rd_rsp_pd;
 output sdp2cvif_rd_cdt_lat_fifo_pop;
 output sdp2cvif_rd_req_valid;
 input sdp2cvif_rd_req_ready;
 output [79 -1:0] sdp2cvif_rd_req_pd;
 input cvif2sdp_rd_rsp_valid;
 output cvif2sdp_rd_rsp_ready;
-input [514 -1:0] cvif2sdp_rd_rsp_pd;
+input [257 -1:0] cvif2sdp_rd_rsp_pd;
 output sdp2cvif_wr_req_valid;
 input sdp2cvif_wr_req_ready;
-output [515 -1:0] sdp2cvif_wr_req_pd;
+output [258 -1:0] sdp2cvif_wr_req_pd;
 input cvif2sdp_wr_rsp_complete;
 output sdp_b2mcif_rd_cdt_lat_fifo_pop;
 output sdp_b2mcif_rd_req_valid;
@@ -167,31 +167,31 @@ input sdp_b2mcif_rd_req_ready;
 output [79 -1:0] sdp_b2mcif_rd_req_pd;
 input mcif2sdp_b_rd_rsp_valid;
 output mcif2sdp_b_rd_rsp_ready;
-input [514 -1:0] mcif2sdp_b_rd_rsp_pd;
+input [257 -1:0] mcif2sdp_b_rd_rsp_pd;
 output sdp_e2mcif_rd_cdt_lat_fifo_pop;
 output sdp_e2mcif_rd_req_valid;
 input sdp_e2mcif_rd_req_ready;
 output [79 -1:0] sdp_e2mcif_rd_req_pd;
 input mcif2sdp_e_rd_rsp_valid;
 output mcif2sdp_e_rd_rsp_ready;
-input [514 -1:0] mcif2sdp_e_rd_rsp_pd;
+input [257 -1:0] mcif2sdp_e_rd_rsp_pd;
 output sdp_n2mcif_rd_cdt_lat_fifo_pop;
 output sdp_n2mcif_rd_req_valid;
 input sdp_n2mcif_rd_req_ready;
 output [79 -1:0] sdp_n2mcif_rd_req_pd;
 input mcif2sdp_n_rd_rsp_valid;
 output mcif2sdp_n_rd_rsp_ready;
-input [514 -1:0] mcif2sdp_n_rd_rsp_pd;
+input [257 -1:0] mcif2sdp_n_rd_rsp_pd;
 output sdp2mcif_rd_cdt_lat_fifo_pop;
 output sdp2mcif_rd_req_valid;
 input sdp2mcif_rd_req_ready;
 output [79 -1:0] sdp2mcif_rd_req_pd;
 input mcif2sdp_rd_rsp_valid;
 output mcif2sdp_rd_rsp_ready;
-input [514 -1:0] mcif2sdp_rd_rsp_pd;
+input [257 -1:0] mcif2sdp_rd_rsp_pd;
 output sdp2mcif_wr_req_valid;
 input sdp2mcif_wr_req_ready;
-output [515 -1:0] sdp2mcif_wr_req_pd;
+output [258 -1:0] sdp2mcif_wr_req_pd;
 input mcif2sdp_wr_rsp_complete;
 wire dp2reg_done;
 wire [31:0] dp2reg_out_saturation;
@@ -345,56 +345,56 @@ NV_NVDLA_SDP_rdma u_rdma (
   ,.sdp_b2cvif_rd_req_pd (sdp_b2cvif_rd_req_pd[79 -1:0])
   ,.cvif2sdp_b_rd_rsp_valid (cvif2sdp_b_rd_rsp_valid)
   ,.cvif2sdp_b_rd_rsp_ready (cvif2sdp_b_rd_rsp_ready)
-  ,.cvif2sdp_b_rd_rsp_pd (cvif2sdp_b_rd_rsp_pd[514 -1:0])
+  ,.cvif2sdp_b_rd_rsp_pd (cvif2sdp_b_rd_rsp_pd[257 -1:0])
   ,.sdp_e2cvif_rd_cdt_lat_fifo_pop (sdp_e2cvif_rd_cdt_lat_fifo_pop)
   ,.sdp_e2cvif_rd_req_valid (sdp_e2cvif_rd_req_valid)
   ,.sdp_e2cvif_rd_req_ready (sdp_e2cvif_rd_req_ready)
   ,.sdp_e2cvif_rd_req_pd (sdp_e2cvif_rd_req_pd[79 -1:0])
   ,.cvif2sdp_e_rd_rsp_valid (cvif2sdp_e_rd_rsp_valid)
   ,.cvif2sdp_e_rd_rsp_ready (cvif2sdp_e_rd_rsp_ready)
-  ,.cvif2sdp_e_rd_rsp_pd (cvif2sdp_e_rd_rsp_pd[514 -1:0])
+  ,.cvif2sdp_e_rd_rsp_pd (cvif2sdp_e_rd_rsp_pd[257 -1:0])
   ,.sdp_n2cvif_rd_cdt_lat_fifo_pop (sdp_n2cvif_rd_cdt_lat_fifo_pop)
   ,.sdp_n2cvif_rd_req_valid (sdp_n2cvif_rd_req_valid)
   ,.sdp_n2cvif_rd_req_ready (sdp_n2cvif_rd_req_ready)
   ,.sdp_n2cvif_rd_req_pd (sdp_n2cvif_rd_req_pd[79 -1:0])
   ,.cvif2sdp_n_rd_rsp_valid (cvif2sdp_n_rd_rsp_valid)
   ,.cvif2sdp_n_rd_rsp_ready (cvif2sdp_n_rd_rsp_ready)
-  ,.cvif2sdp_n_rd_rsp_pd (cvif2sdp_n_rd_rsp_pd[514 -1:0])
+  ,.cvif2sdp_n_rd_rsp_pd (cvif2sdp_n_rd_rsp_pd[257 -1:0])
   ,.sdp2cvif_rd_cdt_lat_fifo_pop (sdp2cvif_rd_cdt_lat_fifo_pop)
   ,.sdp2cvif_rd_req_valid (sdp2cvif_rd_req_valid)
   ,.sdp2cvif_rd_req_ready (sdp2cvif_rd_req_ready)
   ,.sdp2cvif_rd_req_pd (sdp2cvif_rd_req_pd[79 -1:0])
   ,.cvif2sdp_rd_rsp_valid (cvif2sdp_rd_rsp_valid)
   ,.cvif2sdp_rd_rsp_ready (cvif2sdp_rd_rsp_ready)
-  ,.cvif2sdp_rd_rsp_pd (cvif2sdp_rd_rsp_pd[514 -1:0])
+  ,.cvif2sdp_rd_rsp_pd (cvif2sdp_rd_rsp_pd[257 -1:0])
   ,.sdp_b2mcif_rd_cdt_lat_fifo_pop (sdp_b2mcif_rd_cdt_lat_fifo_pop)
   ,.sdp_b2mcif_rd_req_valid (sdp_b2mcif_rd_req_valid)
   ,.sdp_b2mcif_rd_req_ready (sdp_b2mcif_rd_req_ready)
   ,.sdp_b2mcif_rd_req_pd (sdp_b2mcif_rd_req_pd[79 -1:0])
   ,.mcif2sdp_b_rd_rsp_valid (mcif2sdp_b_rd_rsp_valid)
   ,.mcif2sdp_b_rd_rsp_ready (mcif2sdp_b_rd_rsp_ready)
-  ,.mcif2sdp_b_rd_rsp_pd (mcif2sdp_b_rd_rsp_pd[514 -1:0])
+  ,.mcif2sdp_b_rd_rsp_pd (mcif2sdp_b_rd_rsp_pd[257 -1:0])
   ,.sdp_e2mcif_rd_cdt_lat_fifo_pop (sdp_e2mcif_rd_cdt_lat_fifo_pop)
   ,.sdp_e2mcif_rd_req_valid (sdp_e2mcif_rd_req_valid)
   ,.sdp_e2mcif_rd_req_ready (sdp_e2mcif_rd_req_ready)
   ,.sdp_e2mcif_rd_req_pd (sdp_e2mcif_rd_req_pd[79 -1:0])
   ,.mcif2sdp_e_rd_rsp_valid (mcif2sdp_e_rd_rsp_valid)
   ,.mcif2sdp_e_rd_rsp_ready (mcif2sdp_e_rd_rsp_ready)
-  ,.mcif2sdp_e_rd_rsp_pd (mcif2sdp_e_rd_rsp_pd[514 -1:0])
+  ,.mcif2sdp_e_rd_rsp_pd (mcif2sdp_e_rd_rsp_pd[257 -1:0])
   ,.sdp_n2mcif_rd_cdt_lat_fifo_pop (sdp_n2mcif_rd_cdt_lat_fifo_pop)
   ,.sdp_n2mcif_rd_req_valid (sdp_n2mcif_rd_req_valid)
   ,.sdp_n2mcif_rd_req_ready (sdp_n2mcif_rd_req_ready)
   ,.sdp_n2mcif_rd_req_pd (sdp_n2mcif_rd_req_pd[79 -1:0])
   ,.mcif2sdp_n_rd_rsp_valid (mcif2sdp_n_rd_rsp_valid)
   ,.mcif2sdp_n_rd_rsp_ready (mcif2sdp_n_rd_rsp_ready)
-  ,.mcif2sdp_n_rd_rsp_pd (mcif2sdp_n_rd_rsp_pd[514 -1:0])
+  ,.mcif2sdp_n_rd_rsp_pd (mcif2sdp_n_rd_rsp_pd[257 -1:0])
   ,.sdp2mcif_rd_cdt_lat_fifo_pop (sdp2mcif_rd_cdt_lat_fifo_pop)
   ,.sdp2mcif_rd_req_valid (sdp2mcif_rd_req_valid)
   ,.sdp2mcif_rd_req_ready (sdp2mcif_rd_req_ready)
   ,.sdp2mcif_rd_req_pd (sdp2mcif_rd_req_pd[79 -1:0])
   ,.mcif2sdp_rd_rsp_valid (mcif2sdp_rd_rsp_valid)
   ,.mcif2sdp_rd_rsp_ready (mcif2sdp_rd_rsp_ready)
-  ,.mcif2sdp_rd_rsp_pd (mcif2sdp_rd_rsp_pd[514 -1:0])
+  ,.mcif2sdp_rd_rsp_pd (mcif2sdp_rd_rsp_pd[257 -1:0])
   ,.sdp_brdma2dp_alu_valid (sdp_brdma2dp_alu_valid)
   ,.sdp_brdma2dp_alu_ready (sdp_brdma2dp_alu_ready)
   ,.sdp_brdma2dp_alu_pd (sdp_brdma2dp_alu_pd[32*16:0])
@@ -426,12 +426,12 @@ NV_NVDLA_SDP_wdma u_wdma (
   ,.tmc2slcg_disable_clock_gating (tmc2slcg_disable_clock_gating)
   ,.sdp2cvif_wr_req_valid (sdp2cvif_wr_req_valid)
   ,.sdp2cvif_wr_req_ready (sdp2cvif_wr_req_ready)
-  ,.sdp2cvif_wr_req_pd (sdp2cvif_wr_req_pd[515 -1:0])
+  ,.sdp2cvif_wr_req_pd (sdp2cvif_wr_req_pd[258 -1:0])
   ,.cvif2sdp_wr_rsp_complete (cvif2sdp_wr_rsp_complete)
   ,.sdp2glb_done_intr_pd (sdp2glb_done_intr_pd[1:0])
   ,.sdp2mcif_wr_req_valid (sdp2mcif_wr_req_valid)
   ,.sdp2mcif_wr_req_ready (sdp2mcif_wr_req_ready)
-  ,.sdp2mcif_wr_req_pd (sdp2mcif_wr_req_pd[515 -1:0])
+  ,.sdp2mcif_wr_req_pd (sdp2mcif_wr_req_pd[258 -1:0])
   ,.mcif2sdp_wr_rsp_complete (mcif2sdp_wr_rsp_complete)
   ,.sdp_dp2wdma_valid (sdp_dp2wdma_valid)
   ,.sdp_dp2wdma_ready (sdp_dp2wdma_ready)

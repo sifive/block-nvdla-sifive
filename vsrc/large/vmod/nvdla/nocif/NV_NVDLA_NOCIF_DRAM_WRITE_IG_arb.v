@@ -17,6 +17,12 @@
 // File Name: NV_NVDLA_define.h
 ///////////////////////////////////////////////////
 //
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  512 )
+//    #define LARGE_MEMBUS
+//#endif
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  64 )
+//    #define SMALL_MEMBUS
+//#endif
 module NV_NVDLA_NOCIF_DRAM_WRITE_IG_arb (
    nvdla_core_clk //|< i
   ,nvdla_core_rstn //|< i
@@ -28,7 +34,7 @@ module NV_NVDLA_NOCIF_DRAM_WRITE_IG_arb (
   ,arb2spt_dat_pd //|> o
   ,arb2spt_dat_valid //|> o
 //:my $i;
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //: ,bpt2arb_cmd${i}_pd
 //: ,bpt2arb_cmd${i}_valid
@@ -65,33 +71,17 @@ module NV_NVDLA_NOCIF_DRAM_WRITE_IG_arb (
 ,bpt2arb_dat2_ready
 ,client22mcif_wr_wt
 
-,bpt2arb_cmd3_pd
-,bpt2arb_cmd3_valid
-,bpt2arb_cmd3_ready
-,bpt2arb_dat3_pd
-,bpt2arb_dat3_valid
-,bpt2arb_dat3_ready
-,client32mcif_wr_wt
-
-,bpt2arb_cmd4_pd
-,bpt2arb_cmd4_valid
-,bpt2arb_cmd4_ready
-,bpt2arb_dat4_pd
-,bpt2arb_dat4_valid
-,bpt2arb_dat4_ready
-,client42mcif_wr_wt
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 );
 //:my $i;
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //:input bpt2arb_cmd${i}_valid;
 //:output bpt2arb_cmd${i}_ready;
 //:input [64 +12:0] bpt2arb_cmd${i}_pd;
 //:input bpt2arb_dat${i}_valid;
 //:output bpt2arb_dat${i}_ready;
-//:input [512:0] bpt2arb_dat${i}_pd;
+//:input [256 +1:0] bpt2arb_dat${i}_pd;
 //:input [7:0] client${i}2mcif_wr_wt;
 //:);
 //:}
@@ -102,7 +92,7 @@ output bpt2arb_cmd0_ready;
 input [64 +12:0] bpt2arb_cmd0_pd;
 input bpt2arb_dat0_valid;
 output bpt2arb_dat0_ready;
-input [512:0] bpt2arb_dat0_pd;
+input [256 +1:0] bpt2arb_dat0_pd;
 input [7:0] client02mcif_wr_wt;
 
 input bpt2arb_cmd1_valid;
@@ -110,7 +100,7 @@ output bpt2arb_cmd1_ready;
 input [64 +12:0] bpt2arb_cmd1_pd;
 input bpt2arb_dat1_valid;
 output bpt2arb_dat1_ready;
-input [512:0] bpt2arb_dat1_pd;
+input [256 +1:0] bpt2arb_dat1_pd;
 input [7:0] client12mcif_wr_wt;
 
 input bpt2arb_cmd2_valid;
@@ -118,24 +108,8 @@ output bpt2arb_cmd2_ready;
 input [64 +12:0] bpt2arb_cmd2_pd;
 input bpt2arb_dat2_valid;
 output bpt2arb_dat2_ready;
-input [512:0] bpt2arb_dat2_pd;
+input [256 +1:0] bpt2arb_dat2_pd;
 input [7:0] client22mcif_wr_wt;
-
-input bpt2arb_cmd3_valid;
-output bpt2arb_cmd3_ready;
-input [64 +12:0] bpt2arb_cmd3_pd;
-input bpt2arb_dat3_valid;
-output bpt2arb_dat3_ready;
-input [512:0] bpt2arb_dat3_pd;
-input [7:0] client32mcif_wr_wt;
-
-input bpt2arb_cmd4_valid;
-output bpt2arb_cmd4_ready;
-input [64 +12:0] bpt2arb_cmd4_pd;
-input bpt2arb_dat4_valid;
-output bpt2arb_dat4_ready;
-input [512:0] bpt2arb_dat4_pd;
-input [7:0] client42mcif_wr_wt;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 input nvdla_core_clk;
@@ -145,27 +119,27 @@ input arb2spt_cmd_ready; /* data return handshake */
 output [64 +12:0] arb2spt_cmd_pd;
 output arb2spt_dat_valid; /* data valid */
 input arb2spt_dat_ready; /* data return handshake */
-output [512:0] arb2spt_dat_pd;
+output [256 +1:0] arb2spt_dat_pd;
 input [31:0] pwrbus_ram_pd;
 reg [64 +12:0] arb_cmd_pd;
-reg [512:0] arb_dat_pd;
+reg [256 +1:0] arb_dat_pd;
 reg [1:0] gnt_count;
-reg [5 -1:0] stick_gnts;
+reg [3 -1:0] stick_gnts;
 reg sticky;
-wire [5 -1:0] all_gnts;
+wire [3 -1:0] all_gnts;
 wire any_arb_gnt;
 wire [1:0] arb_cmd_beats;
 wire arb_cmd_inc;
 wire [2:0] arb_cmd_size;
 wire arb_cmd_size_bit0_NC;
-wire [5 -1:0] arb_gnts;
-wire [4:0] arb_reqs;
+wire [3 -1:0] arb_gnts;
+wire [3 -1:0] arb_reqs;
 wire gnt_busy;
 wire is_last_beat;
 wire mon_arb_cmd_beats_c;
 wire spt_is_busy;
-wire [5 -1:0] src_dat_vlds;
-wire [5 -1:0] src_dat_gnts;
+wire [3 -1:0] src_dat_vlds;
+wire [3 -1:0] src_dat_gnts;
 //NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_pipe_p1 pipe_p1_${i} (
 // .nvdla_core_clk (nvdla_core_clk) //|< i
 // ,.nvdla_core_rstn (nvdla_core_rstn) //|< i
@@ -176,11 +150,11 @@ wire [5 -1:0] src_dat_gnts;
 // ,.src_cmd0_pd (src_cmd${i}_pd[64 +12:0]) //|> w
 // ,.src_cmd0_vld (src_cmd${i}_vld) //|> w
 // );
-//&eperl::pipe(" -is -wid $w -do src_cmd${i}_pd -vo src_cmd${i}_vld -ri bpt2arb_cmd${i}_ready -di bpt2arb_cmd${i}_pd -vi bpt2arb_cmd${i}_valid -ro  src_cmd${i}_rdy");
+//&eperl::pipe(" -os -wid $w -do src_cmd${i}_pd -vo src_cmd${i}_vld -ri bpt2arb_cmd${i}_ready -di bpt2arb_cmd${i}_pd -vi bpt2arb_cmd${i}_valid -ro  src_cmd${i}_rdy");
 //:my $i;
 //:my $w;
-//:my $dbus_wid=512;
-//:for($i=0;$i<5;$i++) {
+//:my $dbus_wid=256 +1;
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //:wire [2:0] dfifo${i}_wr_count;
 //:wire [1:0] src_cmd${i}_beats;
@@ -222,7 +196,7 @@ wire [5 -1:0] src_dat_gnts;
 //: );
 //:}
 //:my $i;
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //:assign src_cmd${i}_size= {3 {src_cmd${i}_vld}} & src_cmd${i}_pd[64 +7:64 +5];
 //:assign src_cmd${i}_inc = {1{src_cmd${i}_vld}} & src_cmd${i}_pd[64 +10:64 +10];
@@ -242,7 +216,7 @@ wire src_cmd0_camp_vld;
 wire src_cmd0_inc;
 wire [2:0] src_cmd0_size;
 wire src_cmd0_size_bit0_NC;
-wire [512:0] src_dat0_pd;
+wire [257:0] src_dat0_pd;
 wire [64 +12:0] src_cmd0_pd;
 
 wire src_cmd0_rdy, src_cmd0_vld;
@@ -277,7 +251,7 @@ wire src_cmd1_camp_vld;
 wire src_cmd1_inc;
 wire [2:0] src_cmd1_size;
 wire src_cmd1_size_bit0_NC;
-wire [512:0] src_dat1_pd;
+wire [257:0] src_dat1_pd;
 wire [64 +12:0] src_cmd1_pd;
 
 wire src_cmd1_rdy, src_cmd1_vld;
@@ -312,7 +286,7 @@ wire src_cmd2_camp_vld;
 wire src_cmd2_inc;
 wire [2:0] src_cmd2_size;
 wire src_cmd2_size_bit0_NC;
-wire [512:0] src_dat2_pd;
+wire [257:0] src_dat2_pd;
 wire [64 +12:0] src_cmd2_pd;
 
 wire src_cmd2_rdy, src_cmd2_vld;
@@ -340,76 +314,6 @@ NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_dfifo u_dfifo2 (
 ,.pwrbus_ram_pd (pwrbus_ram_pd[31:0])
 );
 
-wire [2:0] dfifo3_wr_count;
-wire [1:0] src_cmd3_beats;
-wire src_cmd3_beats_c;
-wire src_cmd3_camp_vld;
-wire src_cmd3_inc;
-wire [2:0] src_cmd3_size;
-wire src_cmd3_size_bit0_NC;
-wire [512:0] src_dat3_pd;
-wire [64 +12:0] src_cmd3_pd;
-
-wire src_cmd3_rdy, src_cmd3_vld;
-wire src_dat3_rdy, src_dat3_vld;
-NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_pipe_p1 pipe_p1_3 (
-.nvdla_core_clk (nvdla_core_clk) //|< i
-,.nvdla_core_rstn (nvdla_core_rstn) //|< i
-,.bpt2arb_cmd0_pd (bpt2arb_cmd3_pd[64 +12:0]) //|< i
-,.bpt2arb_cmd0_valid (bpt2arb_cmd3_valid) //|< i
-,.src_cmd0_rdy (src_cmd3_rdy) //|< w
-,.bpt2arb_cmd0_ready (bpt2arb_cmd3_ready) //|> o
-,.src_cmd0_pd (src_cmd3_pd[64 +12:0]) //|> w
-,.src_cmd0_vld (src_cmd3_vld) //|> w
-);
-NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_dfifo u_dfifo3 (
-.nvdla_core_clk (nvdla_core_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.dfifo_wr_count (dfifo3_wr_count[2:0])
-,.dfifo_wr_prdy (bpt2arb_dat3_ready)
-,.dfifo_wr_pvld (bpt2arb_dat3_valid)
-,.dfifo_wr_pd (bpt2arb_dat3_pd)
-,.dfifo_rd_prdy (src_dat3_rdy)
-,.dfifo_rd_pvld (src_dat3_vld)
-,.dfifo_rd_pd (src_dat3_pd)
-,.pwrbus_ram_pd (pwrbus_ram_pd[31:0])
-);
-
-wire [2:0] dfifo4_wr_count;
-wire [1:0] src_cmd4_beats;
-wire src_cmd4_beats_c;
-wire src_cmd4_camp_vld;
-wire src_cmd4_inc;
-wire [2:0] src_cmd4_size;
-wire src_cmd4_size_bit0_NC;
-wire [512:0] src_dat4_pd;
-wire [64 +12:0] src_cmd4_pd;
-
-wire src_cmd4_rdy, src_cmd4_vld;
-wire src_dat4_rdy, src_dat4_vld;
-NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_pipe_p1 pipe_p1_4 (
-.nvdla_core_clk (nvdla_core_clk) //|< i
-,.nvdla_core_rstn (nvdla_core_rstn) //|< i
-,.bpt2arb_cmd0_pd (bpt2arb_cmd4_pd[64 +12:0]) //|< i
-,.bpt2arb_cmd0_valid (bpt2arb_cmd4_valid) //|< i
-,.src_cmd0_rdy (src_cmd4_rdy) //|< w
-,.bpt2arb_cmd0_ready (bpt2arb_cmd4_ready) //|> o
-,.src_cmd0_pd (src_cmd4_pd[64 +12:0]) //|> w
-,.src_cmd0_vld (src_cmd4_vld) //|> w
-);
-NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_dfifo u_dfifo4 (
-.nvdla_core_clk (nvdla_core_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.dfifo_wr_count (dfifo4_wr_count[2:0])
-,.dfifo_wr_prdy (bpt2arb_dat4_ready)
-,.dfifo_wr_pvld (bpt2arb_dat4_valid)
-,.dfifo_wr_pd (bpt2arb_dat4_pd)
-,.dfifo_rd_prdy (src_dat4_rdy)
-,.dfifo_rd_pvld (src_dat4_vld)
-,.dfifo_rd_pd (src_dat4_pd)
-,.pwrbus_ram_pd (pwrbus_ram_pd[31:0])
-);
-
 assign src_cmd0_size= {3 {src_cmd0_vld}} & src_cmd0_pd[64 +7:64 +5];
 assign src_cmd0_inc = {1{src_cmd0_vld}} & src_cmd0_pd[64 +10:64 +10];
 assign src_cmd0_rdy = is_last_beat & src_dat_gnts[0];
@@ -434,36 +338,16 @@ assign {src_cmd2_beats_c, src_cmd2_beats} = src_cmd2_size[2:1] + src_cmd2_inc;
 assign src_cmd2_size_bit0_NC = src_cmd2_size[0]; // bit0 is not used
 assign src_cmd2_camp_vld = src_cmd2_vld & (dfifo2_wr_count > {src_cmd2_beats_c,src_cmd2_beats});
 
-assign src_cmd3_size= {3 {src_cmd3_vld}} & src_cmd3_pd[64 +7:64 +5];
-assign src_cmd3_inc = {1{src_cmd3_vld}} & src_cmd3_pd[64 +10:64 +10];
-assign src_cmd3_rdy = is_last_beat & src_dat_gnts[3];
-assign src_dat3_rdy = all_gnts[3];
-assign {src_cmd3_beats_c, src_cmd3_beats} = src_cmd3_size[2:1] + src_cmd3_inc;
-assign src_cmd3_size_bit0_NC = src_cmd3_size[0]; // bit0 is not used
-assign src_cmd3_camp_vld = src_cmd3_vld & (dfifo3_wr_count > {src_cmd3_beats_c,src_cmd3_beats});
-
-assign src_cmd4_size= {3 {src_cmd4_vld}} & src_cmd4_pd[64 +7:64 +5];
-assign src_cmd4_inc = {1{src_cmd4_vld}} & src_cmd4_pd[64 +10:64 +10];
-assign src_cmd4_rdy = is_last_beat & src_dat_gnts[4];
-assign src_dat4_rdy = all_gnts[4];
-assign {src_cmd4_beats_c, src_cmd4_beats} = src_cmd4_size[2:1] + src_cmd4_inc;
-assign src_cmd4_size_bit0_NC = src_cmd4_size[0]; // bit0 is not used
-assign src_cmd4_camp_vld = src_cmd4_vld & (dfifo4_wr_count > {src_cmd4_beats_c,src_cmd4_beats});
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
-wire [5 -1:0] src_cmd_vlds;
+wire [3 -1:0] src_cmd_vlds;
 assign src_cmd_vlds = {
 //:my $i;
-//:for($i=5 -1;$i>=1;$i--) {
+//:for($i=3 -1;$i>=1;$i--) {
 //:print qq(
 //:src_cmd${i}_camp_vld,
 //:);
 //:}
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-
-src_cmd4_camp_vld,
-
-src_cmd3_camp_vld,
 
 src_cmd2_camp_vld,
 
@@ -473,16 +357,12 @@ src_cmd1_camp_vld,
    src_cmd0_camp_vld};
 assign src_dat_vlds = {
 //:my $i;
-//:for($i=5 -1;$i>=1;$i--) {
+//:for($i=3 -1;$i>=1;$i--) {
 //:print qq(
 //:src_dat${i}_vld,
 //:);
 //:}
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-
-src_dat4_vld,
-
-src_dat3_vld,
 
 src_dat2_vld,
 
@@ -493,7 +373,7 @@ src_dat1_vld,
 // MUX out based on GNT
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    stick_gnts <= {3{1'b0}};
+    stick_gnts <= {5{1'b0}};
   end else begin
   if ((any_arb_gnt) == 1'b1) begin
     stick_gnts <= arb_gnts;
@@ -540,47 +420,56 @@ assign {mon_arb_cmd_beats_c,arb_cmd_beats} = arb_cmd_size[2:1] + arb_cmd_inc;
 assign arb_cmd_size_bit0_NC = arb_cmd_size[0];
 assign all_gnts = (sticky) ? (stick_gnts) : arb_gnts;
 assign gnt_busy = sticky || spt_is_busy;
-assign arb_reqs = {2'b0,src_cmd_vlds};
-//:for(my $i=0;$i<5;$i++) {
-//:print "wire [7:0] wt${i} = client${i}2mcif_wr_wt;\n";
-//:}
-//:for(my $i=5;$i<5; $i++) {
-//: print("wire [7:0] wt${i} = 0;\n");
+assign arb_reqs = src_cmd_vlds;
+//:my $i;
+//:for($i=0;$i<3;$i++) {
+//:print qq(
+//:wire [7:0] wt${i} = client${i}2mcif_wr_wt;
+//:);
 //:}
 //| eperl: generated_beg (DO NOT EDIT BELOW)
+
 wire [7:0] wt0 = client02mcif_wr_wt;
+
 wire [7:0] wt1 = client12mcif_wr_wt;
+
 wire [7:0] wt2 = client22mcif_wr_wt;
-wire [7:0] wt3 = client32mcif_wr_wt;
-wire [7:0] wt4 = client42mcif_wr_wt;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 write_ig_arb u_write_ig_arb (
-   .req0 (arb_reqs[0]) //|< w
-  ,.req1 (arb_reqs[1]) //|< w
-  ,.req2 (arb_reqs[2]) //|< w
-  ,.req3 (arb_reqs[3]) //|< w
-  ,.req4 (arb_reqs[4]) //|< w
-  ,.wt0 (wt0[7:0]) //|< w
-  ,.wt1 (wt1[7:0]) //|< w
-  ,.wt2 (wt2[7:0]) //|< w
-  ,.wt3 (wt3[7:0]) //|< w
-  ,.wt4 (wt4[7:0]) //|< w
-  ,.gnt_busy (gnt_busy) //|< w
-  ,.clk (nvdla_core_clk) //|< i
+  .clk (nvdla_core_clk) //|< i
   ,.reset_ (nvdla_core_rstn) //|< i
-  ,.gnt0 (arb_gnts[0]) //|> w
-  ,.gnt1 (arb_gnts[1]) //|> w
-  ,.gnt2 (arb_gnts[2]) //|> w
-//,.gnt3 (arb_gnts[3]) //|> w
-//,.gnt4 (arb_gnts[4]) //|> w
+//:my $i;
+//:for($i=0;$i<3;$i++) {
+//:print qq(
+//: ,.req${i} (arb_reqs[${i}]) //|< w
+//: ,.wt${i} (wt${i}[7:0]) //|< w
+//: ,.gnt${i} (arb_gnts[${i}]) //|> w
+//:);
+//:}
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+
+,.req0 (arb_reqs[0]) //|< w
+,.wt0 (wt0[7:0]) //|< w
+,.gnt0 (arb_gnts[0]) //|> w
+
+,.req1 (arb_reqs[1]) //|< w
+,.wt1 (wt1[7:0]) //|< w
+,.gnt1 (arb_gnts[1]) //|> w
+
+,.req2 (arb_reqs[2]) //|< w
+,.wt2 (wt2[7:0]) //|< w
+,.gnt2 (arb_gnts[2]) //|> w
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
+  ,.gnt_busy (gnt_busy) //|< w
   );
 assign any_arb_gnt = |arb_gnts;
 // ARB MUX
 always @(
   all_gnts
 //:my $i;
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //: or src_cmd${i}_pd
 //:);
@@ -593,16 +482,12 @@ or src_cmd1_pd
 
 or src_cmd2_pd
 
-or src_cmd3_pd
-
-or src_cmd4_pd
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
   ) begin
 //spyglass disable_block W171 W226
     case (1'b1 )
 //:my $i;
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //: all_gnts[${i}]: arb_cmd_pd = src_cmd${i}_pd;
 //:);
@@ -614,10 +499,6 @@ all_gnts[0]: arb_cmd_pd = src_cmd0_pd;
 all_gnts[1]: arb_cmd_pd = src_cmd1_pd;
 
 all_gnts[2]: arb_cmd_pd = src_cmd2_pd;
-
-all_gnts[3]: arb_cmd_pd = src_cmd3_pd;
-
-all_gnts[4]: arb_cmd_pd = src_cmd4_pd;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //VCS coverage off
@@ -641,7 +522,7 @@ assign arb_cmd_inc = arb_cmd_pd[64 +10:64 +10];
 always @(
   all_gnts
 //:my $i;
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //: or src_dat${i}_pd
 //:);
@@ -654,16 +535,12 @@ or src_dat1_pd
 
 or src_dat2_pd
 
-or src_dat3_pd
-
-or src_dat4_pd
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
   ) begin
 //spyglass disable_block W171 W226
     case (1'b1 )
 //:my $i;
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //: all_gnts[${i}]: arb_dat_pd = src_dat${i}_pd;
 //:);
@@ -676,19 +553,15 @@ all_gnts[1]: arb_dat_pd = src_dat1_pd;
 
 all_gnts[2]: arb_dat_pd = src_dat2_pd;
 
-all_gnts[3]: arb_dat_pd = src_dat3_pd;
-
-all_gnts[4]: arb_dat_pd = src_dat4_pd;
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //VCS coverage off
     default : begin
 //:print qq(
-//:arb_dat_pd[512:0] = 0;
+//:arb_dat_pd[256 +1:0] = 0;
 //:);
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-arb_dat_pd[512:0] = 0;
+arb_dat_pd[256 +1:0] = 0;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
               end
@@ -738,10 +611,10 @@ input nvdla_core_rstn;
 output [2:0] dfifo_wr_count;
 output dfifo_wr_prdy;
 input dfifo_wr_pvld;
-input [512:0] dfifo_wr_pd;
+input [256 +1:0] dfifo_wr_pd;
 input dfifo_rd_prdy;
 output dfifo_rd_pvld;
-output [512:0] dfifo_rd_pd;
+output [256 +1:0] dfifo_rd_pd;
 input [31:0] pwrbus_ram_pd;
 // Master Clock Gating (SLCG)
 //
@@ -815,18 +688,18 @@ end
 // spyglass enable_block W484
 reg [1:0] dfifo_rd_adr; // read address this cycle
 wire ram_we = wr_pushing; // note: write occurs next cycle
-wire [512:0] dfifo_rd_pd; // read data out of ram
+wire [256 +1:0] dfifo_rd_pd; // read data out of ram
 wire [31 : 0] pwrbus_ram_pd;
 // Adding parameter for fifogen to disable wr/rd contention assertion in ramgen.
 // Fifogen handles this by ignoring the data on the ram data out for that cycle.
 //:my $w;
-//:$w = 512 +2;
+//:$w = 256 +2;
 //:print qq(
 //:NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_dfifo_flopram_rwsa_4x${w} ram
 //:);
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514 ram
+NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_dfifo_flopram_rwsa_4x258 ram
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
       (
@@ -1061,13 +934,13 @@ endmodule // NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_dfifo
 // Flop-Based RAM
 //
 //:my $w;
-//:$w=512 +2;
+//:$w=256 +2;
 //:print qq(
 //:module NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_dfifo_flopram_rwsa_4x${w}
 //:);
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-module NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514
+module NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_dfifo_flopram_rwsa_4x258
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
     (
@@ -1081,11 +954,11 @@ module NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514
     );
 input clk; // write clock
 input [31 : 0] pwrbus_ram_pd;
-input [512:0] di;
+input [256 +1:0] di;
 input we;
 input [1:0] wa;
 input [1:0] ra;
-output [512:0] dout;
+output [256 +1:0] dout;
 `ifndef FPGA
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
 `endif
@@ -1182,10 +1055,10 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 `ifndef FPGA
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
 `endif
-reg [512:0] ram_ff0;
-reg [512:0] ram_ff1;
-reg [512:0] ram_ff2;
-reg [512:0] ram_ff3;
+reg [256 +1:0] ram_ff0;
+reg [256 +1:0] ram_ff1;
+reg [256 +1:0] ram_ff2;
+reg [256 +1:0] ram_ff3;
 always @( posedge clk ) begin
     if ( we && wa == 2'd0 ) begin
  ram_ff0 <= di;
@@ -1200,7 +1073,7 @@ always @( posedge clk ) begin
  ram_ff3 <= di;
     end
 end
-reg [512:0] dout;
+reg [256 +1:0] dout;
 always @(*) begin
     case( ra )
     2'd0: dout = ram_ff0;
@@ -1208,7 +1081,7 @@ always @(*) begin
     2'd2: dout = ram_ff2;
     2'd3: dout = ram_ff3;
 //VCS coverage off
-    default: dout = {512 +2{`x_or_0}};
+    default: dout = {256 +2{`x_or_0}};
 //VCS coverage on
     endcase
 end

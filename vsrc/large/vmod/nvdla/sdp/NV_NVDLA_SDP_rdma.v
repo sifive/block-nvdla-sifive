@@ -124,42 +124,42 @@ input sdp_b2cvif_rd_req_ready;
 output [79 -1:0] sdp_b2cvif_rd_req_pd;
 input cvif2sdp_b_rd_rsp_valid;
 output cvif2sdp_b_rd_rsp_ready;
-input [514 -1:0] cvif2sdp_b_rd_rsp_pd;
+input [257 -1:0] cvif2sdp_b_rd_rsp_pd;
 output sdp_e2cvif_rd_cdt_lat_fifo_pop;
 output sdp_e2cvif_rd_req_valid;
 input sdp_e2cvif_rd_req_ready;
 output [79 -1:0] sdp_e2cvif_rd_req_pd;
 input cvif2sdp_e_rd_rsp_valid;
 output cvif2sdp_e_rd_rsp_ready;
-input [514 -1:0] cvif2sdp_e_rd_rsp_pd;
+input [257 -1:0] cvif2sdp_e_rd_rsp_pd;
 output sdp_n2cvif_rd_cdt_lat_fifo_pop;
 output sdp_n2cvif_rd_req_valid;
 input sdp_n2cvif_rd_req_ready;
 output [79 -1:0] sdp_n2cvif_rd_req_pd;
 input cvif2sdp_n_rd_rsp_valid;
 output cvif2sdp_n_rd_rsp_ready;
-input [514 -1:0] cvif2sdp_n_rd_rsp_pd;
+input [257 -1:0] cvif2sdp_n_rd_rsp_pd;
 output sdp2cvif_rd_cdt_lat_fifo_pop;
 output sdp2cvif_rd_req_valid;
 input sdp2cvif_rd_req_ready;
 output [79 -1:0] sdp2cvif_rd_req_pd;
 input cvif2sdp_rd_rsp_valid;
 output cvif2sdp_rd_rsp_ready;
-input [514 -1:0] cvif2sdp_rd_rsp_pd;
+input [257 -1:0] cvif2sdp_rd_rsp_pd;
 output sdp2mcif_rd_cdt_lat_fifo_pop;
 output sdp2mcif_rd_req_valid;
 input sdp2mcif_rd_req_ready;
 output [79 -1:0] sdp2mcif_rd_req_pd;
 input mcif2sdp_rd_rsp_valid;
 output mcif2sdp_rd_rsp_ready;
-input [514 -1:0] mcif2sdp_rd_rsp_pd;
+input [257 -1:0] mcif2sdp_rd_rsp_pd;
 output sdp_b2mcif_rd_cdt_lat_fifo_pop;
 output sdp_b2mcif_rd_req_valid;
 input sdp_b2mcif_rd_req_ready;
 output [79 -1:0] sdp_b2mcif_rd_req_pd;
 input mcif2sdp_b_rd_rsp_valid;
 output mcif2sdp_b_rd_rsp_ready;
-input [514 -1:0] mcif2sdp_b_rd_rsp_pd;
+input [257 -1:0] mcif2sdp_b_rd_rsp_pd;
 output sdp_brdma2dp_alu_valid;
 input sdp_brdma2dp_alu_ready;
 output [32*16:0] sdp_brdma2dp_alu_pd;
@@ -172,7 +172,7 @@ input sdp_e2mcif_rd_req_ready;
 output [79 -1:0] sdp_e2mcif_rd_req_pd;
 input mcif2sdp_e_rd_rsp_valid;
 output mcif2sdp_e_rd_rsp_ready;
-input [514 -1:0] mcif2sdp_e_rd_rsp_pd;
+input [257 -1:0] mcif2sdp_e_rd_rsp_pd;
 output sdp_erdma2dp_alu_valid;
 input sdp_erdma2dp_alu_ready;
 output [32*16:0] sdp_erdma2dp_alu_pd;
@@ -185,7 +185,7 @@ input sdp_n2mcif_rd_req_ready;
 output [79 -1:0] sdp_n2mcif_rd_req_pd;
 input mcif2sdp_n_rd_rsp_valid;
 output mcif2sdp_n_rd_rsp_ready;
-input [514 -1:0] mcif2sdp_n_rd_rsp_pd;
+input [257 -1:0] mcif2sdp_n_rd_rsp_pd;
 output sdp_nrdma2dp_alu_valid;
 input sdp_nrdma2dp_alu_ready;
 output [32*16:0] sdp_nrdma2dp_alu_pd;
@@ -280,7 +280,7 @@ NV_NVDLA_SDP_mrdma u_mrdma (
   ,.mrdma_disable (mrdma_disable) //|< w
   ,.cvif2sdp_rd_rsp_valid (cvif2sdp_rd_rsp_valid) //|< i
   ,.cvif2sdp_rd_rsp_ready (cvif2sdp_rd_rsp_ready) //|> o
-  ,.cvif2sdp_rd_rsp_pd (cvif2sdp_rd_rsp_pd[514 -1:0]) //|< i
+  ,.cvif2sdp_rd_rsp_pd (cvif2sdp_rd_rsp_pd[257 -1:0]) //|< i
   ,.sdp2cvif_rd_cdt_lat_fifo_pop (sdp2cvif_rd_cdt_lat_fifo_pop) //|> o
   ,.sdp2cvif_rd_req_valid (sdp2cvif_rd_req_valid) //|> o
   ,.sdp2cvif_rd_req_ready (sdp2cvif_rd_req_ready) //|< i
@@ -291,7 +291,7 @@ NV_NVDLA_SDP_mrdma u_mrdma (
   ,.sdp2mcif_rd_req_pd (sdp2mcif_rd_req_pd[79 -1:0]) //|> o
   ,.mcif2sdp_rd_rsp_valid (mcif2sdp_rd_rsp_valid) //|< i
   ,.mcif2sdp_rd_rsp_ready (mcif2sdp_rd_rsp_ready) //|> o
-  ,.mcif2sdp_rd_rsp_pd (mcif2sdp_rd_rsp_pd[514 -1:0]) //|< i
+  ,.mcif2sdp_rd_rsp_pd (mcif2sdp_rd_rsp_pd[257 -1:0]) //|< i
   ,.sdp_mrdma2cmux_valid (sdp_mrdma2cmux_valid) //|> o
   ,.sdp_mrdma2cmux_ready (sdp_mrdma2cmux_ready) //|< i
   ,.sdp_mrdma2cmux_pd (sdp_mrdma2cmux_pd[32*32 +1:0]) //|> o
@@ -329,14 +329,14 @@ NV_NVDLA_SDP_brdma u_brdma (
   ,.sdp_b2cvif_rd_req_pd (sdp_b2cvif_rd_req_pd[79 -1:0]) //|> o
   ,.cvif2sdp_b_rd_rsp_valid (cvif2sdp_b_rd_rsp_valid) //|< i
   ,.cvif2sdp_b_rd_rsp_ready (cvif2sdp_b_rd_rsp_ready) //|> o
-  ,.cvif2sdp_b_rd_rsp_pd (cvif2sdp_b_rd_rsp_pd[514 -1:0]) //|< i
+  ,.cvif2sdp_b_rd_rsp_pd (cvif2sdp_b_rd_rsp_pd[257 -1:0]) //|< i
   ,.sdp_b2mcif_rd_cdt_lat_fifo_pop (sdp_b2mcif_rd_cdt_lat_fifo_pop) //|> o
   ,.sdp_b2mcif_rd_req_valid (sdp_b2mcif_rd_req_valid) //|> o
   ,.sdp_b2mcif_rd_req_ready (sdp_b2mcif_rd_req_ready) //|< i
   ,.sdp_b2mcif_rd_req_pd (sdp_b2mcif_rd_req_pd[79 -1:0]) //|> o
   ,.mcif2sdp_b_rd_rsp_valid (mcif2sdp_b_rd_rsp_valid) //|< i
   ,.mcif2sdp_b_rd_rsp_ready (mcif2sdp_b_rd_rsp_ready) //|> o
-  ,.mcif2sdp_b_rd_rsp_pd (mcif2sdp_b_rd_rsp_pd[514 -1:0]) //|< i
+  ,.mcif2sdp_b_rd_rsp_pd (mcif2sdp_b_rd_rsp_pd[257 -1:0]) //|< i
   ,.sdp_brdma2dp_alu_valid (sdp_brdma2dp_alu_valid) //|> o
   ,.sdp_brdma2dp_alu_ready (sdp_brdma2dp_alu_ready) //|< i
   ,.sdp_brdma2dp_alu_pd (sdp_brdma2dp_alu_pd[32*16:0]) //|> o
@@ -378,14 +378,14 @@ NV_NVDLA_SDP_nrdma u_nrdma (
   ,.sdp_n2cvif_rd_req_pd (sdp_n2cvif_rd_req_pd[79 -1:0]) //|> o
   ,.cvif2sdp_n_rd_rsp_valid (cvif2sdp_n_rd_rsp_valid) //|< i
   ,.cvif2sdp_n_rd_rsp_ready (cvif2sdp_n_rd_rsp_ready) //|> o
-  ,.cvif2sdp_n_rd_rsp_pd (cvif2sdp_n_rd_rsp_pd[514 -1:0]) //|< i
+  ,.cvif2sdp_n_rd_rsp_pd (cvif2sdp_n_rd_rsp_pd[257 -1:0]) //|< i
   ,.sdp_n2mcif_rd_cdt_lat_fifo_pop (sdp_n2mcif_rd_cdt_lat_fifo_pop) //|> o
   ,.sdp_n2mcif_rd_req_valid (sdp_n2mcif_rd_req_valid) //|> o
   ,.sdp_n2mcif_rd_req_ready (sdp_n2mcif_rd_req_ready) //|< i
   ,.sdp_n2mcif_rd_req_pd (sdp_n2mcif_rd_req_pd[79 -1:0]) //|> o
   ,.mcif2sdp_n_rd_rsp_valid (mcif2sdp_n_rd_rsp_valid) //|< i
   ,.mcif2sdp_n_rd_rsp_ready (mcif2sdp_n_rd_rsp_ready) //|> o
-  ,.mcif2sdp_n_rd_rsp_pd (mcif2sdp_n_rd_rsp_pd[514 -1:0]) //|< i
+  ,.mcif2sdp_n_rd_rsp_pd (mcif2sdp_n_rd_rsp_pd[257 -1:0]) //|< i
   ,.sdp_nrdma2dp_alu_valid (sdp_nrdma2dp_alu_valid) //|> o
   ,.sdp_nrdma2dp_alu_ready (sdp_nrdma2dp_alu_ready) //|< i
   ,.sdp_nrdma2dp_alu_pd (sdp_nrdma2dp_alu_pd[32*16:0]) //|> o
@@ -427,14 +427,14 @@ NV_NVDLA_SDP_erdma u_erdma (
   ,.sdp_e2cvif_rd_req_pd (sdp_e2cvif_rd_req_pd[79 -1:0]) //|> o
   ,.cvif2sdp_e_rd_rsp_valid (cvif2sdp_e_rd_rsp_valid) //|< i
   ,.cvif2sdp_e_rd_rsp_ready (cvif2sdp_e_rd_rsp_ready) //|> o
-  ,.cvif2sdp_e_rd_rsp_pd (cvif2sdp_e_rd_rsp_pd[514 -1:0]) //|< i
+  ,.cvif2sdp_e_rd_rsp_pd (cvif2sdp_e_rd_rsp_pd[257 -1:0]) //|< i
   ,.sdp_e2mcif_rd_cdt_lat_fifo_pop (sdp_e2mcif_rd_cdt_lat_fifo_pop) //|> o
   ,.sdp_e2mcif_rd_req_valid (sdp_e2mcif_rd_req_valid) //|> o
   ,.sdp_e2mcif_rd_req_ready (sdp_e2mcif_rd_req_ready) //|< i
   ,.sdp_e2mcif_rd_req_pd (sdp_e2mcif_rd_req_pd[79 -1:0]) //|> o
   ,.mcif2sdp_e_rd_rsp_valid (mcif2sdp_e_rd_rsp_valid) //|< i
   ,.mcif2sdp_e_rd_rsp_ready (mcif2sdp_e_rd_rsp_ready) //|> o
-  ,.mcif2sdp_e_rd_rsp_pd (mcif2sdp_e_rd_rsp_pd[514 -1:0]) //|< i
+  ,.mcif2sdp_e_rd_rsp_pd (mcif2sdp_e_rd_rsp_pd[257 -1:0]) //|< i
   ,.sdp_erdma2dp_alu_valid (sdp_erdma2dp_alu_valid) //|> o
   ,.sdp_erdma2dp_alu_ready (sdp_erdma2dp_alu_ready) //|< i
   ,.sdp_erdma2dp_alu_pd (sdp_erdma2dp_alu_pd[32*16:0]) //|> o

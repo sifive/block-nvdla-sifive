@@ -16,6 +16,14 @@
 // File Name: NV_NVDLA_PDP_define.h
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_PDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_PDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 `include "simulate_x_tick.vh"
 module NV_NVDLA_PDP_wdma (
    nvdla_core_clk //|< i
@@ -65,11 +73,11 @@ input nvdla_core_clk;
 input nvdla_core_rstn;
 output pdp2mcif_wr_req_valid; /* data valid */
 input pdp2mcif_wr_req_ready; /* data return handshake */
-output [( 512 + (512/8/32) + 1 )-1:0] pdp2mcif_wr_req_pd;
+output [( 256 + (256/8/32) + 1 )-1:0] pdp2mcif_wr_req_pd;
 input mcif2pdp_wr_rsp_complete;
 output pdp2cvif_wr_req_valid;
 input pdp2cvif_wr_req_ready;
-output [( 512 + (512/8/32) + 1 )-1:0] pdp2cvif_wr_req_pd;
+output [( 256 + (256/8/32) + 1 )-1:0] pdp2cvif_wr_req_pd;
 input cvif2pdp_wr_rsp_complete;
 input pdp_dp2wdma_valid;
 output pdp_dp2wdma_ready;
@@ -112,7 +120,7 @@ reg cv_pending;
 reg dat0_fifo_rd_pvld;
 reg dat1_fifo_rd_pvld;
 reg dat_en;
-reg [( 512 + (512/8/32) + 1 )-1:0] dma_wr_req_pd;
+reg [( 256 + (256/8/32) + 1 )-1:0] dma_wr_req_pd;
 wire dma_wr_rsp_complete;
 reg [31:0] dp2reg_d0_perf_write_stall;
 reg [31:0] dp2reg_d1_perf_write_stall;
@@ -161,7 +169,7 @@ wire [12:0] cmd_fifo_rd_size;
 wire cnt_cen;
 wire cnt_clr;
 wire cnt_inc;
-//: my $dmaifBW = 512;
+//: my $dmaifBW = 256;
 //: my $atomicm = 32*8;
 //: my $pdpbw = 8*8;
 //: my $Wnum = int( $dmaifBW/$atomicm );
@@ -194,27 +202,10 @@ wire dat0_fifo2_rd_pvld;
 wire [64-1:0]dat0_fifo3_rd_pd;
 wire dat0_fifo3_rd_prdy;
 wire dat0_fifo3_rd_pvld;
-wire   [64*4-1:0] dat1_data; 
-
-wire [64-1:0]dat1_fifo0_rd_pd;
-wire dat1_fifo0_rd_prdy;
-wire dat1_fifo0_rd_pvld;
-
-wire [64-1:0]dat1_fifo1_rd_pd;
-wire dat1_fifo1_rd_prdy;
-wire dat1_fifo1_rd_pvld;
-
-wire [64-1:0]dat1_fifo2_rd_pd;
-wire dat1_fifo2_rd_prdy;
-wire dat1_fifo2_rd_pvld;
-
-wire [64-1:0]dat1_fifo3_rd_pd;
-wire dat1_fifo3_rd_prdy;
-wire dat1_fifo3_rd_pvld;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 wire dat_accept;
-wire [512 -1:0] dat_data;
+wire [256 -1:0] dat_data;
 reg dat_fifo_rd_last_pvld;
 wire dat_rdy;
 wire dma_wr_cmd_accept;
@@ -223,9 +214,9 @@ wire [64 +13:0] dma_wr_cmd_pd;
 wire dma_wr_cmd_require_ack;
 wire [22:0] dma_wr_cmd_size;
 wire dma_wr_cmd_vld;
-wire [512 -1:0] dma_wr_dat_data;
+wire [256 -1:0] dma_wr_dat_data;
 wire [1:0] dma_wr_dat_mask;
-wire [512 + (512/8/32)-1:0] dma_wr_dat_pd;
+wire [256 + (256/8/32)-1:0] dma_wr_dat_pd;
 wire dma_wr_dat_vld;
 wire dma_wr_req_rdy;
 wire dma_wr_req_type;
@@ -405,7 +396,7 @@ NV_NVDLA_PDP_WDMA_dat u_dat (
   ,.nvdla_core_clk (nvdla_core_clk)
   ,.nvdla_core_rstn (nvdla_core_rstn)
   ,.pwrbus_ram_pd (pwrbus_ram_pd[31:0])
-//: my $dmaifBW = 512;
+//: my $dmaifBW = 256;
 //: my $atomicm = 32*8;
 //: my $pdpbw = 8*8;
 //: my $Wnum = int( $dmaifBW/$atomicm );
@@ -437,29 +428,13 @@ NV_NVDLA_PDP_WDMA_dat u_dat (
 ,.dat0_fifo3_rd_prdy (dat0_fifo3_rd_prdy )
 ,.dat0_fifo3_rd_pvld (dat0_fifo3_rd_pvld )
 
-,.dat1_fifo0_rd_pd (dat1_fifo0_rd_pd )
-,.dat1_fifo0_rd_prdy (dat1_fifo0_rd_prdy )
-,.dat1_fifo0_rd_pvld (dat1_fifo0_rd_pvld )
-
-,.dat1_fifo1_rd_pd (dat1_fifo1_rd_pd )
-,.dat1_fifo1_rd_prdy (dat1_fifo1_rd_prdy )
-,.dat1_fifo1_rd_pvld (dat1_fifo1_rd_pvld )
-
-,.dat1_fifo2_rd_pd (dat1_fifo2_rd_pd )
-,.dat1_fifo2_rd_prdy (dat1_fifo2_rd_prdy )
-,.dat1_fifo2_rd_pvld (dat1_fifo2_rd_pvld )
-
-,.dat1_fifo3_rd_pd (dat1_fifo3_rd_pd )
-,.dat1_fifo3_rd_prdy (dat1_fifo3_rd_prdy )
-,.dat1_fifo3_rd_pvld (dat1_fifo3_rd_pvld )
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
   ,.wdma_done (wdma_done)
   ,.op_load (op_load)
   );
 /////////////////////////////////////////
 // DATA FIFO: READ SIDE
-//: my $dmaifBW = 512;
+//: my $dmaifBW = 256;
 //: my $atomicm = 32*8;
 //: my $pdpbw = 8*8;
 //: my $Wnum = int( $dmaifBW/$atomicm );
@@ -524,7 +499,7 @@ NV_NVDLA_PDP_WDMA_dat u_dat (
 //: end
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-reg  [2-1:0] atomm_invld; 
+reg  [1-1:0] atomm_invld; 
 
 always @(*) begin
 case (reg_lenb)
@@ -554,37 +529,9 @@ assign dat0_fifo2_rd_prdy = (atomm_invld[0] & is_last_beat)? 1'b0 : (dat_rdy & d
 assign dat0_fifo3_rd_prdy = (atomm_invld[0] & is_last_beat)? 1'b0 : (dat_rdy & dat_fifo_rd_last_pvld);
 
 always @(*) begin
-case (reg_lenb)
-
-5'd0: dat1_fifo_rd_pvld = dat1_fifo0_rd_pvld;
-
-5'd1: dat1_fifo_rd_pvld = dat1_fifo1_rd_pvld;
-
-5'd2: dat1_fifo_rd_pvld = dat1_fifo2_rd_pvld;
-
-5'd3: dat1_fifo_rd_pvld = dat1_fifo3_rd_pvld;
-
-//VCS coverage off
-default : begin
-dat1_fifo_rd_pvld = {1{`x_or_0}};
-end
-//VCS coverage on
-endcase
-end
-
-assign dat1_fifo0_rd_prdy = (atomm_invld[1] & is_last_beat)? 1'b0 : (dat_rdy & dat_fifo_rd_last_pvld);
-
-assign dat1_fifo1_rd_prdy = (atomm_invld[1] & is_last_beat)? 1'b0 : (dat_rdy & dat_fifo_rd_last_pvld);
-
-assign dat1_fifo2_rd_prdy = (atomm_invld[1] & is_last_beat)? 1'b0 : (dat_rdy & dat_fifo_rd_last_pvld);
-
-assign dat1_fifo3_rd_prdy = (atomm_invld[1] & is_last_beat)? 1'b0 : (dat_rdy & dat_fifo_rd_last_pvld);
-
-always @(*) begin
 
 atomm_invld[0] = 1'b0;
-atomm_invld[1] = (reg_size[0]==0);
-dat_fifo_rd_last_pvld = ((reg_size[0]==0) & is_last_beat) ? dat0_fifo_rd_pvld : dat1_fifo_rd_pvld;
+dat_fifo_rd_last_pvld = dat0_fifo_rd_pvld;
 
 end
 
@@ -602,7 +549,7 @@ end
 // assign dat0_data= {dat0_fifo3_rd_pd, dat0_fifo2_rd_pd, dat0_fifo1_rd_pd, dat0_fifo0_rd_pd};
 // assign dat1_data= {dat1_fifo3_rd_pd, dat1_fifo2_rd_pd, dat1_fifo1_rd_pd, dat1_fifo0_rd_pd};
 // assign dat_data = {dat1_data,dat0_data};
-//: my $dmaifBW = 512;
+//: my $dmaifBW = 256;
 //: my $atomicm = 32*8;
 //: my $pdpbw = 8*8;
 //: my $Wnum = int( $dmaifBW/$atomicm );
@@ -628,8 +575,7 @@ end
 //: print "dat0_data}; \n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 assign dat0_data = { dat0_fifo3_rd_pd, dat0_fifo2_rd_pd, dat0_fifo1_rd_pd, dat0_fifo0_rd_pd}; 
-assign dat1_data = { dat1_fifo3_rd_pd, dat1_fifo2_rd_pd, dat1_fifo1_rd_pd, dat1_fifo0_rd_pd}; 
-assign dat_data = { dat1_data, dat0_data}; 
+assign dat_data = { dat0_data}; 
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //==============
@@ -877,16 +823,16 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (dma_wr_cmd_accept) begin
         count_w <= 0;
     end else if (dat_accept) begin
-//: my $Wnum= 512/32/8;
+//: my $Wnum= 256/32/8;
 //: print "    count_w <= count_w + ${Wnum};   \n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-    count_w <= count_w + 2;   
+    count_w <= count_w + 1;   
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
     end
   end
 end
-//: my $Wnum= 512/32/8;
+//: my $Wnum= 256/32/8;
 //: if($Wnum == 1) {
 //: print qq(
 //: assign is_last_beat = (count_w==reg_size);
@@ -902,7 +848,7 @@ end
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign is_last_beat = (count_w==reg_size || count_w==reg_size-1);
+assign is_last_beat = (count_w==reg_size);
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -994,7 +940,7 @@ end
 // spyglass enable_block WRN_58
 // spyglass enable_block WRN_61
 `endif // SPYGLASS_ASSERT_ON
-//: my $msk = (512/8/32);
+//: my $msk = (256/8/32);
 //: if($msk == 1) {
 //: print " assign dma_wr_dat_mask = 2'b1;  \n";
 //: } elsif($msk == 2) {
@@ -1005,25 +951,25 @@ end
 //: print "                          ((cmd_fifo_rd_size_use[1:0]==2'b10) && is_last_beat) ? 4'b0111 : 4'b1111;  \n";
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
- assign dma_wr_dat_mask = (cmd_fifo_rd_size_use[0]==0 && is_last_beat) ? 2'b01 : 2'b11;  
+ assign dma_wr_dat_mask = 2'b1;  
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 // PKT_PACK_WIRE( dma_write_data , dma_wr_dat_ , dma_wr_dat_pd )
-assign dma_wr_dat_pd[512 -1:0] = dma_wr_dat_data[512 -1:0];
-assign dma_wr_dat_pd[512 +(512/8/32)-1:512] = dma_wr_dat_mask[(512/8/32)-1:0];
+assign dma_wr_dat_pd[256 -1:0] = dma_wr_dat_data[256 -1:0];
+assign dma_wr_dat_pd[256 +(256/8/32)-1:256] = dma_wr_dat_mask[(256/8/32)-1:0];
 // pack cmd & dat
 assign dma_wr_req_vld = dma_wr_cmd_vld | dma_wr_dat_vld;
 always @(*) begin
 // init to 0
-    dma_wr_req_pd[512 + (512/8/32)-1:0] = 0;
+    dma_wr_req_pd[256 + (256/8/32)-1:0] = 0;
 // cmd or dat
     if (cmd_en) begin
         dma_wr_req_pd[64 +13:0] = dma_wr_cmd_pd;
     end else begin
-        dma_wr_req_pd[512 + (512/8/32)-1:0] = dma_wr_dat_pd;
+        dma_wr_req_pd[256 + (256/8/32)-1:0] = dma_wr_dat_pd;
     end
 // pkt id
-    dma_wr_req_pd[( 512 + (512/8/32) + 1 )-1] = cmd_en ? 1'd0 /* PKT_nvdla_dma_wr_req_dma_write_cmd_ID  */ : 1'd1 /* PKT_nvdla_dma_wr_req_dma_write_data_ID  */ ;
+    dma_wr_req_pd[( 256 + (256/8/32) + 1 )-1] = cmd_en ? 1'd0 /* PKT_nvdla_dma_wr_req_dma_write_cmd_ID  */ : 1'd1 /* PKT_nvdla_dma_wr_req_dma_write_data_ID  */ ;
 end
 //==============
 // reading stall counter before DMA_if

@@ -14,8 +14,7 @@ import sifive.nvdla_blocks.ip.nvdla._
 
 case class NVDLAParams(
   config: String,
-  raddress: BigInt,
-  cvsram_base_addr: BigInt = 0
+  raddress: BigInt
 )
 
 class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
@@ -48,30 +47,22 @@ class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
     := AXI4Buffer()
     := dbb_axi_node)
 
-  // cvsram TL
-  val cvsram_tl_node = TLIdentityNode()
-
   // cvsram AXI
-  val cvsram_axi_node = AXI4MasterNode(
+  val cvsram_axi_node = if (params.config == "large") Some(AXI4MasterNode(
     Seq(
       AXI4MasterPortParameters(
         masters = Seq(AXI4MasterParameters(
           name    = "NVDLA CVSRAM",
-          id      = IdRange(0, 256)))
-      )
-    )
-  )
+          id      = IdRange(0, 256)))))))
+  else None
 
-  // TL <-> AXI
-  (cvsram_tl_node
-    := TLBuffer()
-    := TLWidthWidget(8)
-    := AXI4ToTL()
-    := AXI4UserYanker(capMaxFlight=Some(8))
-    := AXI4Fragmenter()
-    := AXI4IdIndexer(idBits=2)
-    := AXI4Buffer()
-    := cvsram_axi_node)
+  cvsram_axi_node.foreach {
+    val sram = if (params.config == "large") Some(LazyModule(new AXI4RAM(
+      address = AddressSet(0, 1*1024-1),
+      beatBytes = 256/8)))
+    else None
+      sram.get.node := _
+  }
 
   // cfg APB
   val cfg_apb_node = APBSlaveNode(
@@ -83,9 +74,7 @@ class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
           executable    = false,
           supportsWrite = true,
           supportsRead  = true)),
-        beatBytes = 4)
-    )
-  )
+        beatBytes = 4)))
 
   val cfg_tl_node = cfg_apb_node := LazyModule(new TLToAPB).node
 
@@ -134,14 +123,14 @@ class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
     u_nvdla.io.nvdla_core2dbb_r_rdata       := dbb.r.bits.data
 
     u_nvdla.io.nvdla_core2cvsram.foreach { u_nvdla_cvsram =>
-      val (cvsram, _) = cvsram_axi_node.out(0)
+      val (cvsram, _) = cvsram_axi_node.get.out(0)
 
       cvsram.aw.valid                       := u_nvdla_cvsram.aw_awvalid
       u_nvdla_cvsram.aw_awready             := cvsram.aw.ready
       cvsram.aw.bits.id                     := u_nvdla_cvsram.aw_awid
       cvsram.aw.bits.len                    := u_nvdla_cvsram.aw_awlen
       cvsram.aw.bits.size                   := u_nvdla_cvsram.aw_awsize
-      cvsram.aw.bits.addr                   := u_nvdla_cvsram.aw_awaddr + params.cvsram_base_addr.U
+      cvsram.aw.bits.addr                   := u_nvdla_cvsram.aw_awaddr
 
       cvsram.w.valid                        := u_nvdla_cvsram.w_wvalid
       u_nvdla_cvsram.w_wready               := cvsram.w.ready
@@ -154,7 +143,7 @@ class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
       cvsram.ar.bits.id                     := u_nvdla_cvsram.ar_arid
       cvsram.ar.bits.len                    := u_nvdla_cvsram.ar_arlen
       cvsram.ar.bits.size                   := u_nvdla_cvsram.ar_arsize
-      cvsram.ar.bits.addr                   := u_nvdla_cvsram.ar_araddr + params.cvsram_base_addr.U
+      cvsram.ar.bits.addr                   := u_nvdla_cvsram.ar_araddr
 
       u_nvdla_cvsram.b_bvalid               := cvsram.b.valid
       cvsram.b.ready                        := u_nvdla_cvsram.b_bready

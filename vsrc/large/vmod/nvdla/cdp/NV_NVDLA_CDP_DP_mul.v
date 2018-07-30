@@ -15,6 +15,14 @@
 // ================================================================
 // File Name: NV_NVDLA_CDP_define.h
 ///////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_CDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_CDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 module NV_NVDLA_CDP_DP_mul (
    nvdla_core_clk //|< i
   ,nvdla_core_rstn //|< i

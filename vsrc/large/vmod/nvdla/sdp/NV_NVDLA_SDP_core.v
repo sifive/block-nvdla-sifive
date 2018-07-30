@@ -428,22 +428,22 @@ reg [33:0] cvt_sat_cvt_sat_cnt_mod;
 reg [33:0] cvt_sat_cvt_sat_cnt_new;
 reg [33:0] cvt_sat_cvt_sat_cnt_nxt;
 reg [31:0] cvt_saturation_cnt;
-wire [5:0] i_add;
+wire [4:0] i_add;
 wire [0:0] i_sub;
-wire [5:0] cvt_sat_add_act;
-wire [5:0] cvt_sat_add_act_ext;
-wire [5:0] cvt_sat_add_ext;
+wire [4:0] cvt_sat_add_act;
+wire [4:0] cvt_sat_add_act_ext;
+wire [4:0] cvt_sat_add_ext;
 wire cvt_sat_add_flow;
 wire cvt_sat_add_guard;
 wire cvt_sat_dec;
 wire cvt_sat_inc;
-wire [5:0] cvt_sat_mod_ext;
+wire [4:0] cvt_sat_mod_ext;
 wire cvt_sat_sub_act;
-wire [5:0] cvt_sat_sub_act_ext;
-wire [5:0] cvt_sat_sub_ext;
+wire [4:0] cvt_sat_sub_act_ext;
+wire [4:0] cvt_sat_sub_ext;
 wire cvt_sat_sub_flow;
 wire cvt_sat_sub_guard;
-wire [5:0] cvt_saturation_add;
+wire [4:0] cvt_saturation_add;
 wire cvt_saturation_cen;
 wire cvt_saturation_clr;
 wire cvt_saturation_sub;
@@ -1045,30 +1045,30 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     end
   end
 end
-assign cvt_saturation_add = fun_my_bit_sum({{(32-16){1'b0}},saturation_bits});
+assign cvt_saturation_add = fun_my_bit_sum({{(16-16){1'b0}},saturation_bits});
 assign cvt_saturation_sub = 1'b0;
 assign cvt_saturation_clr = op_en_load;
 assign cvt_saturation_cen = reg2dp_perf_sat_en;
 assign cvt_sat_add_ext = cvt_saturation_add;
-assign cvt_sat_sub_ext = {{5{1'b0}}, cvt_saturation_sub};
+assign cvt_sat_sub_ext = {{4{1'b0}}, cvt_saturation_sub};
 assign cvt_sat_inc = cvt_sat_add_ext > cvt_sat_sub_ext;
 assign cvt_sat_dec = cvt_sat_add_ext < cvt_sat_sub_ext;
-assign cvt_sat_mod_ext[5:0] = cvt_sat_inc ? (cvt_sat_add_ext - cvt_sat_sub_ext) : (cvt_sat_sub_ext - cvt_sat_add_ext); // spyglass disable W484 
+assign cvt_sat_mod_ext[4:0] = cvt_sat_inc ? (cvt_sat_add_ext - cvt_sat_sub_ext) : (cvt_sat_sub_ext - cvt_sat_add_ext); // spyglass disable W484 
 assign cvt_sat_sub_guard = (|cvt_saturation_cnt[31:1])==1'b0;
 assign cvt_sat_sub_act = cvt_saturation_cnt[0:0];
-assign cvt_sat_sub_act_ext = {{5{1'b0}}, cvt_sat_sub_act};
+assign cvt_sat_sub_act_ext = {{4{1'b0}}, cvt_sat_sub_act};
 assign cvt_sat_sub_flow = cvt_sat_dec & cvt_sat_sub_guard & (cvt_sat_sub_act_ext < cvt_sat_mod_ext);
-assign cvt_sat_add_guard = (&cvt_saturation_cnt[31:6])==1'b1;
-assign cvt_sat_add_act = cvt_saturation_cnt[5:0];
+assign cvt_sat_add_guard = (&cvt_saturation_cnt[31:5])==1'b1;
+assign cvt_sat_add_act = cvt_saturation_cnt[4:0];
 assign cvt_sat_add_act_ext = cvt_sat_add_act;
-assign cvt_sat_add_flow = cvt_sat_inc & cvt_sat_add_guard & (cvt_sat_add_act_ext + cvt_sat_mod_ext > 63 );
-assign i_add = cvt_sat_add_flow ? (63 - cvt_sat_add_act) : cvt_sat_sub_flow ? 0 : cvt_saturation_add;
+assign cvt_sat_add_flow = cvt_sat_inc & cvt_sat_add_guard & (cvt_sat_add_act_ext + cvt_sat_mod_ext > 31 );
+assign i_add = cvt_sat_add_flow ? (31 - cvt_sat_add_act) : cvt_sat_sub_flow ? 0 : cvt_saturation_add;
 assign i_sub = cvt_sat_sub_flow ? (cvt_sat_sub_act) : cvt_sat_add_flow ? 0 : cvt_saturation_sub ;
 always @(
   i_add
   or i_sub
   ) begin
-  cvt_sat_cvt_sat_adv = i_add[5:0] != {{5{1'b0}}, i_sub[0:0]};
+  cvt_sat_cvt_sat_adv = i_add[4:0] != {{4{1'b0}}, i_sub[0:0]};
 end
 always @(
   cvt_sat_cvt_sat_cnt_cur
@@ -1078,7 +1078,7 @@ always @(
   or cvt_saturation_clr
   ) begin
   cvt_sat_cvt_sat_cnt_ext[33:0] = {1'b0, 1'b0, cvt_sat_cvt_sat_cnt_cur};
-  cvt_sat_cvt_sat_cnt_mod[33:0] = cvt_sat_cvt_sat_cnt_cur + i_add[5:0] - i_sub[0:0]; // spyglass disable W164b
+  cvt_sat_cvt_sat_cnt_mod[33:0] = cvt_sat_cvt_sat_cnt_cur + i_add[4:0] - i_sub[0:0]; // spyglass disable W164b
   cvt_sat_cvt_sat_cnt_new[33:0] = (cvt_sat_cvt_sat_adv)? cvt_sat_cvt_sat_cnt_mod[33:0] : cvt_sat_cvt_sat_cnt_ext[33:0];
   cvt_sat_cvt_sat_cnt_nxt[33:0] = (cvt_saturation_clr)? 34'd0 : cvt_sat_cvt_sat_cnt_new[33:0];
 end
@@ -1097,12 +1097,12 @@ always @(
   cvt_saturation_cnt[31:0] = cvt_sat_cvt_sat_cnt_cur[31:0];
 end
 assign dp2reg_out_saturation = cvt_saturation_cnt;
-function [5:0] fun_my_bit_sum;
-  input [31:0] idata;
-  reg [5:0] ocnt;
+function [4:0] fun_my_bit_sum;
+  input [15:0] idata;
+  reg [4:0] ocnt;
   begin
     ocnt =
-        (((( idata[0]
+        ((( idata[0]
       + idata[1]
       + idata[2] )
       + ( idata[3]
@@ -1114,26 +1114,10 @@ function [5:0] fun_my_bit_sum;
       + ( idata[9]
       + idata[10]
       + idata[11] )))
-      + ((( idata[12]
+      + ( idata[12]
       + idata[13]
       + idata[14] )
-      + ( idata[15]
-      + idata[16]
-      + idata[17] ))
-      + (( idata[18]
-      + idata[19]
-      + idata[20] )
-      + ( idata[21]
-      + idata[22]
-      + idata[23] ))))
-      + (( idata[24]
-      + idata[25]
-      + idata[26] )
-      + ( idata[27]
-      + idata[28]
-      + idata[29] ))
-      + ( idata[30]
-      + idata[31] ) ;
+      + idata[15] ;
     fun_my_bit_sum = ocnt;
   end
 endfunction

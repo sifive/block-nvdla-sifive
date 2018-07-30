@@ -94,22 +94,27 @@ output [31:0] dp2reg_lut_oflow;
 output [31:0] dp2reg_lut_uflow;
 input [31:0] pwrbus_ram_pd;
 input op_en_load;
-reg idx2lut_prdy;
-reg [185*4 -1:0] lut2inp_pd;
-reg lut2inp_pvld;
-reg [81*4 -1:0] lut_in_pd;
-reg lut_in_pvld;
+wire idx2lut_prdy;
+wire [185*4 -1:0] lut2inp_pd;
+wire lut2inp_pvld;
+wire [81*4 -1:0] lut_in_pd;
+wire lut_in_pvld;
 wire lut_in_prdy;
 wire [185*4 -1:0] lut_out_pd;
 wire lut_out_pvld;
-reg lut_out_prdy;
-//: my $k = 4;
-//: my $m = 257;
-//: foreach my $lut (qw(le lo)) {
+wire lut_out_prdy;
+//: my $m = 65;
+//: my $n = 257;
 //: foreach my $i (0..${m}-1) {
-//: print "reg     [15:0] REG_${lut}_${i}; \n";
+//: print "reg     [15:0] REG_le_${i}; \n";
 //: }
+//: foreach my $i (${m}..${n}-1) {
+//: print "wire   [15:0] REG_le_${i}; \n";
 //: }
+//: foreach my $i (0..${n}-1) {
+//: print "reg     [15:0] REG_lo_${i}; \n";
+//: }
+//: my $k = 4;
 //: foreach my $lut (qw(le lo)) {
 //: foreach my $j (0..1) {
 //: foreach my $i (0..${k}-1) {
@@ -183,198 +188,198 @@ reg     [15:0] REG_le_61;
 reg     [15:0] REG_le_62; 
 reg     [15:0] REG_le_63; 
 reg     [15:0] REG_le_64; 
-reg     [15:0] REG_le_65; 
-reg     [15:0] REG_le_66; 
-reg     [15:0] REG_le_67; 
-reg     [15:0] REG_le_68; 
-reg     [15:0] REG_le_69; 
-reg     [15:0] REG_le_70; 
-reg     [15:0] REG_le_71; 
-reg     [15:0] REG_le_72; 
-reg     [15:0] REG_le_73; 
-reg     [15:0] REG_le_74; 
-reg     [15:0] REG_le_75; 
-reg     [15:0] REG_le_76; 
-reg     [15:0] REG_le_77; 
-reg     [15:0] REG_le_78; 
-reg     [15:0] REG_le_79; 
-reg     [15:0] REG_le_80; 
-reg     [15:0] REG_le_81; 
-reg     [15:0] REG_le_82; 
-reg     [15:0] REG_le_83; 
-reg     [15:0] REG_le_84; 
-reg     [15:0] REG_le_85; 
-reg     [15:0] REG_le_86; 
-reg     [15:0] REG_le_87; 
-reg     [15:0] REG_le_88; 
-reg     [15:0] REG_le_89; 
-reg     [15:0] REG_le_90; 
-reg     [15:0] REG_le_91; 
-reg     [15:0] REG_le_92; 
-reg     [15:0] REG_le_93; 
-reg     [15:0] REG_le_94; 
-reg     [15:0] REG_le_95; 
-reg     [15:0] REG_le_96; 
-reg     [15:0] REG_le_97; 
-reg     [15:0] REG_le_98; 
-reg     [15:0] REG_le_99; 
-reg     [15:0] REG_le_100; 
-reg     [15:0] REG_le_101; 
-reg     [15:0] REG_le_102; 
-reg     [15:0] REG_le_103; 
-reg     [15:0] REG_le_104; 
-reg     [15:0] REG_le_105; 
-reg     [15:0] REG_le_106; 
-reg     [15:0] REG_le_107; 
-reg     [15:0] REG_le_108; 
-reg     [15:0] REG_le_109; 
-reg     [15:0] REG_le_110; 
-reg     [15:0] REG_le_111; 
-reg     [15:0] REG_le_112; 
-reg     [15:0] REG_le_113; 
-reg     [15:0] REG_le_114; 
-reg     [15:0] REG_le_115; 
-reg     [15:0] REG_le_116; 
-reg     [15:0] REG_le_117; 
-reg     [15:0] REG_le_118; 
-reg     [15:0] REG_le_119; 
-reg     [15:0] REG_le_120; 
-reg     [15:0] REG_le_121; 
-reg     [15:0] REG_le_122; 
-reg     [15:0] REG_le_123; 
-reg     [15:0] REG_le_124; 
-reg     [15:0] REG_le_125; 
-reg     [15:0] REG_le_126; 
-reg     [15:0] REG_le_127; 
-reg     [15:0] REG_le_128; 
-reg     [15:0] REG_le_129; 
-reg     [15:0] REG_le_130; 
-reg     [15:0] REG_le_131; 
-reg     [15:0] REG_le_132; 
-reg     [15:0] REG_le_133; 
-reg     [15:0] REG_le_134; 
-reg     [15:0] REG_le_135; 
-reg     [15:0] REG_le_136; 
-reg     [15:0] REG_le_137; 
-reg     [15:0] REG_le_138; 
-reg     [15:0] REG_le_139; 
-reg     [15:0] REG_le_140; 
-reg     [15:0] REG_le_141; 
-reg     [15:0] REG_le_142; 
-reg     [15:0] REG_le_143; 
-reg     [15:0] REG_le_144; 
-reg     [15:0] REG_le_145; 
-reg     [15:0] REG_le_146; 
-reg     [15:0] REG_le_147; 
-reg     [15:0] REG_le_148; 
-reg     [15:0] REG_le_149; 
-reg     [15:0] REG_le_150; 
-reg     [15:0] REG_le_151; 
-reg     [15:0] REG_le_152; 
-reg     [15:0] REG_le_153; 
-reg     [15:0] REG_le_154; 
-reg     [15:0] REG_le_155; 
-reg     [15:0] REG_le_156; 
-reg     [15:0] REG_le_157; 
-reg     [15:0] REG_le_158; 
-reg     [15:0] REG_le_159; 
-reg     [15:0] REG_le_160; 
-reg     [15:0] REG_le_161; 
-reg     [15:0] REG_le_162; 
-reg     [15:0] REG_le_163; 
-reg     [15:0] REG_le_164; 
-reg     [15:0] REG_le_165; 
-reg     [15:0] REG_le_166; 
-reg     [15:0] REG_le_167; 
-reg     [15:0] REG_le_168; 
-reg     [15:0] REG_le_169; 
-reg     [15:0] REG_le_170; 
-reg     [15:0] REG_le_171; 
-reg     [15:0] REG_le_172; 
-reg     [15:0] REG_le_173; 
-reg     [15:0] REG_le_174; 
-reg     [15:0] REG_le_175; 
-reg     [15:0] REG_le_176; 
-reg     [15:0] REG_le_177; 
-reg     [15:0] REG_le_178; 
-reg     [15:0] REG_le_179; 
-reg     [15:0] REG_le_180; 
-reg     [15:0] REG_le_181; 
-reg     [15:0] REG_le_182; 
-reg     [15:0] REG_le_183; 
-reg     [15:0] REG_le_184; 
-reg     [15:0] REG_le_185; 
-reg     [15:0] REG_le_186; 
-reg     [15:0] REG_le_187; 
-reg     [15:0] REG_le_188; 
-reg     [15:0] REG_le_189; 
-reg     [15:0] REG_le_190; 
-reg     [15:0] REG_le_191; 
-reg     [15:0] REG_le_192; 
-reg     [15:0] REG_le_193; 
-reg     [15:0] REG_le_194; 
-reg     [15:0] REG_le_195; 
-reg     [15:0] REG_le_196; 
-reg     [15:0] REG_le_197; 
-reg     [15:0] REG_le_198; 
-reg     [15:0] REG_le_199; 
-reg     [15:0] REG_le_200; 
-reg     [15:0] REG_le_201; 
-reg     [15:0] REG_le_202; 
-reg     [15:0] REG_le_203; 
-reg     [15:0] REG_le_204; 
-reg     [15:0] REG_le_205; 
-reg     [15:0] REG_le_206; 
-reg     [15:0] REG_le_207; 
-reg     [15:0] REG_le_208; 
-reg     [15:0] REG_le_209; 
-reg     [15:0] REG_le_210; 
-reg     [15:0] REG_le_211; 
-reg     [15:0] REG_le_212; 
-reg     [15:0] REG_le_213; 
-reg     [15:0] REG_le_214; 
-reg     [15:0] REG_le_215; 
-reg     [15:0] REG_le_216; 
-reg     [15:0] REG_le_217; 
-reg     [15:0] REG_le_218; 
-reg     [15:0] REG_le_219; 
-reg     [15:0] REG_le_220; 
-reg     [15:0] REG_le_221; 
-reg     [15:0] REG_le_222; 
-reg     [15:0] REG_le_223; 
-reg     [15:0] REG_le_224; 
-reg     [15:0] REG_le_225; 
-reg     [15:0] REG_le_226; 
-reg     [15:0] REG_le_227; 
-reg     [15:0] REG_le_228; 
-reg     [15:0] REG_le_229; 
-reg     [15:0] REG_le_230; 
-reg     [15:0] REG_le_231; 
-reg     [15:0] REG_le_232; 
-reg     [15:0] REG_le_233; 
-reg     [15:0] REG_le_234; 
-reg     [15:0] REG_le_235; 
-reg     [15:0] REG_le_236; 
-reg     [15:0] REG_le_237; 
-reg     [15:0] REG_le_238; 
-reg     [15:0] REG_le_239; 
-reg     [15:0] REG_le_240; 
-reg     [15:0] REG_le_241; 
-reg     [15:0] REG_le_242; 
-reg     [15:0] REG_le_243; 
-reg     [15:0] REG_le_244; 
-reg     [15:0] REG_le_245; 
-reg     [15:0] REG_le_246; 
-reg     [15:0] REG_le_247; 
-reg     [15:0] REG_le_248; 
-reg     [15:0] REG_le_249; 
-reg     [15:0] REG_le_250; 
-reg     [15:0] REG_le_251; 
-reg     [15:0] REG_le_252; 
-reg     [15:0] REG_le_253; 
-reg     [15:0] REG_le_254; 
-reg     [15:0] REG_le_255; 
-reg     [15:0] REG_le_256; 
+wire   [15:0] REG_le_65; 
+wire   [15:0] REG_le_66; 
+wire   [15:0] REG_le_67; 
+wire   [15:0] REG_le_68; 
+wire   [15:0] REG_le_69; 
+wire   [15:0] REG_le_70; 
+wire   [15:0] REG_le_71; 
+wire   [15:0] REG_le_72; 
+wire   [15:0] REG_le_73; 
+wire   [15:0] REG_le_74; 
+wire   [15:0] REG_le_75; 
+wire   [15:0] REG_le_76; 
+wire   [15:0] REG_le_77; 
+wire   [15:0] REG_le_78; 
+wire   [15:0] REG_le_79; 
+wire   [15:0] REG_le_80; 
+wire   [15:0] REG_le_81; 
+wire   [15:0] REG_le_82; 
+wire   [15:0] REG_le_83; 
+wire   [15:0] REG_le_84; 
+wire   [15:0] REG_le_85; 
+wire   [15:0] REG_le_86; 
+wire   [15:0] REG_le_87; 
+wire   [15:0] REG_le_88; 
+wire   [15:0] REG_le_89; 
+wire   [15:0] REG_le_90; 
+wire   [15:0] REG_le_91; 
+wire   [15:0] REG_le_92; 
+wire   [15:0] REG_le_93; 
+wire   [15:0] REG_le_94; 
+wire   [15:0] REG_le_95; 
+wire   [15:0] REG_le_96; 
+wire   [15:0] REG_le_97; 
+wire   [15:0] REG_le_98; 
+wire   [15:0] REG_le_99; 
+wire   [15:0] REG_le_100; 
+wire   [15:0] REG_le_101; 
+wire   [15:0] REG_le_102; 
+wire   [15:0] REG_le_103; 
+wire   [15:0] REG_le_104; 
+wire   [15:0] REG_le_105; 
+wire   [15:0] REG_le_106; 
+wire   [15:0] REG_le_107; 
+wire   [15:0] REG_le_108; 
+wire   [15:0] REG_le_109; 
+wire   [15:0] REG_le_110; 
+wire   [15:0] REG_le_111; 
+wire   [15:0] REG_le_112; 
+wire   [15:0] REG_le_113; 
+wire   [15:0] REG_le_114; 
+wire   [15:0] REG_le_115; 
+wire   [15:0] REG_le_116; 
+wire   [15:0] REG_le_117; 
+wire   [15:0] REG_le_118; 
+wire   [15:0] REG_le_119; 
+wire   [15:0] REG_le_120; 
+wire   [15:0] REG_le_121; 
+wire   [15:0] REG_le_122; 
+wire   [15:0] REG_le_123; 
+wire   [15:0] REG_le_124; 
+wire   [15:0] REG_le_125; 
+wire   [15:0] REG_le_126; 
+wire   [15:0] REG_le_127; 
+wire   [15:0] REG_le_128; 
+wire   [15:0] REG_le_129; 
+wire   [15:0] REG_le_130; 
+wire   [15:0] REG_le_131; 
+wire   [15:0] REG_le_132; 
+wire   [15:0] REG_le_133; 
+wire   [15:0] REG_le_134; 
+wire   [15:0] REG_le_135; 
+wire   [15:0] REG_le_136; 
+wire   [15:0] REG_le_137; 
+wire   [15:0] REG_le_138; 
+wire   [15:0] REG_le_139; 
+wire   [15:0] REG_le_140; 
+wire   [15:0] REG_le_141; 
+wire   [15:0] REG_le_142; 
+wire   [15:0] REG_le_143; 
+wire   [15:0] REG_le_144; 
+wire   [15:0] REG_le_145; 
+wire   [15:0] REG_le_146; 
+wire   [15:0] REG_le_147; 
+wire   [15:0] REG_le_148; 
+wire   [15:0] REG_le_149; 
+wire   [15:0] REG_le_150; 
+wire   [15:0] REG_le_151; 
+wire   [15:0] REG_le_152; 
+wire   [15:0] REG_le_153; 
+wire   [15:0] REG_le_154; 
+wire   [15:0] REG_le_155; 
+wire   [15:0] REG_le_156; 
+wire   [15:0] REG_le_157; 
+wire   [15:0] REG_le_158; 
+wire   [15:0] REG_le_159; 
+wire   [15:0] REG_le_160; 
+wire   [15:0] REG_le_161; 
+wire   [15:0] REG_le_162; 
+wire   [15:0] REG_le_163; 
+wire   [15:0] REG_le_164; 
+wire   [15:0] REG_le_165; 
+wire   [15:0] REG_le_166; 
+wire   [15:0] REG_le_167; 
+wire   [15:0] REG_le_168; 
+wire   [15:0] REG_le_169; 
+wire   [15:0] REG_le_170; 
+wire   [15:0] REG_le_171; 
+wire   [15:0] REG_le_172; 
+wire   [15:0] REG_le_173; 
+wire   [15:0] REG_le_174; 
+wire   [15:0] REG_le_175; 
+wire   [15:0] REG_le_176; 
+wire   [15:0] REG_le_177; 
+wire   [15:0] REG_le_178; 
+wire   [15:0] REG_le_179; 
+wire   [15:0] REG_le_180; 
+wire   [15:0] REG_le_181; 
+wire   [15:0] REG_le_182; 
+wire   [15:0] REG_le_183; 
+wire   [15:0] REG_le_184; 
+wire   [15:0] REG_le_185; 
+wire   [15:0] REG_le_186; 
+wire   [15:0] REG_le_187; 
+wire   [15:0] REG_le_188; 
+wire   [15:0] REG_le_189; 
+wire   [15:0] REG_le_190; 
+wire   [15:0] REG_le_191; 
+wire   [15:0] REG_le_192; 
+wire   [15:0] REG_le_193; 
+wire   [15:0] REG_le_194; 
+wire   [15:0] REG_le_195; 
+wire   [15:0] REG_le_196; 
+wire   [15:0] REG_le_197; 
+wire   [15:0] REG_le_198; 
+wire   [15:0] REG_le_199; 
+wire   [15:0] REG_le_200; 
+wire   [15:0] REG_le_201; 
+wire   [15:0] REG_le_202; 
+wire   [15:0] REG_le_203; 
+wire   [15:0] REG_le_204; 
+wire   [15:0] REG_le_205; 
+wire   [15:0] REG_le_206; 
+wire   [15:0] REG_le_207; 
+wire   [15:0] REG_le_208; 
+wire   [15:0] REG_le_209; 
+wire   [15:0] REG_le_210; 
+wire   [15:0] REG_le_211; 
+wire   [15:0] REG_le_212; 
+wire   [15:0] REG_le_213; 
+wire   [15:0] REG_le_214; 
+wire   [15:0] REG_le_215; 
+wire   [15:0] REG_le_216; 
+wire   [15:0] REG_le_217; 
+wire   [15:0] REG_le_218; 
+wire   [15:0] REG_le_219; 
+wire   [15:0] REG_le_220; 
+wire   [15:0] REG_le_221; 
+wire   [15:0] REG_le_222; 
+wire   [15:0] REG_le_223; 
+wire   [15:0] REG_le_224; 
+wire   [15:0] REG_le_225; 
+wire   [15:0] REG_le_226; 
+wire   [15:0] REG_le_227; 
+wire   [15:0] REG_le_228; 
+wire   [15:0] REG_le_229; 
+wire   [15:0] REG_le_230; 
+wire   [15:0] REG_le_231; 
+wire   [15:0] REG_le_232; 
+wire   [15:0] REG_le_233; 
+wire   [15:0] REG_le_234; 
+wire   [15:0] REG_le_235; 
+wire   [15:0] REG_le_236; 
+wire   [15:0] REG_le_237; 
+wire   [15:0] REG_le_238; 
+wire   [15:0] REG_le_239; 
+wire   [15:0] REG_le_240; 
+wire   [15:0] REG_le_241; 
+wire   [15:0] REG_le_242; 
+wire   [15:0] REG_le_243; 
+wire   [15:0] REG_le_244; 
+wire   [15:0] REG_le_245; 
+wire   [15:0] REG_le_246; 
+wire   [15:0] REG_le_247; 
+wire   [15:0] REG_le_248; 
+wire   [15:0] REG_le_249; 
+wire   [15:0] REG_le_250; 
+wire   [15:0] REG_le_251; 
+wire   [15:0] REG_le_252; 
+wire   [15:0] REG_le_253; 
+wire   [15:0] REG_le_254; 
+wire   [15:0] REG_le_255; 
+wire   [15:0] REG_le_256; 
 reg     [15:0] REG_lo_0; 
 reg     [15:0] REG_lo_1; 
 reg     [15:0] REG_lo_2; 
@@ -684,6 +689,11 @@ reg [15:0] out_scale3;
 reg [4:0] out_shift3;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
+wire [2:0] lut_hybrid_sum_tmp;
+wire [2:0] lut_le_hit_sum_tmp;
+wire [2:0] lut_lo_hit_sum_tmp;
+wire [2:0] lut_oflow_sum_tmp;
+wire [2:0] lut_uflow_sum_tmp;
 wire [4:0] lut_hybrid_sum;
 wire [4:0] lut_le_hit_sum;
 wire [4:0] lut_lo_hit_sum;
@@ -22146,7 +22156,8 @@ assign   lut_in_lo_hit3         =  lut_in_pd[3+320];
 // PERF STATISTIC
 // OFLOW
 //: my $k=4;
-//: print "assign lut_oflow_sum[4:0] = lut_in_oflow0";
+//: my $w=2;
+//: print "assign lut_oflow_sum_tmp[${w}:0] = lut_in_oflow0";
 //: if(${k} >1) {
 //: foreach my $i (1..${k}-1) {
 //: print "+ lut_in_oflow${i}";
@@ -22154,9 +22165,10 @@ assign   lut_in_lo_hit3         =  lut_in_pd[3+320];
 //: }
 //: print ";\n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-assign lut_oflow_sum[4:0] = lut_in_oflow0+ lut_in_oflow1+ lut_in_oflow2+ lut_in_oflow3;
+assign lut_oflow_sum_tmp[2:0] = lut_in_oflow0+ lut_in_oflow1+ lut_in_oflow2+ lut_in_oflow3;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
+assign lut_oflow_sum[4:0] = {{(4-2){1'b0}},lut_oflow_sum_tmp[2:0]}; //spyglass disable W164b
 assign perf_lut_oflow_add = (&lut_oflow_cnt) ? 0 : lut_oflow_sum;
 assign perf_lut_oflow_sub = 1'b0;
 assign dp2reg_lut_oflow = lut_oflow_cnt;
@@ -22194,7 +22206,8 @@ always @(
 end
 // UFLOW
 //: my $k=4;
-//: print "assign lut_uflow_sum[4:0] = lut_in_uflow0";
+//: my $w=2;
+//: print "assign lut_uflow_sum_tmp[${w}:0] = lut_in_uflow0";
 //: if(${k} >1) {
 //: foreach my $i (1..${k}-1) {
 //: print "+ lut_in_uflow${i}";
@@ -22202,9 +22215,10 @@ end
 //: }
 //: print ";\n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-assign lut_uflow_sum[4:0] = lut_in_uflow0+ lut_in_uflow1+ lut_in_uflow2+ lut_in_uflow3;
+assign lut_uflow_sum_tmp[2:0] = lut_in_uflow0+ lut_in_uflow1+ lut_in_uflow2+ lut_in_uflow3;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
+assign lut_uflow_sum[4:0] = {{(4-2){1'b0}},lut_uflow_sum_tmp[2:0]}; //spyglass disable W164b
 assign perf_lut_uflow_add = (&lut_uflow_cnt) ? 0 : lut_uflow_sum;
 assign perf_lut_uflow_sub = 1'b0;
 assign dp2reg_lut_uflow = lut_uflow_cnt;
@@ -22242,11 +22256,12 @@ always @(
 end
 // HYBRID
 //: my $k=4;
-//: foreach my $i (1..${k}-1) {
+//: my $w=2;
+//: foreach my $i (0..${k}-1) {
 //: print "assign lut_in_hybrid${i} = !(lut_in_oflow${i} | lut_in_uflow${i}); \n";
 //: }
 //: print "\n";
-//: print "assign lut_hybrid_sum[4:0] = lut_in_hybrid0";
+//: print "assign lut_hybrid_sum_tmp[${w}:0] = lut_in_hybrid0";
 //: if(${k} >1) {
 //: foreach my $i (1..${k}-1) {
 //: print "+ lut_in_hybrid${i}";
@@ -22254,13 +22269,15 @@ end
 //: }
 //: print ";\n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
+assign lut_in_hybrid0 = !(lut_in_oflow0 | lut_in_uflow0); 
 assign lut_in_hybrid1 = !(lut_in_oflow1 | lut_in_uflow1); 
 assign lut_in_hybrid2 = !(lut_in_oflow2 | lut_in_uflow2); 
 assign lut_in_hybrid3 = !(lut_in_oflow3 | lut_in_uflow3); 
 
-assign lut_hybrid_sum[4:0] = lut_in_hybrid0+ lut_in_hybrid1+ lut_in_hybrid2+ lut_in_hybrid3;
+assign lut_hybrid_sum_tmp[2:0] = lut_in_hybrid0+ lut_in_hybrid1+ lut_in_hybrid2+ lut_in_hybrid3;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
+assign lut_hybrid_sum[4:0] = {{(4-2){1'b0}},lut_hybrid_sum_tmp}; //spyglass disable W164b
 assign perf_lut_hybrid_add = (&lut_hybrid_cnt) ? 0 : lut_hybrid_sum;
 assign perf_lut_hybrid_sub = 1'b0;
 assign dp2reg_lut_hybrid = lut_hybrid_cnt;
@@ -22300,7 +22317,8 @@ always @(
 end
 // LE_HIT
 //: my $k=4;
-//: print "assign lut_le_hit_sum[4:0] = lut_in_le_hit0";
+//: my $w=2;
+//: print "assign lut_le_hit_sum_tmp[${w}:0] = lut_in_le_hit0";
 //: if(${k} >1) {
 //: foreach my $i (1..${k}-1) {
 //: print "+ lut_in_le_hit${i}";
@@ -22308,9 +22326,10 @@ end
 //: }
 //: print ";\n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-assign lut_le_hit_sum[4:0] = lut_in_le_hit0+ lut_in_le_hit1+ lut_in_le_hit2+ lut_in_le_hit3;
+assign lut_le_hit_sum_tmp[2:0] = lut_in_le_hit0+ lut_in_le_hit1+ lut_in_le_hit2+ lut_in_le_hit3;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
+assign lut_le_hit_sum[4:0] = {{(4-2){1'b0}},lut_le_hit_sum_tmp[2:0]}; //spyglass disable W164b 
 assign perf_lut_le_hit_add = (&lut_le_hit_cnt) ? 0 : lut_le_hit_sum;
 assign perf_lut_le_hit_sub = 1'b0;
 assign dp2reg_lut_le_hit = lut_le_hit_cnt;
@@ -22330,7 +22349,7 @@ always @(
   ) begin
 // VCS sop_coverage_off start
   perf_lut_le_hit_cnt_ext[33:0] = {1'b0, 1'b0, perf_lut_le_hit_cnt_cur};
-  perf_lut_le_hit_cnt_mod[33:0] = perf_lut_le_hit_cnt_cur + perf_lut_le_hit_add[4:0] - perf_lut_le_hit_sub[0:0];
+  perf_lut_le_hit_cnt_mod[33:0] = perf_lut_le_hit_cnt_cur + perf_lut_le_hit_add[4:0] - perf_lut_le_hit_sub[0:0]; // spyglass disable W164b
   perf_lut_le_hit_cnt_new[33:0] = (perf_lut_le_hit_adv)? perf_lut_le_hit_cnt_mod[33:0] : perf_lut_le_hit_cnt_ext[33:0];
   perf_lut_le_hit_cnt_nxt[33:0] = (op_en_load)? 34'd0 : perf_lut_le_hit_cnt_new[33:0];
 end
@@ -22350,7 +22369,8 @@ always @(
 end
 // LO_HIT
 //: my $k=4;
-//: print "assign lut_lo_hit_sum[4:0] = lut_in_lo_hit0";
+//: my $w=2;
+//: print "assign lut_lo_hit_sum_tmp[${w}:0] = lut_in_lo_hit0";
 //: if(${k} >1) {
 //: foreach my $i (1..${k}-1) {
 //: print "+ lut_in_lo_hit${i}";
@@ -22358,9 +22378,10 @@ end
 //: }
 //: print ";\n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-assign lut_lo_hit_sum[4:0] = lut_in_lo_hit0+ lut_in_lo_hit1+ lut_in_lo_hit2+ lut_in_lo_hit3;
+assign lut_lo_hit_sum_tmp[2:0] = lut_in_lo_hit0+ lut_in_lo_hit1+ lut_in_lo_hit2+ lut_in_lo_hit3;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
+assign lut_lo_hit_sum[4:0] = {{(4-2){1'b0}},lut_lo_hit_sum_tmp[2:0]}; //spyglass disable W164b
 assign perf_lut_lo_hit_add = (&lut_lo_hit_cnt) ? 0 : lut_lo_hit_sum;
 assign perf_lut_lo_hit_sub = 1'b0;
 assign dp2reg_lut_lo_hit = lut_lo_hit_cnt;
@@ -26840,7 +26861,6 @@ assign cmd_fifo_rd_prdy = lut_out_prdy & dat_fifo_rd_pvld;
 //: or reg2dp_lut_le_slope_uflow_shift
 //: or reg2dp_lut_le_start
 //: or reg2dp_lut_le_function
-//: or reg2dp_proc_precision
 //: or reg2dp_lut_le_index_offset
 //: or reg2dp_lut_lo_slope_uflow_scale
 //: or reg2dp_lut_lo_slope_uflow_shift
@@ -26903,7 +26923,6 @@ or reg2dp_lut_le_slope_uflow_scale
 or reg2dp_lut_le_slope_uflow_shift
 or reg2dp_lut_le_start
 or reg2dp_lut_le_function
-or reg2dp_proc_precision
 or reg2dp_lut_le_index_offset
 or reg2dp_lut_lo_slope_uflow_scale
 or reg2dp_lut_lo_slope_uflow_shift
@@ -26959,7 +26978,6 @@ or reg2dp_lut_le_slope_uflow_scale
 or reg2dp_lut_le_slope_uflow_shift
 or reg2dp_lut_le_start
 or reg2dp_lut_le_function
-or reg2dp_proc_precision
 or reg2dp_lut_le_index_offset
 or reg2dp_lut_lo_slope_uflow_scale
 or reg2dp_lut_lo_slope_uflow_shift
@@ -27015,7 +27033,6 @@ or reg2dp_lut_le_slope_uflow_scale
 or reg2dp_lut_le_slope_uflow_shift
 or reg2dp_lut_le_start
 or reg2dp_lut_le_function
-or reg2dp_proc_precision
 or reg2dp_lut_le_index_offset
 or reg2dp_lut_lo_slope_uflow_scale
 or reg2dp_lut_lo_slope_uflow_shift
@@ -27071,7 +27088,6 @@ or reg2dp_lut_le_slope_uflow_scale
 or reg2dp_lut_le_slope_uflow_shift
 or reg2dp_lut_le_start
 or reg2dp_lut_le_function
-or reg2dp_proc_precision
 or reg2dp_lut_le_index_offset
 or reg2dp_lut_lo_slope_uflow_scale
 or reg2dp_lut_lo_slope_uflow_shift
@@ -27968,8 +27984,6 @@ endmodule // vmw_NV_NVDLA_SDP_CORE_Y_LUT_dat_flopram_rwsa_2x128
 //qt: TERMINAL Do0[%d] TYPE=DATA DIR=O BIT=%1 PORT=1
 //qt:
 `endif // EMU
-`define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
-`include "simulate_x_tick.vh"
 module NV_NVDLA_SDP_CORE_Y_LUT_cmd (
       nvdla_core_clk
     , nvdla_core_rstn

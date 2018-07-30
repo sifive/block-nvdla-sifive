@@ -216,26 +216,7 @@ assign is_elem_end = is_batch_end;
 assign is_line_end = is_elem_end ;
 assign is_surf_end = is_line_end & ( (cfg_mode_1x1_pack) || (is_last_h) );
 assign is_cube_end = is_surf_end & ( (cfg_mode_1x1_pack) || (is_last_c) );
-//==============
-// Batch Count:
-//==============
-assign size_of_batch = reg2dp_batch_number;
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    count_b <= {5{1'b0}};
-  end else begin
-    if (cfg_mode_multi_batch) begin
-        if (cmd_accept) begin
-            if (is_batch_end) begin
-                count_b <= 0;
-            end else begin
-                count_b <= count_b + 1'b1;
-            end
-        end
-    end
-  end
-end
-assign is_last_b = (count_b==size_of_batch);
+assign is_last_b = 1'b1;
 //==============
 // CHANNEL Count:
 //==============

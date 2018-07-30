@@ -17,13 +17,19 @@
 //#define CDMA_SBUF_SDATA_BITS            256
 //DorisL-S----------------
 //
+// #if ( NVDLA_MEMORY_ATOMIC_SIZE  ==  32 )
+//     #define IMG_LARGE
+// #endif
+// #if ( NVDLA_MEMORY_ATOMIC_SIZE == 8 )
+//     #define IMG_SMALL
+// #endif
 //DorisL-E----------------
 //--------------------------------------------------
 module NV_NVDLA_CDMA_cvt (
    nvdla_core_clk
   ,nvdla_core_rstn
   ,dc2cvt_dat_wr_en
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
 //: my $k = int(log(int($atmc/$dmaif))/log(2));
@@ -51,50 +57,14 @@ module NV_NVDLA_CDMA_cvt (
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+,dc2cvt_dat_wr_sel
 ,dc2cvt_dat_wr_addr
 ,dc2cvt_dat_wr_data
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
   ,dc2cvt_dat_wr_info_pd
-  ,wg2cvt_dat_wr_en
-//: my $dmaif=512;
-//: my $atmc=64*8;
-//: if($dmaif < $atmc) {
-//: my $k = int(log(int($atmc/$dmaif))/log(2));
-//: print qq(
-//: ,wg2cvt_dat_wr_sel
-//: ,wg2cvt_dat_wr_addr
-//: ,wg2cvt_dat_wr_data
-//: );
-//: } elsif($dmaif > $atmc) {
-//: my $k = int(log(int($dmaif/$atmc))/log(2));
-//: print qq(
-//: ,wg2cvt_dat_wr_mask
-//: );
-//: foreach my $i (0..$k-1) {
-//: print qq(
-//: ,wg2cvt_dat_wr_addr${i}
-//: ,wg2cvt_dat_wr_data${i}
-//: );
-//: }
-//: } else {
-//: print qq(
-//: ,wg2cvt_dat_wr_addr
-//: ,wg2cvt_dat_wr_data
-//: );
-//: }
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-
-,wg2cvt_dat_wr_addr
-,wg2cvt_dat_wr_data
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-// ,wg2cvt_dat_wr_addr
-// ,wg2cvt_dat_wr_hsel
-// ,wg2cvt_dat_wr_data
-  ,wg2cvt_dat_wr_info_pd
   ,img2cvt_dat_wr_en
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
 //: my $k = int(log(int($atmc/$dmaif))/log(2));
@@ -128,6 +98,7 @@ module NV_NVDLA_CDMA_cvt (
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+,img2cvt_dat_wr_sel
 ,img2cvt_dat_wr_addr
 ,img2cvt_dat_wr_data
 ,img2cvt_mn_wr_data
@@ -140,7 +111,7 @@ module NV_NVDLA_CDMA_cvt (
 // ,img2cvt_mn_wr_data
   ,img2cvt_dat_wr_info_pd
   ,cdma2buf_dat_wr_en
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
 //: print qq(
@@ -167,6 +138,7 @@ module NV_NVDLA_CDMA_cvt (
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+,cdma2buf_dat_wr_sel
 ,cdma2buf_dat_wr_addr
 ,cdma2buf_dat_wr_data
 
@@ -196,7 +168,7 @@ module NV_NVDLA_CDMA_cvt (
 input nvdla_core_clk;
 input nvdla_core_rstn;
 input dc2cvt_dat_wr_en;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
 //: my $k = int(log(int($atmc/$dmaif))/log(2));
@@ -224,56 +196,20 @@ input dc2cvt_dat_wr_en;
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+input [1-1:0] dc2cvt_dat_wr_sel;
 input [16:0] dc2cvt_dat_wr_addr;
-input [512-1:0] dc2cvt_dat_wr_data;
+input [256-1:0] dc2cvt_dat_wr_data;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 input [11:0] dc2cvt_dat_wr_info_pd;
 // input dc2cvt_dat_wr_en;
 // input [11:0] dc2cvt_dat_wr_addr;
 // input dc2cvt_dat_wr_hsel;
-// input [512 -1:0] dc2cvt_dat_wr_data;
+// input [256 -1:0] dc2cvt_dat_wr_data;
 // input [11:0] dc2cvt_dat_wr_info_pd;
-input wg2cvt_dat_wr_en;
-//: my $dmaif=512;
-//: my $atmc=64*8;
-//: if($dmaif < $atmc) {
-//: my $k = int(log(int($atmc/$dmaif))/log(2));
-//: print qq(
-//: input [${k}-1:0] wg2cvt_dat_wr_sel;
-//: input [16:0] wg2cvt_dat_wr_addr;
-//: input [${dmaif}-1:0] wg2cvt_dat_wr_data;
-//: );
-//: } elsif($dmaif > $atmc) {
-//: my $k = int(log(int($dmaif/$atmc))/log(2));
-//: print qq(
-//: input [${k}-1:0] wg2cvt_dat_wr_mask;
-//: );
-//: foreach my $i (0..$k-1) {
-//: print qq(
-//: input [16:0] wg2cvt_dat_wr_addr${i};
-//: input [${dmaif}-1:0] wg2cvt_dat_wr_data${i};
-//: );
-//: }
-//: } else {
-//: print qq(
-//: input [16:0] wg2cvt_dat_wr_addr;
-//: input [${dmaif}-1:0] wg2cvt_dat_wr_data;
-//: );
-//: }
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-
-input [16:0] wg2cvt_dat_wr_addr;
-input [512-1:0] wg2cvt_dat_wr_data;
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-// input [11:0] wg2cvt_dat_wr_addr;
-// input wg2cvt_dat_wr_hsel;
-// input [512 -1:0] wg2cvt_dat_wr_data;
-input [11:0] wg2cvt_dat_wr_info_pd;
 //////////////// img
 input img2cvt_dat_wr_en;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $Bnum = $dmaif / 8;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
@@ -308,25 +244,26 @@ input img2cvt_dat_wr_en;
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+input [1-1:0] img2cvt_dat_wr_sel;
 input [16:0] img2cvt_dat_wr_addr;
-input [512-1:0] img2cvt_dat_wr_data;
-input [64*16-1:0] img2cvt_mn_wr_data;
-input [64-1:0] img2cvt_dat_wr_pad_mask;
+input [256-1:0] img2cvt_dat_wr_data;
+input [32*16-1:0] img2cvt_mn_wr_data;
+input [32-1:0] img2cvt_dat_wr_pad_mask;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 input [11:0] img2cvt_dat_wr_info_pd;
 // input [11:0] img2cvt_dat_wr_addr;
 // input img2cvt_dat_wr_hsel;
 // //input [1023:0] img2cvt_dat_wr_data;
-// input [512 -1:0] img2cvt_dat_wr_data;
+// input [256 -1:0] img2cvt_dat_wr_data;
 // //input  [127:0] img2cvt_dat_wr_pad_mask;
 // //input [1023:0] img2cvt_mn_wr_data;
 // //: my $dmaif = NVDLA_CDMA_DMAIF_BW;
 // //: my $Bnum = $dmaif / NVDLA_BPE;
 // //: print qq(input  [$Bnum-1:0] img2cvt_dat_wr_pad_mask; );
-// input [512 -1:0] img2cvt_mn_wr_data;
+// input [256 -1:0] img2cvt_mn_wr_data;
 output cdma2buf_dat_wr_en;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
 //: my $k = int($atmc/$dmaif);
@@ -354,15 +291,16 @@ output cdma2buf_dat_wr_en;
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+output [2-1:0] cdma2buf_dat_wr_sel;
 output [16:0] cdma2buf_dat_wr_addr;
-output [512-1:0] cdma2buf_dat_wr_data;
+output [256-1:0] cdma2buf_dat_wr_data;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 // output cdma2buf_dat_wr_en;
 // output [11:0] cdma2buf_dat_wr_addr;
 // output [1:0] cdma2buf_dat_wr_hsel;
 // //output [1023:0] cdma2buf_dat_wr_data;
-// output [512 -1:0] cdma2buf_dat_wr_data;
+// output [256 -1:0] cdma2buf_dat_wr_data;
 input nvdla_hls_clk;
 output slcg_hls_en;
 input nvdla_core_ng_clk;
@@ -391,7 +329,7 @@ reg cfg_out_int8;
 reg [15:0] cfg_pad_value;
 reg [16:0] cvt_out_addr_d1;
 reg [16:0] cvt_out_addr_reg;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm=32;
 //: my $bpe = 8;
 //: my $Bnum = $dmaif / $bpe;
@@ -403,18 +341,16 @@ reg [16:0] cvt_out_addr_reg;
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 reg [32*8-1:0] cvt_out_data_p0_reg; 
 wire [32*8-1:0] cvt_out_data_p0; 
-reg [32*8-1:0] cvt_out_data_p1_reg; 
-wire [32*8-1:0] cvt_out_data_p1; 
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 reg [3:0] cvt_out_nz_mask_d1;
 reg cvt_out_pad_vld_d1;
 reg cvt_out_vld_d1;
 reg cvt_out_vld_reg;
-reg [512 -1:0] cvt_wr_data_d1;
+reg [256 -1:0] cvt_wr_data_d1;
 reg cvt_wr_en_d1;
 reg cvt_wr_mean_d1;
-reg [512/8*16-1:0] cvt_wr_mean_data_d1;
+reg [256/8*16-1:0] cvt_wr_mean_data_d1;
 reg [17:0] dat_cbuf_flush_idx;
 wire [31:0] dp2reg_inf_data_num;
 wire [31:0] dp2reg_nan_data_num;
@@ -425,7 +361,7 @@ reg [0:0] is_input_int8;
 reg op_en;
 reg op_en_d0;
 reg cvt_wr_uint_d1;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $bpe = 8;
 //: my $Bnum = $dmaif / $bpe;
 //: foreach my $i (0..$Bnum -1) {
@@ -639,204 +575,12 @@ wire [16:0] oprand_0_31_ori;
 wire [15:0] oprand_1_31_ori;
 wire [15:0] cellout_31;
 
-reg [16:0] oprand_0_32_d0;
-reg [15:0] oprand_1_32_d0;
-wire [16:0] oprand_0_32_ori;
-wire [15:0] oprand_1_32_ori;
-wire [15:0] cellout_32;
-
-reg [16:0] oprand_0_33_d0;
-reg [15:0] oprand_1_33_d0;
-wire [16:0] oprand_0_33_ori;
-wire [15:0] oprand_1_33_ori;
-wire [15:0] cellout_33;
-
-reg [16:0] oprand_0_34_d0;
-reg [15:0] oprand_1_34_d0;
-wire [16:0] oprand_0_34_ori;
-wire [15:0] oprand_1_34_ori;
-wire [15:0] cellout_34;
-
-reg [16:0] oprand_0_35_d0;
-reg [15:0] oprand_1_35_d0;
-wire [16:0] oprand_0_35_ori;
-wire [15:0] oprand_1_35_ori;
-wire [15:0] cellout_35;
-
-reg [16:0] oprand_0_36_d0;
-reg [15:0] oprand_1_36_d0;
-wire [16:0] oprand_0_36_ori;
-wire [15:0] oprand_1_36_ori;
-wire [15:0] cellout_36;
-
-reg [16:0] oprand_0_37_d0;
-reg [15:0] oprand_1_37_d0;
-wire [16:0] oprand_0_37_ori;
-wire [15:0] oprand_1_37_ori;
-wire [15:0] cellout_37;
-
-reg [16:0] oprand_0_38_d0;
-reg [15:0] oprand_1_38_d0;
-wire [16:0] oprand_0_38_ori;
-wire [15:0] oprand_1_38_ori;
-wire [15:0] cellout_38;
-
-reg [16:0] oprand_0_39_d0;
-reg [15:0] oprand_1_39_d0;
-wire [16:0] oprand_0_39_ori;
-wire [15:0] oprand_1_39_ori;
-wire [15:0] cellout_39;
-
-reg [16:0] oprand_0_40_d0;
-reg [15:0] oprand_1_40_d0;
-wire [16:0] oprand_0_40_ori;
-wire [15:0] oprand_1_40_ori;
-wire [15:0] cellout_40;
-
-reg [16:0] oprand_0_41_d0;
-reg [15:0] oprand_1_41_d0;
-wire [16:0] oprand_0_41_ori;
-wire [15:0] oprand_1_41_ori;
-wire [15:0] cellout_41;
-
-reg [16:0] oprand_0_42_d0;
-reg [15:0] oprand_1_42_d0;
-wire [16:0] oprand_0_42_ori;
-wire [15:0] oprand_1_42_ori;
-wire [15:0] cellout_42;
-
-reg [16:0] oprand_0_43_d0;
-reg [15:0] oprand_1_43_d0;
-wire [16:0] oprand_0_43_ori;
-wire [15:0] oprand_1_43_ori;
-wire [15:0] cellout_43;
-
-reg [16:0] oprand_0_44_d0;
-reg [15:0] oprand_1_44_d0;
-wire [16:0] oprand_0_44_ori;
-wire [15:0] oprand_1_44_ori;
-wire [15:0] cellout_44;
-
-reg [16:0] oprand_0_45_d0;
-reg [15:0] oprand_1_45_d0;
-wire [16:0] oprand_0_45_ori;
-wire [15:0] oprand_1_45_ori;
-wire [15:0] cellout_45;
-
-reg [16:0] oprand_0_46_d0;
-reg [15:0] oprand_1_46_d0;
-wire [16:0] oprand_0_46_ori;
-wire [15:0] oprand_1_46_ori;
-wire [15:0] cellout_46;
-
-reg [16:0] oprand_0_47_d0;
-reg [15:0] oprand_1_47_d0;
-wire [16:0] oprand_0_47_ori;
-wire [15:0] oprand_1_47_ori;
-wire [15:0] cellout_47;
-
-reg [16:0] oprand_0_48_d0;
-reg [15:0] oprand_1_48_d0;
-wire [16:0] oprand_0_48_ori;
-wire [15:0] oprand_1_48_ori;
-wire [15:0] cellout_48;
-
-reg [16:0] oprand_0_49_d0;
-reg [15:0] oprand_1_49_d0;
-wire [16:0] oprand_0_49_ori;
-wire [15:0] oprand_1_49_ori;
-wire [15:0] cellout_49;
-
-reg [16:0] oprand_0_50_d0;
-reg [15:0] oprand_1_50_d0;
-wire [16:0] oprand_0_50_ori;
-wire [15:0] oprand_1_50_ori;
-wire [15:0] cellout_50;
-
-reg [16:0] oprand_0_51_d0;
-reg [15:0] oprand_1_51_d0;
-wire [16:0] oprand_0_51_ori;
-wire [15:0] oprand_1_51_ori;
-wire [15:0] cellout_51;
-
-reg [16:0] oprand_0_52_d0;
-reg [15:0] oprand_1_52_d0;
-wire [16:0] oprand_0_52_ori;
-wire [15:0] oprand_1_52_ori;
-wire [15:0] cellout_52;
-
-reg [16:0] oprand_0_53_d0;
-reg [15:0] oprand_1_53_d0;
-wire [16:0] oprand_0_53_ori;
-wire [15:0] oprand_1_53_ori;
-wire [15:0] cellout_53;
-
-reg [16:0] oprand_0_54_d0;
-reg [15:0] oprand_1_54_d0;
-wire [16:0] oprand_0_54_ori;
-wire [15:0] oprand_1_54_ori;
-wire [15:0] cellout_54;
-
-reg [16:0] oprand_0_55_d0;
-reg [15:0] oprand_1_55_d0;
-wire [16:0] oprand_0_55_ori;
-wire [15:0] oprand_1_55_ori;
-wire [15:0] cellout_55;
-
-reg [16:0] oprand_0_56_d0;
-reg [15:0] oprand_1_56_d0;
-wire [16:0] oprand_0_56_ori;
-wire [15:0] oprand_1_56_ori;
-wire [15:0] cellout_56;
-
-reg [16:0] oprand_0_57_d0;
-reg [15:0] oprand_1_57_d0;
-wire [16:0] oprand_0_57_ori;
-wire [15:0] oprand_1_57_ori;
-wire [15:0] cellout_57;
-
-reg [16:0] oprand_0_58_d0;
-reg [15:0] oprand_1_58_d0;
-wire [16:0] oprand_0_58_ori;
-wire [15:0] oprand_1_58_ori;
-wire [15:0] cellout_58;
-
-reg [16:0] oprand_0_59_d0;
-reg [15:0] oprand_1_59_d0;
-wire [16:0] oprand_0_59_ori;
-wire [15:0] oprand_1_59_ori;
-wire [15:0] cellout_59;
-
-reg [16:0] oprand_0_60_d0;
-reg [15:0] oprand_1_60_d0;
-wire [16:0] oprand_0_60_ori;
-wire [15:0] oprand_1_60_ori;
-wire [15:0] cellout_60;
-
-reg [16:0] oprand_0_61_d0;
-reg [15:0] oprand_1_61_d0;
-wire [16:0] oprand_0_61_ori;
-wire [15:0] oprand_1_61_ori;
-wire [15:0] cellout_61;
-
-reg [16:0] oprand_0_62_d0;
-reg [15:0] oprand_1_62_d0;
-wire [16:0] oprand_0_62_ori;
-wire [15:0] oprand_1_62_ori;
-wire [15:0] cellout_62;
-
-reg [16:0] oprand_0_63_d0;
-reg [15:0] oprand_1_63_d0;
-wire [16:0] oprand_0_63_ori;
-wire [15:0] oprand_1_63_ori;
-wire [15:0] cellout_63;
-
-wire [64-1:0] oprand_0_8b_sign;
-wire [64-1:0] mon_cell_op0_ready;
-wire [64-1:0] mon_cell_op1_ready;
-wire [64-1:0] cvt_cell_en;
-reg [64-1:0] cell_en_d0;
-reg [64-1:0] cvt_cell_en_d1;
+wire [32-1:0] oprand_0_8b_sign;
+wire [32-1:0] mon_cell_op0_ready;
+wire [32-1:0] mon_cell_op1_ready;
+wire [32-1:0] cvt_cell_en;
+reg [32-1:0] cell_en_d0;
+reg [32-1:0] cvt_cell_en_d1;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 reg slcg_hls_en_d1;
@@ -844,21 +588,21 @@ reg slcg_hls_en_d2;
 reg slcg_hls_en_d3;
 wire [15:0] cfg_pad_value_w;
 wire cfg_reg_en;
-wire [512 -1:0] cvt_data_cell;
+wire [256 -1:0] cvt_data_cell;
 wire [16:0] cvt_out_addr;
 wire [16:0] cvt_out_addr_bp;
 wire [16:0] cvt_out_addr_reg_w;
-wire [512 -1:0] cvt_out_data_masked;
-wire [512 -1:0] cvt_out_data_mix;
+wire [256 -1:0] cvt_out_data_masked;
+wire [256 -1:0] cvt_out_data_mix;
 wire [3:0] cvt_out_nz_mask_bp;
 wire cvt_out_pad_vld_bp;
 wire cvt_out_vld;
 wire cvt_out_vld_bp;
 wire cvt_out_vld_reg_w;
 wire [16:0] cvt_wr_addr;
-wire [512 -1:0] cvt_wr_data;
+wire [256 -1:0] cvt_wr_data;
 wire cvt_wr_en;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $Bnum = $dmaif / 8;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
@@ -888,25 +632,30 @@ wire cvt_wr_en;
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-wire cvt_out_reg_en;
-reg cvt_out_reg_en_d1;
-wire cvt_out_reg_en_bp;
+wire [1-1:0] cvt_wr_sel;
+wire [1-1:0] cvt_out_sel;
+reg [1-1:0] cvt_out_sel_d1;
+wire [1-1:0] cvt_out_sel_bp;
+reg [2-1:0] cvt_out_sel_reg;
+wire [1-1:0] cvt_out_reg_en;
+reg [1-1:0] cvt_out_reg_en_d1;
+wire [1-1:0] cvt_out_reg_en_bp;
 
-wire [64-1:0] cvt_wr_pad_mask;
-reg [64-1:0] cvt_out_pad_mask_d1;
-wire [64-1:0] cvt_out_pad_mask_bp;
+wire [32-1:0] cvt_wr_pad_mask;
+reg [32-1:0] cvt_out_pad_mask_d1;
+wire [32-1:0] cvt_out_pad_mask_bp;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 wire [11:0] cvt_wr_info_pd;
 wire [3:0] cvt_wr_mask;
 wire cvt_wr_mean;
-wire [512/8*16-1:0] cvt_wr_mean_data;
+wire [256/8*16-1:0] cvt_wr_mean_data;
 wire [2:0] cvt_wr_sub_h;
 wire cvt_wr_uint;
 wire [17:0] dat_cbuf_flush_idx_w;
 wire dat_cbuf_flush_vld_w;
 wire [31:0] dat_half_mask;
-wire [512 -1:0] dat_nan_mask;
+wire [256 -1:0] dat_nan_mask;
 wire is_data_expand_w;
 wire is_data_normal_w;
 wire is_input_fp16_w;
@@ -1174,7 +923,6 @@ assign slcg_hls_en = slcg_hls_en_d3;
 // Input signals //
 ////////////////////////////////////////////////////////////////////////
 assign cvt_wr_info_pd = ({12 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_info_pd)
-                      | ({12 {wg2cvt_dat_wr_en}} & wg2cvt_dat_wr_info_pd)
                       | ({12 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_info_pd);
 assign cvt_wr_mask[3:0] = cvt_wr_info_pd[3:0];
 //assign cvt_wr_interleave = cvt_wr_info_pd[4];
@@ -1183,8 +931,8 @@ assign cvt_wr_mask[3:0] = cvt_wr_info_pd[3:0];
 assign cvt_wr_mean = cvt_wr_info_pd[7];
 assign cvt_wr_uint = cvt_wr_info_pd[8];
 assign cvt_wr_sub_h[2:0] = cvt_wr_info_pd[11:9];
-assign cvt_wr_en = (dc2cvt_dat_wr_en | wg2cvt_dat_wr_en | img2cvt_dat_wr_en);
-//: my $dmaif=512;
+assign cvt_wr_en = (dc2cvt_dat_wr_en | img2cvt_dat_wr_en);
+//: my $dmaif=256;
 //: my $Bnum = $dmaif / 8;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
@@ -1192,32 +940,26 @@ assign cvt_wr_en = (dc2cvt_dat_wr_en | wg2cvt_dat_wr_en | img2cvt_dat_wr_en);
 //: print qq(
 //: assign cvt_wr_pad_mask = img2cvt_dat_wr_en ? img2cvt_dat_wr_pad_mask : ${Bnum}'d0;
 //: assign cvt_wr_sel = dc2cvt_dat_wr_en ? dc2cvt_dat_wr_sel
-//: : wg2cvt_dat_wr_en ? wg2cvt_dat_wr_sel
 //: : img2cvt_dat_wr_en ? img2cvt_dat_wr_sel : 0;
 //: assign cvt_wr_addr = ({17 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_addr)
-//: | ({17 {wg2cvt_dat_wr_en}} & wg2cvt_dat_wr_addr)
 //: | ({17 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_addr);
-//: assign cvt_wr_data = ({512 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_data)
-//: | ({512 {wg2cvt_dat_wr_en}} & wg2cvt_dat_wr_data)
-//: | ({512 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_data);
+//: assign cvt_wr_data = ({256 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_data)
+//: | ({256 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_data);
 //: assign cvt_wr_mean_data = img2cvt_mn_wr_data;
 //: );
 //: } elsif($dmaif > $atmc) {
 //: my $k = int(log(int($dmaif/$atmc))/log(2));
 //: print qq(
 //: assign cvt_dat_wr_mask = (dc2cvt_dat_wr_en & dc2cvt_dat_wr_mask)
-//: | (wg2cvt_dat_wr_en & wg2cvt_dat_wr_mask)
 //: | (img2cvt_dat_wr_en & img2cvt_dat_wr_mask);
 //: );
 //: foreach my $i (0..$k-1) {
 //: print qq(
 //: assign cvt_wr_pad_mask${i} = img2cvt_dat_wr_en ? img2cvt_dat_wr_pad_mask${i} : ${Bnum}'d0;
 //: assign cvt_wr_addr${i} = ({17 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_addr${i})
-//: | ({17 {wg2cvt_dat_wr_en}} & wg2cvt_dat_wr_addr${i})
 //: | ({17 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_addr${i});
-//: assign cvt_wr_data${i} = ({512 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_data${i})
-//: | ({512 {wg2cvt_dat_wr_en}} & wg2cvt_dat_wr_data${i})
-//: | ({512 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_data${i});
+//: assign cvt_wr_data${i} = ({256 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_data${i})
+//: | ({256 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_data${i});
 //: assign cvt_wr_mean_data${i} = img2cvt_mn_wr_data${i};
 //: );
 //: }
@@ -1225,30 +967,28 @@ assign cvt_wr_en = (dc2cvt_dat_wr_en | wg2cvt_dat_wr_en | img2cvt_dat_wr_en);
 //: print qq(
 //: assign cvt_wr_pad_mask = img2cvt_dat_wr_en ? img2cvt_dat_wr_pad_mask : ${Bnum}'d0;
 //: assign cvt_wr_addr = ({17 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_addr)
-//: | ({17 {wg2cvt_dat_wr_en}} & wg2cvt_dat_wr_addr)
 //: | ({17 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_addr);
-//: assign cvt_wr_data = ({512 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_data)
-//: | ({512 {wg2cvt_dat_wr_en}} & wg2cvt_dat_wr_data)
-//: | ({512 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_data);
+//: assign cvt_wr_data = ({256 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_data)
+//: | ({256 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_data);
 //: assign cvt_wr_mean_data = img2cvt_mn_wr_data;
 //: );
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign cvt_wr_pad_mask = img2cvt_dat_wr_en ? img2cvt_dat_wr_pad_mask : 64'd0;
+assign cvt_wr_pad_mask = img2cvt_dat_wr_en ? img2cvt_dat_wr_pad_mask : 32'd0;
+assign cvt_wr_sel = dc2cvt_dat_wr_en ? dc2cvt_dat_wr_sel
+: img2cvt_dat_wr_en ? img2cvt_dat_wr_sel : 0;
 assign cvt_wr_addr = ({17 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_addr)
-| ({17 {wg2cvt_dat_wr_en}} & wg2cvt_dat_wr_addr)
 | ({17 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_addr);
-assign cvt_wr_data = ({512 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_data)
-| ({512 {wg2cvt_dat_wr_en}} & wg2cvt_dat_wr_data)
-| ({512 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_data);
+assign cvt_wr_data = ({256 {dc2cvt_dat_wr_en}} & dc2cvt_dat_wr_data)
+| ({256 {img2cvt_dat_wr_en}} & img2cvt_dat_wr_data);
 assign cvt_wr_mean_data = img2cvt_mn_wr_data;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////////////////////////////////////////////////////////////////////////
 // generator mux control signals //
 ////////////////////////////////////////////////////////////////////////
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
 //: print qq(
@@ -1263,13 +1003,13 @@ assign cvt_wr_mean_data = img2cvt_mn_wr_data;
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-//assign cvt_out_reg_en = cvt_wr_en;
-assign cvt_out_reg_en = 1'b0;
+assign cvt_out_sel = cvt_wr_sel;
+assign cvt_out_reg_en = cvt_wr_en ? cvt_out_sel : 0;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign cvt_out_addr = cvt_wr_addr;
 assign cvt_out_vld = cvt_wr_en;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm=32;
 //: my $Bnum = $dmaif / 8;
 //: my $atmm_num = $Bnum / $atmm;
@@ -1288,7 +1028,7 @@ assign cvt_out_vld = cvt_wr_en;
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign cvt_cell_en = (cvt_wr_en & cfg_cvt_en[0]) ? {{32{cvt_wr_mask[1]}},{32{cvt_wr_mask[0]}}} : 64'b0;
+assign cvt_cell_en = (cvt_wr_en & cfg_cvt_en[0]) ? {32{cvt_wr_mask[0]}} : 32'b0;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //assign cvt_out_reg_en = cvt_wr_en ? {{4{cvt_out_sel[1]}}, {4{cvt_out_sel[0]}}} : 8'b0;
@@ -1300,7 +1040,7 @@ assign cvt_cell_en = (cvt_wr_en & cfg_cvt_en[0]) ? {{32{cvt_wr_mask[1]}},{32{cvt
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"        -en \"cvt_wr_en\"          -d \"cvt_wr_uint\"           -q cvt_wr_uint_d1");
 //: &eperl::flop("-nodeclare  -norst                 -en \"cvt_wr_en & cvt_wr_mean\" -d \"cvt_wr_mean_data\" -q cvt_wr_mean_data_d1");
 //: &eperl::flop("-nodeclare  -norst                 -en \"cvt_wr_en\"          -d \"cvt_wr_data\"           -q cvt_wr_data_d1");
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $bpe = 8;
 //: my $Bnum = $dmaif / $bpe;
 //: &eperl::flop("-nodeclare   -rval \"${Bnum}'b0\"           -en \"cvt_wr_en | cvt_wr_en_d1\" -d \"cvt_cell_en\"     -q cvt_cell_en_d1");
@@ -1375,7 +1115,7 @@ always @(posedge nvdla_core_clk) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       cvt_cell_en_d1 <= 64'b0;
+       cvt_cell_en_d1 <= 32'b0;
    end else begin
        if ((cvt_wr_en | cvt_wr_en_d1) == 1'b1) begin
            cvt_cell_en_d1 <= cvt_cell_en;
@@ -1431,7 +1171,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       cvt_out_pad_mask_d1 <= 64'b0;
+       cvt_out_pad_mask_d1 <= 32'b0;
    end else begin
        if ((img2cvt_dat_wr_en) == 1'b1) begin
            cvt_out_pad_mask_d1 <= cvt_wr_pad_mask;
@@ -1450,12 +1190,26 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        cvt_out_reg_en_d1 <= cvt_out_reg_en;
    end
 end
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       cvt_out_sel_d1 <= {2{1'b0}};
+   end else begin
+       if ((cvt_wr_en) == 1'b1) begin
+           cvt_out_sel_d1 <= cvt_out_sel;
+       // VCS coverage off
+       end else if ((cvt_wr_en) == 1'b0) begin
+       end else begin
+           cvt_out_sel_d1 <= 'bx;
+       // VCS coverage on
+       end
+   end
+end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////////////////////////////////////////////////////////////////////////
 // generate input signals for convertor cells //
 ////////////////////////////////////////////////////////////////////////
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $bpe = 8;
 //: my $Bnum = $dmaif / $bpe;
 //: foreach my $i(0..$Bnum-1) {
@@ -2238,777 +1992,9 @@ always @(posedge nvdla_core_clk) begin
        end
 end
 
-assign oprand_0_8b_sign[32] = (cvt_wr_data_d1[33*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_32_ori = {{(17-8){oprand_0_8b_sign[32]}}, cvt_wr_data_d1[33*8-1:32*8]} ;
-assign oprand_1_32_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[33*16-1:32*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[32]) == 1'b1) begin
-           oprand_0_32_d0 <= oprand_0_32_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[32]) == 1'b0) begin
-       end else begin
-           oprand_0_32_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[32]) == 1'b1) begin
-           oprand_1_32_d0 <= oprand_1_32_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[32]) == 1'b0) begin
-       end else begin
-           oprand_1_32_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[33] = (cvt_wr_data_d1[34*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_33_ori = {{(17-8){oprand_0_8b_sign[33]}}, cvt_wr_data_d1[34*8-1:33*8]} ;
-assign oprand_1_33_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[34*16-1:33*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[33]) == 1'b1) begin
-           oprand_0_33_d0 <= oprand_0_33_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[33]) == 1'b0) begin
-       end else begin
-           oprand_0_33_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[33]) == 1'b1) begin
-           oprand_1_33_d0 <= oprand_1_33_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[33]) == 1'b0) begin
-       end else begin
-           oprand_1_33_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[34] = (cvt_wr_data_d1[35*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_34_ori = {{(17-8){oprand_0_8b_sign[34]}}, cvt_wr_data_d1[35*8-1:34*8]} ;
-assign oprand_1_34_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[35*16-1:34*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[34]) == 1'b1) begin
-           oprand_0_34_d0 <= oprand_0_34_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[34]) == 1'b0) begin
-       end else begin
-           oprand_0_34_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[34]) == 1'b1) begin
-           oprand_1_34_d0 <= oprand_1_34_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[34]) == 1'b0) begin
-       end else begin
-           oprand_1_34_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[35] = (cvt_wr_data_d1[36*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_35_ori = {{(17-8){oprand_0_8b_sign[35]}}, cvt_wr_data_d1[36*8-1:35*8]} ;
-assign oprand_1_35_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[36*16-1:35*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[35]) == 1'b1) begin
-           oprand_0_35_d0 <= oprand_0_35_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[35]) == 1'b0) begin
-       end else begin
-           oprand_0_35_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[35]) == 1'b1) begin
-           oprand_1_35_d0 <= oprand_1_35_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[35]) == 1'b0) begin
-       end else begin
-           oprand_1_35_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[36] = (cvt_wr_data_d1[37*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_36_ori = {{(17-8){oprand_0_8b_sign[36]}}, cvt_wr_data_d1[37*8-1:36*8]} ;
-assign oprand_1_36_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[37*16-1:36*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[36]) == 1'b1) begin
-           oprand_0_36_d0 <= oprand_0_36_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[36]) == 1'b0) begin
-       end else begin
-           oprand_0_36_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[36]) == 1'b1) begin
-           oprand_1_36_d0 <= oprand_1_36_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[36]) == 1'b0) begin
-       end else begin
-           oprand_1_36_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[37] = (cvt_wr_data_d1[38*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_37_ori = {{(17-8){oprand_0_8b_sign[37]}}, cvt_wr_data_d1[38*8-1:37*8]} ;
-assign oprand_1_37_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[38*16-1:37*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[37]) == 1'b1) begin
-           oprand_0_37_d0 <= oprand_0_37_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[37]) == 1'b0) begin
-       end else begin
-           oprand_0_37_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[37]) == 1'b1) begin
-           oprand_1_37_d0 <= oprand_1_37_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[37]) == 1'b0) begin
-       end else begin
-           oprand_1_37_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[38] = (cvt_wr_data_d1[39*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_38_ori = {{(17-8){oprand_0_8b_sign[38]}}, cvt_wr_data_d1[39*8-1:38*8]} ;
-assign oprand_1_38_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[39*16-1:38*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[38]) == 1'b1) begin
-           oprand_0_38_d0 <= oprand_0_38_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[38]) == 1'b0) begin
-       end else begin
-           oprand_0_38_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[38]) == 1'b1) begin
-           oprand_1_38_d0 <= oprand_1_38_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[38]) == 1'b0) begin
-       end else begin
-           oprand_1_38_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[39] = (cvt_wr_data_d1[40*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_39_ori = {{(17-8){oprand_0_8b_sign[39]}}, cvt_wr_data_d1[40*8-1:39*8]} ;
-assign oprand_1_39_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[40*16-1:39*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[39]) == 1'b1) begin
-           oprand_0_39_d0 <= oprand_0_39_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[39]) == 1'b0) begin
-       end else begin
-           oprand_0_39_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[39]) == 1'b1) begin
-           oprand_1_39_d0 <= oprand_1_39_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[39]) == 1'b0) begin
-       end else begin
-           oprand_1_39_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[40] = (cvt_wr_data_d1[41*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_40_ori = {{(17-8){oprand_0_8b_sign[40]}}, cvt_wr_data_d1[41*8-1:40*8]} ;
-assign oprand_1_40_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[41*16-1:40*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[40]) == 1'b1) begin
-           oprand_0_40_d0 <= oprand_0_40_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[40]) == 1'b0) begin
-       end else begin
-           oprand_0_40_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[40]) == 1'b1) begin
-           oprand_1_40_d0 <= oprand_1_40_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[40]) == 1'b0) begin
-       end else begin
-           oprand_1_40_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[41] = (cvt_wr_data_d1[42*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_41_ori = {{(17-8){oprand_0_8b_sign[41]}}, cvt_wr_data_d1[42*8-1:41*8]} ;
-assign oprand_1_41_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[42*16-1:41*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[41]) == 1'b1) begin
-           oprand_0_41_d0 <= oprand_0_41_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[41]) == 1'b0) begin
-       end else begin
-           oprand_0_41_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[41]) == 1'b1) begin
-           oprand_1_41_d0 <= oprand_1_41_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[41]) == 1'b0) begin
-       end else begin
-           oprand_1_41_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[42] = (cvt_wr_data_d1[43*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_42_ori = {{(17-8){oprand_0_8b_sign[42]}}, cvt_wr_data_d1[43*8-1:42*8]} ;
-assign oprand_1_42_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[43*16-1:42*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[42]) == 1'b1) begin
-           oprand_0_42_d0 <= oprand_0_42_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[42]) == 1'b0) begin
-       end else begin
-           oprand_0_42_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[42]) == 1'b1) begin
-           oprand_1_42_d0 <= oprand_1_42_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[42]) == 1'b0) begin
-       end else begin
-           oprand_1_42_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[43] = (cvt_wr_data_d1[44*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_43_ori = {{(17-8){oprand_0_8b_sign[43]}}, cvt_wr_data_d1[44*8-1:43*8]} ;
-assign oprand_1_43_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[44*16-1:43*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[43]) == 1'b1) begin
-           oprand_0_43_d0 <= oprand_0_43_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[43]) == 1'b0) begin
-       end else begin
-           oprand_0_43_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[43]) == 1'b1) begin
-           oprand_1_43_d0 <= oprand_1_43_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[43]) == 1'b0) begin
-       end else begin
-           oprand_1_43_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[44] = (cvt_wr_data_d1[45*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_44_ori = {{(17-8){oprand_0_8b_sign[44]}}, cvt_wr_data_d1[45*8-1:44*8]} ;
-assign oprand_1_44_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[45*16-1:44*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[44]) == 1'b1) begin
-           oprand_0_44_d0 <= oprand_0_44_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[44]) == 1'b0) begin
-       end else begin
-           oprand_0_44_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[44]) == 1'b1) begin
-           oprand_1_44_d0 <= oprand_1_44_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[44]) == 1'b0) begin
-       end else begin
-           oprand_1_44_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[45] = (cvt_wr_data_d1[46*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_45_ori = {{(17-8){oprand_0_8b_sign[45]}}, cvt_wr_data_d1[46*8-1:45*8]} ;
-assign oprand_1_45_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[46*16-1:45*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[45]) == 1'b1) begin
-           oprand_0_45_d0 <= oprand_0_45_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[45]) == 1'b0) begin
-       end else begin
-           oprand_0_45_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[45]) == 1'b1) begin
-           oprand_1_45_d0 <= oprand_1_45_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[45]) == 1'b0) begin
-       end else begin
-           oprand_1_45_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[46] = (cvt_wr_data_d1[47*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_46_ori = {{(17-8){oprand_0_8b_sign[46]}}, cvt_wr_data_d1[47*8-1:46*8]} ;
-assign oprand_1_46_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[47*16-1:46*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[46]) == 1'b1) begin
-           oprand_0_46_d0 <= oprand_0_46_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[46]) == 1'b0) begin
-       end else begin
-           oprand_0_46_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[46]) == 1'b1) begin
-           oprand_1_46_d0 <= oprand_1_46_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[46]) == 1'b0) begin
-       end else begin
-           oprand_1_46_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[47] = (cvt_wr_data_d1[48*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_47_ori = {{(17-8){oprand_0_8b_sign[47]}}, cvt_wr_data_d1[48*8-1:47*8]} ;
-assign oprand_1_47_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[48*16-1:47*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[47]) == 1'b1) begin
-           oprand_0_47_d0 <= oprand_0_47_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[47]) == 1'b0) begin
-       end else begin
-           oprand_0_47_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[47]) == 1'b1) begin
-           oprand_1_47_d0 <= oprand_1_47_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[47]) == 1'b0) begin
-       end else begin
-           oprand_1_47_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[48] = (cvt_wr_data_d1[49*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_48_ori = {{(17-8){oprand_0_8b_sign[48]}}, cvt_wr_data_d1[49*8-1:48*8]} ;
-assign oprand_1_48_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[49*16-1:48*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[48]) == 1'b1) begin
-           oprand_0_48_d0 <= oprand_0_48_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[48]) == 1'b0) begin
-       end else begin
-           oprand_0_48_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[48]) == 1'b1) begin
-           oprand_1_48_d0 <= oprand_1_48_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[48]) == 1'b0) begin
-       end else begin
-           oprand_1_48_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[49] = (cvt_wr_data_d1[50*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_49_ori = {{(17-8){oprand_0_8b_sign[49]}}, cvt_wr_data_d1[50*8-1:49*8]} ;
-assign oprand_1_49_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[50*16-1:49*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[49]) == 1'b1) begin
-           oprand_0_49_d0 <= oprand_0_49_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[49]) == 1'b0) begin
-       end else begin
-           oprand_0_49_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[49]) == 1'b1) begin
-           oprand_1_49_d0 <= oprand_1_49_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[49]) == 1'b0) begin
-       end else begin
-           oprand_1_49_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[50] = (cvt_wr_data_d1[51*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_50_ori = {{(17-8){oprand_0_8b_sign[50]}}, cvt_wr_data_d1[51*8-1:50*8]} ;
-assign oprand_1_50_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[51*16-1:50*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[50]) == 1'b1) begin
-           oprand_0_50_d0 <= oprand_0_50_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[50]) == 1'b0) begin
-       end else begin
-           oprand_0_50_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[50]) == 1'b1) begin
-           oprand_1_50_d0 <= oprand_1_50_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[50]) == 1'b0) begin
-       end else begin
-           oprand_1_50_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[51] = (cvt_wr_data_d1[52*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_51_ori = {{(17-8){oprand_0_8b_sign[51]}}, cvt_wr_data_d1[52*8-1:51*8]} ;
-assign oprand_1_51_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[52*16-1:51*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[51]) == 1'b1) begin
-           oprand_0_51_d0 <= oprand_0_51_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[51]) == 1'b0) begin
-       end else begin
-           oprand_0_51_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[51]) == 1'b1) begin
-           oprand_1_51_d0 <= oprand_1_51_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[51]) == 1'b0) begin
-       end else begin
-           oprand_1_51_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[52] = (cvt_wr_data_d1[53*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_52_ori = {{(17-8){oprand_0_8b_sign[52]}}, cvt_wr_data_d1[53*8-1:52*8]} ;
-assign oprand_1_52_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[53*16-1:52*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[52]) == 1'b1) begin
-           oprand_0_52_d0 <= oprand_0_52_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[52]) == 1'b0) begin
-       end else begin
-           oprand_0_52_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[52]) == 1'b1) begin
-           oprand_1_52_d0 <= oprand_1_52_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[52]) == 1'b0) begin
-       end else begin
-           oprand_1_52_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[53] = (cvt_wr_data_d1[54*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_53_ori = {{(17-8){oprand_0_8b_sign[53]}}, cvt_wr_data_d1[54*8-1:53*8]} ;
-assign oprand_1_53_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[54*16-1:53*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[53]) == 1'b1) begin
-           oprand_0_53_d0 <= oprand_0_53_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[53]) == 1'b0) begin
-       end else begin
-           oprand_0_53_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[53]) == 1'b1) begin
-           oprand_1_53_d0 <= oprand_1_53_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[53]) == 1'b0) begin
-       end else begin
-           oprand_1_53_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[54] = (cvt_wr_data_d1[55*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_54_ori = {{(17-8){oprand_0_8b_sign[54]}}, cvt_wr_data_d1[55*8-1:54*8]} ;
-assign oprand_1_54_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[55*16-1:54*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[54]) == 1'b1) begin
-           oprand_0_54_d0 <= oprand_0_54_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[54]) == 1'b0) begin
-       end else begin
-           oprand_0_54_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[54]) == 1'b1) begin
-           oprand_1_54_d0 <= oprand_1_54_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[54]) == 1'b0) begin
-       end else begin
-           oprand_1_54_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[55] = (cvt_wr_data_d1[56*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_55_ori = {{(17-8){oprand_0_8b_sign[55]}}, cvt_wr_data_d1[56*8-1:55*8]} ;
-assign oprand_1_55_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[56*16-1:55*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[55]) == 1'b1) begin
-           oprand_0_55_d0 <= oprand_0_55_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[55]) == 1'b0) begin
-       end else begin
-           oprand_0_55_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[55]) == 1'b1) begin
-           oprand_1_55_d0 <= oprand_1_55_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[55]) == 1'b0) begin
-       end else begin
-           oprand_1_55_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[56] = (cvt_wr_data_d1[57*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_56_ori = {{(17-8){oprand_0_8b_sign[56]}}, cvt_wr_data_d1[57*8-1:56*8]} ;
-assign oprand_1_56_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[57*16-1:56*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[56]) == 1'b1) begin
-           oprand_0_56_d0 <= oprand_0_56_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[56]) == 1'b0) begin
-       end else begin
-           oprand_0_56_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[56]) == 1'b1) begin
-           oprand_1_56_d0 <= oprand_1_56_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[56]) == 1'b0) begin
-       end else begin
-           oprand_1_56_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[57] = (cvt_wr_data_d1[58*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_57_ori = {{(17-8){oprand_0_8b_sign[57]}}, cvt_wr_data_d1[58*8-1:57*8]} ;
-assign oprand_1_57_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[58*16-1:57*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[57]) == 1'b1) begin
-           oprand_0_57_d0 <= oprand_0_57_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[57]) == 1'b0) begin
-       end else begin
-           oprand_0_57_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[57]) == 1'b1) begin
-           oprand_1_57_d0 <= oprand_1_57_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[57]) == 1'b0) begin
-       end else begin
-           oprand_1_57_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[58] = (cvt_wr_data_d1[59*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_58_ori = {{(17-8){oprand_0_8b_sign[58]}}, cvt_wr_data_d1[59*8-1:58*8]} ;
-assign oprand_1_58_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[59*16-1:58*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[58]) == 1'b1) begin
-           oprand_0_58_d0 <= oprand_0_58_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[58]) == 1'b0) begin
-       end else begin
-           oprand_0_58_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[58]) == 1'b1) begin
-           oprand_1_58_d0 <= oprand_1_58_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[58]) == 1'b0) begin
-       end else begin
-           oprand_1_58_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[59] = (cvt_wr_data_d1[60*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_59_ori = {{(17-8){oprand_0_8b_sign[59]}}, cvt_wr_data_d1[60*8-1:59*8]} ;
-assign oprand_1_59_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[60*16-1:59*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[59]) == 1'b1) begin
-           oprand_0_59_d0 <= oprand_0_59_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[59]) == 1'b0) begin
-       end else begin
-           oprand_0_59_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[59]) == 1'b1) begin
-           oprand_1_59_d0 <= oprand_1_59_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[59]) == 1'b0) begin
-       end else begin
-           oprand_1_59_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[60] = (cvt_wr_data_d1[61*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_60_ori = {{(17-8){oprand_0_8b_sign[60]}}, cvt_wr_data_d1[61*8-1:60*8]} ;
-assign oprand_1_60_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[61*16-1:60*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[60]) == 1'b1) begin
-           oprand_0_60_d0 <= oprand_0_60_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[60]) == 1'b0) begin
-       end else begin
-           oprand_0_60_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[60]) == 1'b1) begin
-           oprand_1_60_d0 <= oprand_1_60_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[60]) == 1'b0) begin
-       end else begin
-           oprand_1_60_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[61] = (cvt_wr_data_d1[62*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_61_ori = {{(17-8){oprand_0_8b_sign[61]}}, cvt_wr_data_d1[62*8-1:61*8]} ;
-assign oprand_1_61_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[62*16-1:61*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[61]) == 1'b1) begin
-           oprand_0_61_d0 <= oprand_0_61_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[61]) == 1'b0) begin
-       end else begin
-           oprand_0_61_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[61]) == 1'b1) begin
-           oprand_1_61_d0 <= oprand_1_61_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[61]) == 1'b0) begin
-       end else begin
-           oprand_1_61_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[62] = (cvt_wr_data_d1[63*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_62_ori = {{(17-8){oprand_0_8b_sign[62]}}, cvt_wr_data_d1[63*8-1:62*8]} ;
-assign oprand_1_62_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[63*16-1:62*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[62]) == 1'b1) begin
-           oprand_0_62_d0 <= oprand_0_62_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[62]) == 1'b0) begin
-       end else begin
-           oprand_0_62_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[62]) == 1'b1) begin
-           oprand_1_62_d0 <= oprand_1_62_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[62]) == 1'b0) begin
-       end else begin
-           oprand_1_62_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
-assign oprand_0_8b_sign[63] = (cvt_wr_data_d1[64*8-1] & ~cvt_wr_uint_d1);
-assign oprand_0_63_ori = {{(17-8){oprand_0_8b_sign[63]}}, cvt_wr_data_d1[64*8-1:63*8]} ;
-assign oprand_1_63_ori = cvt_wr_mean_d1 ? cvt_wr_mean_data_d1[64*16-1:63*16] : cfg_offset[15:0];
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[63]) == 1'b1) begin
-           oprand_0_63_d0 <= oprand_0_63_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[63]) == 1'b0) begin
-       end else begin
-           oprand_0_63_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((cvt_cell_en_d1[63]) == 1'b1) begin
-           oprand_1_63_d0 <= oprand_1_63_ori;
-       // VCS coverage off
-       end else if ((cvt_cell_en_d1[63]) == 1'b0) begin
-       end else begin
-           oprand_1_63_d0 <= 'bx;
-       // VCS coverage on
-       end
-end
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////////////////////////////////////////////////////////////////////////
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $bpe = 8;
 //: my $Bnum = ($dmaif / $bpe);
 //: &eperl::flop("-nodeclare -rval \"1'b0\"                               -d \"cvt_wr_en_d1\"   -q op_en_d0");
@@ -3023,7 +2009,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       cell_en_d0 <= 64'b0;
+       cell_en_d0 <= 32'b0;
    end else begin
        if ((cvt_wr_en_d1 | op_en_d0) == 1'b1) begin
            cell_en_d0 <= cvt_cell_en_d1;
@@ -3040,7 +2026,7 @@ end
 ////////////////////////////////////////////////////////////////////////
 // instance of convert cells //
 ////////////////////////////////////////////////////////////////////////
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $bpe = 8;
 //: my $Bnum = $dmaif / $bpe;
 //: foreach my $i (0..$Bnum-1) {
@@ -3774,714 +2760,10 @@ NV_NVDLA_CDMA_CVT_cell u_cell_31 (
 ,.chn_data_out_rsc_lz ( )
 );
 
-NV_NVDLA_CDMA_CVT_cell u_cell_32 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_32_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[32])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[32])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_32_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[32])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[32])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_32[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_33 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_33_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[33])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[33])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_33_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[33])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[33])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_33[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_34 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_34_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[34])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[34])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_34_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[34])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[34])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_34[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_35 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_35_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[35])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[35])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_35_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[35])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[35])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_35[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_36 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_36_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[36])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[36])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_36_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[36])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[36])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_36[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_37 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_37_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[37])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[37])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_37_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[37])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[37])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_37[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_38 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_38_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[38])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[38])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_38_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[38])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[38])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_38[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_39 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_39_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[39])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[39])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_39_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[39])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[39])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_39[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_40 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_40_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[40])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[40])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_40_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[40])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[40])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_40[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_41 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_41_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[41])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[41])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_41_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[41])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[41])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_41[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_42 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_42_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[42])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[42])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_42_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[42])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[42])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_42[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_43 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_43_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[43])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[43])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_43_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[43])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[43])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_43[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_44 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_44_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[44])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[44])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_44_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[44])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[44])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_44[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_45 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_45_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[45])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[45])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_45_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[45])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[45])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_45[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_46 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_46_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[46])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[46])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_46_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[46])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[46])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_46[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_47 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_47_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[47])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[47])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_47_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[47])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[47])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_47[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_48 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_48_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[48])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[48])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_48_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[48])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[48])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_48[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_49 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_49_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[49])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[49])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_49_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[49])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[49])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_49[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_50 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_50_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[50])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[50])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_50_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[50])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[50])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_50[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_51 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_51_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[51])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[51])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_51_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[51])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[51])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_51[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_52 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_52_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[52])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[52])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_52_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[52])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[52])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_52[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_53 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_53_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[53])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[53])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_53_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[53])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[53])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_53[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_54 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_54_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[54])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[54])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_54_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[54])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[54])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_54[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_55 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_55_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[55])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[55])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_55_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[55])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[55])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_55[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_56 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_56_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[56])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[56])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_56_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[56])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[56])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_56[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_57 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_57_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[57])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[57])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_57_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[57])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[57])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_57[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_58 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_58_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[58])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[58])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_58_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[58])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[58])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_58[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_59 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_59_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[59])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[59])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_59_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[59])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[59])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_59[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_60 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_60_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[60])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[60])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_60_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[60])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[60])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_60[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_61 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_61_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[61])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[61])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_61_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[61])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[61])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_61[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_62 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_62_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[62])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[62])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_62_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[62])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[62])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_62[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
-NV_NVDLA_CDMA_CVT_cell u_cell_63 (
-.nvdla_core_clk (nvdla_hls_clk)
-,.nvdla_core_rstn (nvdla_core_rstn)
-,.chn_data_in_rsc_z (oprand_0_63_d0[16:0])
-,.chn_data_in_rsc_vz (cell_en_d0[63])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_data_in_rsc_lz (mon_cell_op0_ready[63])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_z (oprand_1_63_d0[15:0])
-,.chn_alu_in_rsc_vz (cell_en_d0[63])
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.chn_alu_in_rsc_lz (mon_cell_op1_ready[63])
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-,.cfg_mul_in_rsc_z (cfg_scale[15:0])
-,.cfg_in_precision (cfg_in_precision[1:0])
-,.cfg_out_precision (cfg_proc_precision[1:0])
-,.cfg_truncate (cfg_truncate[5:0])
-,.chn_data_out_rsc_z (cellout_63[15:0])
-,.chn_data_out_rsc_vz (1'b1)
-,.chn_data_out_rsc_lz ( )
-);
-
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign cvt_data_cell = {
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $bpe = 8;
 //: my $Bnum = $dmaif / $bpe;
 //: if($Bnum > 1) {
@@ -4492,13 +2774,13 @@ assign cvt_data_cell = {
 //: }
 //: print qq(cellout_0[${bpe}-1:0]}; \n);
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-cellout_63[8-1:0], cellout_62[8-1:0], cellout_61[8-1:0], cellout_60[8-1:0], cellout_59[8-1:0], cellout_58[8-1:0], cellout_57[8-1:0], cellout_56[8-1:0], cellout_55[8-1:0], cellout_54[8-1:0], cellout_53[8-1:0], cellout_52[8-1:0], cellout_51[8-1:0], cellout_50[8-1:0], cellout_49[8-1:0], cellout_48[8-1:0], cellout_47[8-1:0], cellout_46[8-1:0], cellout_45[8-1:0], cellout_44[8-1:0], cellout_43[8-1:0], cellout_42[8-1:0], cellout_41[8-1:0], cellout_40[8-1:0], cellout_39[8-1:0], cellout_38[8-1:0], cellout_37[8-1:0], cellout_36[8-1:0], cellout_35[8-1:0], cellout_34[8-1:0], cellout_33[8-1:0], cellout_32[8-1:0], cellout_31[8-1:0], cellout_30[8-1:0], cellout_29[8-1:0], cellout_28[8-1:0], cellout_27[8-1:0], cellout_26[8-1:0], cellout_25[8-1:0], cellout_24[8-1:0], cellout_23[8-1:0], cellout_22[8-1:0], cellout_21[8-1:0], cellout_20[8-1:0], cellout_19[8-1:0], cellout_18[8-1:0], cellout_17[8-1:0], cellout_16[8-1:0], cellout_15[8-1:0], cellout_14[8-1:0], cellout_13[8-1:0], cellout_12[8-1:0], cellout_11[8-1:0], cellout_10[8-1:0], cellout_9[8-1:0], cellout_8[8-1:0], cellout_7[8-1:0], cellout_6[8-1:0], cellout_5[8-1:0], cellout_4[8-1:0], cellout_3[8-1:0], cellout_2[8-1:0], cellout_1[8-1:0], cellout_0[8-1:0]}; 
+cellout_31[8-1:0], cellout_30[8-1:0], cellout_29[8-1:0], cellout_28[8-1:0], cellout_27[8-1:0], cellout_26[8-1:0], cellout_25[8-1:0], cellout_24[8-1:0], cellout_23[8-1:0], cellout_22[8-1:0], cellout_21[8-1:0], cellout_20[8-1:0], cellout_19[8-1:0], cellout_18[8-1:0], cellout_17[8-1:0], cellout_16[8-1:0], cellout_15[8-1:0], cellout_14[8-1:0], cellout_13[8-1:0], cellout_12[8-1:0], cellout_11[8-1:0], cellout_10[8-1:0], cellout_9[8-1:0], cellout_8[8-1:0], cellout_7[8-1:0], cellout_6[8-1:0], cellout_5[8-1:0], cellout_4[8-1:0], cellout_3[8-1:0], cellout_2[8-1:0], cellout_1[8-1:0], cellout_0[8-1:0]}; 
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////////////////////////////////////////////////////////////////////////
 // stage 2: pipeline to match latency of conver cells //
 ////////////////////////////////////////////////////////////////////////
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $Bnum = $dmaif / 8;
 //: my $atmc=64*8;
 //: my $k = int(log(int($atmc/$dmaif))/log(2));
@@ -4548,10 +2830,25 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        cvt_out_pad_vld_d2 <= cvt_out_pad_vld_d1;
    end
 end
+reg  cvt_out_sel_d2;
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       cvt_out_sel_d2 <= {1{1'b0}};
+   end else begin
+       if ((cvt_out_vld_d1) == 1'b1) begin
+           cvt_out_sel_d2 <= cvt_out_sel_d1;
+       // VCS coverage off
+       end else if ((cvt_out_vld_d1) == 1'b0) begin
+       end else begin
+           cvt_out_sel_d2 <= 'bx;
+       // VCS coverage on
+       end
+   end
+end
 reg  cvt_out_reg_en_d2;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       cvt_out_reg_en_d2 <= 1'b0;
+       cvt_out_reg_en_d2 <= {1{1'b0}};
    end else begin
        if ((cvt_out_vld_d1 | cvt_out_vld_d2) == 1'b1) begin
            cvt_out_reg_en_d2 <= cvt_out_reg_en_d1;
@@ -4593,10 +2890,10 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        end
    end
 end
-reg [63:0] cvt_out_pad_mask_d2;
+reg [31:0] cvt_out_pad_mask_d2;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       cvt_out_pad_mask_d2 <= {64{1'b0}};
+       cvt_out_pad_mask_d2 <= {32{1'b0}};
    end else begin
        if ((cvt_out_pad_vld_d1) == 1'b1) begin
            cvt_out_pad_mask_d2 <= cvt_out_pad_mask_d1;
@@ -4626,10 +2923,25 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        cvt_out_pad_vld_d3 <= cvt_out_pad_vld_d2;
    end
 end
+reg  cvt_out_sel_d3;
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       cvt_out_sel_d3 <= {1{1'b0}};
+   end else begin
+       if ((cvt_out_vld_d2) == 1'b1) begin
+           cvt_out_sel_d3 <= cvt_out_sel_d2;
+       // VCS coverage off
+       end else if ((cvt_out_vld_d2) == 1'b0) begin
+       end else begin
+           cvt_out_sel_d3 <= 'bx;
+       // VCS coverage on
+       end
+   end
+end
 reg  cvt_out_reg_en_d3;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       cvt_out_reg_en_d3 <= 1'b0;
+       cvt_out_reg_en_d3 <= {1{1'b0}};
    end else begin
        if ((cvt_out_vld_d2 | cvt_out_vld_d2) == 1'b1) begin
            cvt_out_reg_en_d3 <= cvt_out_reg_en_d2;
@@ -4671,10 +2983,10 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        end
    end
 end
-reg [63:0] cvt_out_pad_mask_d3;
+reg [31:0] cvt_out_pad_mask_d3;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       cvt_out_pad_mask_d3 <= {64{1'b0}};
+       cvt_out_pad_mask_d3 <= {32{1'b0}};
    end else begin
        if ((cvt_out_pad_vld_d2) == 1'b1) begin
            cvt_out_pad_mask_d3 <= cvt_out_pad_mask_d2;
@@ -4704,10 +3016,25 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        cvt_out_pad_vld_d4 <= cvt_out_pad_vld_d3;
    end
 end
+reg  cvt_out_sel_d4;
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       cvt_out_sel_d4 <= {1{1'b0}};
+   end else begin
+       if ((cvt_out_vld_d3) == 1'b1) begin
+           cvt_out_sel_d4 <= cvt_out_sel_d3;
+       // VCS coverage off
+       end else if ((cvt_out_vld_d3) == 1'b0) begin
+       end else begin
+           cvt_out_sel_d4 <= 'bx;
+       // VCS coverage on
+       end
+   end
+end
 reg  cvt_out_reg_en_d4;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       cvt_out_reg_en_d4 <= 1'b0;
+       cvt_out_reg_en_d4 <= {1{1'b0}};
    end else begin
        if ((cvt_out_vld_d3 | cvt_out_vld_d2) == 1'b1) begin
            cvt_out_reg_en_d4 <= cvt_out_reg_en_d3;
@@ -4749,10 +3076,10 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        end
    end
 end
-reg [63:0] cvt_out_pad_mask_d4;
+reg [31:0] cvt_out_pad_mask_d4;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       cvt_out_pad_mask_d4 <= {64{1'b0}};
+       cvt_out_pad_mask_d4 <= {32{1'b0}};
    end else begin
        if ((cvt_out_pad_vld_d3) == 1'b1) begin
            cvt_out_pad_mask_d4 <= cvt_out_pad_mask_d3;
@@ -4782,10 +3109,25 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        cvt_out_pad_vld_d5 <= cvt_out_pad_vld_d4;
    end
 end
+reg  cvt_out_sel_d5;
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       cvt_out_sel_d5 <= {1{1'b0}};
+   end else begin
+       if ((cvt_out_vld_d4) == 1'b1) begin
+           cvt_out_sel_d5 <= cvt_out_sel_d4;
+       // VCS coverage off
+       end else if ((cvt_out_vld_d4) == 1'b0) begin
+       end else begin
+           cvt_out_sel_d5 <= 'bx;
+       // VCS coverage on
+       end
+   end
+end
 reg  cvt_out_reg_en_d5;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       cvt_out_reg_en_d5 <= 1'b0;
+       cvt_out_reg_en_d5 <= {1{1'b0}};
    end else begin
        if ((cvt_out_vld_d4 | cvt_out_vld_d2) == 1'b1) begin
            cvt_out_reg_en_d5 <= cvt_out_reg_en_d4;
@@ -4827,10 +3169,10 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        end
    end
 end
-reg [63:0] cvt_out_pad_mask_d5;
+reg [31:0] cvt_out_pad_mask_d5;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       cvt_out_pad_mask_d5 <= {64{1'b0}};
+       cvt_out_pad_mask_d5 <= {32{1'b0}};
    end else begin
        if ((cvt_out_pad_vld_d4) == 1'b1) begin
            cvt_out_pad_mask_d5 <= cvt_out_pad_mask_d4;
@@ -4845,11 +3187,13 @@ end
 
 
 
+assign cvt_out_sel_bp = cfg_cvt_en[1] ? cvt_out_sel_d5 : cvt_out_sel_d1;
+
 assign cvt_out_vld_bp = cfg_cvt_en[1] ? cvt_out_vld_d5 : cvt_out_vld_d1;
 assign cvt_out_addr_bp = cfg_cvt_en[1] ? cvt_out_addr_d5 : cvt_out_addr_d1;
 assign cvt_out_nz_mask_bp = cfg_cvt_en[2] ? cvt_out_nz_mask_d5 : cvt_out_nz_mask_d1;
 assign cvt_out_pad_vld_bp = cfg_cvt_en[3] ? cvt_out_pad_vld_d5 : cvt_out_pad_vld_d1;
-assign cvt_out_pad_mask_bp = ~cvt_out_pad_vld_bp ? 64'b0 : (cfg_cvt_en[3] ? cvt_out_pad_mask_d5 : cvt_out_pad_mask_d1);
+assign cvt_out_pad_mask_bp = ~cvt_out_pad_vld_bp ? 32'b0 : (cfg_cvt_en[3] ? cvt_out_pad_mask_d5 : cvt_out_pad_mask_d1);
 assign cvt_out_reg_en_bp = cfg_cvt_en[4] ? cvt_out_reg_en_d5 : cvt_out_reg_en_d1;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
@@ -4857,7 +3201,7 @@ assign cvt_out_reg_en_bp = cfg_cvt_en[4] ? cvt_out_reg_en_d5 : cvt_out_reg_en_d1
 // stage 3: final pipeline stage //
 ////////////////////////////////////////////////////////////////////////
 assign cvt_out_data_mix = cfg_cvt_en[5] ? cvt_data_cell : cvt_wr_data_d1;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm=32;
 //: my $bpe = 8;
 //: my $atmmbw= $atmm * $bpe;
@@ -4906,38 +3250,6 @@ assign cvt_out_data_masked[231:224] = cvt_out_pad_mask_bp[28] ? cfg_pad_value[8-
 assign cvt_out_data_masked[239:232] = cvt_out_pad_mask_bp[29] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[239:232]; 
 assign cvt_out_data_masked[247:240] = cvt_out_pad_mask_bp[30] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[247:240]; 
 assign cvt_out_data_masked[255:248] = cvt_out_pad_mask_bp[31] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[255:248]; 
-assign cvt_out_data_masked[263:256] = cvt_out_pad_mask_bp[32] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[263:256]; 
-assign cvt_out_data_masked[271:264] = cvt_out_pad_mask_bp[33] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[271:264]; 
-assign cvt_out_data_masked[279:272] = cvt_out_pad_mask_bp[34] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[279:272]; 
-assign cvt_out_data_masked[287:280] = cvt_out_pad_mask_bp[35] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[287:280]; 
-assign cvt_out_data_masked[295:288] = cvt_out_pad_mask_bp[36] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[295:288]; 
-assign cvt_out_data_masked[303:296] = cvt_out_pad_mask_bp[37] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[303:296]; 
-assign cvt_out_data_masked[311:304] = cvt_out_pad_mask_bp[38] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[311:304]; 
-assign cvt_out_data_masked[319:312] = cvt_out_pad_mask_bp[39] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[319:312]; 
-assign cvt_out_data_masked[327:320] = cvt_out_pad_mask_bp[40] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[327:320]; 
-assign cvt_out_data_masked[335:328] = cvt_out_pad_mask_bp[41] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[335:328]; 
-assign cvt_out_data_masked[343:336] = cvt_out_pad_mask_bp[42] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[343:336]; 
-assign cvt_out_data_masked[351:344] = cvt_out_pad_mask_bp[43] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[351:344]; 
-assign cvt_out_data_masked[359:352] = cvt_out_pad_mask_bp[44] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[359:352]; 
-assign cvt_out_data_masked[367:360] = cvt_out_pad_mask_bp[45] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[367:360]; 
-assign cvt_out_data_masked[375:368] = cvt_out_pad_mask_bp[46] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[375:368]; 
-assign cvt_out_data_masked[383:376] = cvt_out_pad_mask_bp[47] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[383:376]; 
-assign cvt_out_data_masked[391:384] = cvt_out_pad_mask_bp[48] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[391:384]; 
-assign cvt_out_data_masked[399:392] = cvt_out_pad_mask_bp[49] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[399:392]; 
-assign cvt_out_data_masked[407:400] = cvt_out_pad_mask_bp[50] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[407:400]; 
-assign cvt_out_data_masked[415:408] = cvt_out_pad_mask_bp[51] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[415:408]; 
-assign cvt_out_data_masked[423:416] = cvt_out_pad_mask_bp[52] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[423:416]; 
-assign cvt_out_data_masked[431:424] = cvt_out_pad_mask_bp[53] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[431:424]; 
-assign cvt_out_data_masked[439:432] = cvt_out_pad_mask_bp[54] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[439:432]; 
-assign cvt_out_data_masked[447:440] = cvt_out_pad_mask_bp[55] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[447:440]; 
-assign cvt_out_data_masked[455:448] = cvt_out_pad_mask_bp[56] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[455:448]; 
-assign cvt_out_data_masked[463:456] = cvt_out_pad_mask_bp[57] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[463:456]; 
-assign cvt_out_data_masked[471:464] = cvt_out_pad_mask_bp[58] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[471:464]; 
-assign cvt_out_data_masked[479:472] = cvt_out_pad_mask_bp[59] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[479:472]; 
-assign cvt_out_data_masked[487:480] = cvt_out_pad_mask_bp[60] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[487:480]; 
-assign cvt_out_data_masked[495:488] = cvt_out_pad_mask_bp[61] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[495:488]; 
-assign cvt_out_data_masked[503:496] = cvt_out_pad_mask_bp[62] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[503:496]; 
-assign cvt_out_data_masked[511:504] = cvt_out_pad_mask_bp[63] ? cfg_pad_value[8-1:0] : cvt_out_data_mix[511:504]; 
 assign cvt_out_data_p0 = cvt_out_nz_mask_bp[0] ? cvt_out_data_masked[(0+1)*256-1:0*256] : 0; 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
@@ -4946,18 +3258,10 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        cvt_out_data_p0_reg <= cvt_out_data_p0;
    end
 end
-assign cvt_out_data_p1 = cvt_out_nz_mask_bp[1] ? cvt_out_data_masked[(1+1)*256-1:1*256] : 0; 
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       cvt_out_data_p1_reg <= 256'b0;
-   end else begin
-       cvt_out_data_p1_reg <= cvt_out_data_p1;
-   end
-end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign cvt_out_vld_reg_w = cvt_out_vld_bp | dat_cbuf_flush_vld_w;
-//: my $dmaif=512/8;
+//: my $dmaif=256/8;
 //: my $atmc=64;
 //: if ( $dmaif < $atmc ) {
 //: my $k = int( log( int($atmc/$dmaif) ) / log(2) );
@@ -4965,7 +3269,7 @@ assign cvt_out_vld_reg_w = cvt_out_vld_bp | dat_cbuf_flush_vld_w;
 //: } else {
 //: print "assign cvt_out_addr_reg_w = dat_cbuf_flush_vld_w ? dat_cbuf_flush_idx[16:0] : cvt_out_addr_bp; \n";
 //: }
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $bpe = 8;
 //: my $Bnum = $dmaif / $bpe;
 //: my $atmc=64;
@@ -4987,7 +3291,23 @@ assign cvt_out_vld_reg_w = cvt_out_vld_bp | dat_cbuf_flush_vld_w;
 //: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"${dmaif_num}'b0\"  -en \"cvt_out_vld_reg_w\" -d \"cvt_out_sel_reg_w\" -q cvt_out_sel_reg");
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-assign cvt_out_addr_reg_w = dat_cbuf_flush_vld_w ? dat_cbuf_flush_idx[16:0] : cvt_out_addr_bp; 
+assign cvt_out_addr_reg_w = dat_cbuf_flush_vld_w ? dat_cbuf_flush_idx[17:1] : cvt_out_addr_bp; 
+wire [2-1:0] cvt_out_sel_reg_w; 
+assign cvt_out_sel_reg_w = dat_cbuf_flush_vld_w ? {dat_cbuf_flush_idx[0], ~dat_cbuf_flush_idx[0]} : {cvt_out_sel_bp[0],~cvt_out_sel_bp[0]}; 
+always @(posedge nvdla_core_ng_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       cvt_out_sel_reg <= 2'b0;
+   end else begin
+       if ((cvt_out_vld_reg_w) == 1'b1) begin
+           cvt_out_sel_reg <= cvt_out_sel_reg_w;
+       // VCS coverage off
+       end else if ((cvt_out_vld_reg_w) == 1'b0) begin
+       end else begin
+           cvt_out_sel_reg <= 'bx;
+       // VCS coverage on
+       end
+   end
+end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //================ Non-SLCG clock domain ================//
@@ -5024,7 +3344,7 @@ assign {mon_dat_cbuf_flush_idx_w,
         dat_cbuf_flush_idx_w} = dat_cbuf_flush_idx + 1'b1;
 //: my $bank_entry = 16 * 512;
 //: my $bank_entry_bw = int( log( $bank_entry)/log(2) );
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: my $k;
 //: if($dmaif < $atmc) {
@@ -5038,8 +3358,8 @@ assign {mon_dat_cbuf_flush_idx_w,
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign dat_cbuf_flush_vld_w = ~dat_cbuf_flush_idx[13+0-1];//max value = half bank entry * 2^0
-assign dp2reg_dat_flush_done = dat_cbuf_flush_idx[13+0-1];
+assign dat_cbuf_flush_vld_w = ~dat_cbuf_flush_idx[13+1-1];//max value = half bank entry * 2^1
+assign dp2reg_dat_flush_done = dat_cbuf_flush_idx[13+1-1];
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //assign dat_cbuf_flush_vld_w = ~dat_cbuf_flush_idx[17];
@@ -5068,7 +3388,7 @@ end
 ////////////////////////////////////////////////////////////////////////
 assign cdma2buf_dat_wr_en = cvt_out_vld_reg;
 assign cdma2buf_dat_wr_addr = cvt_out_addr_reg;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $bpe = 8;
 //: my $Bnum = $dmaif / $bpe;
 //: my $atmc=64;
@@ -5076,10 +3396,11 @@ assign cdma2buf_dat_wr_addr = cvt_out_addr_reg;
 //: print qq(assign cdma2buf_dat_wr_sel = cvt_out_sel_reg; \n );
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-
+assign cdma2buf_dat_wr_sel = cvt_out_sel_reg; 
+ 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign cdma2buf_dat_wr_data = {
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm=32;
 //: my $bpe = 8;
 //: my $Bnum = $dmaif / $bpe;
@@ -5091,10 +3412,10 @@ assign cdma2buf_dat_wr_data = {
 //: }
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-cvt_out_data_p1_reg, 
+
 //| eperl: generated_end (DO NOT EDIT ABOVE)
  cvt_out_data_p0_reg};
-assign dat_nan_mask = {512{1'b1}};
+assign dat_nan_mask = {256{1'b1}};
 assign dp2reg_nan_data_num = 32'b0;
 assign dp2reg_inf_data_num = 32'b0;
 ////////////////////////////////////////////////////////////////////////
@@ -5193,11 +3514,7 @@ assign dp2reg_inf_data_num = 32'b0;
   nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_101x (nvdla_core_ng_clk, `ASSERT_RESET, 1'd1, (^(dat_cbuf_flush_vld_w))); // spyglass disable W504 SelfDeterminedExpr-ML 
   nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_102x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(nan_reg_en))); // spyglass disable W504 SelfDeterminedExpr-ML 
   nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_103x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(inf_reg_en))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_zero_one_hot #(0,3,0,"Error! CVT input conflict!") zzz_assert_zero_one_hot_16x (nvdla_core_clk, `ASSERT_RESET, {dc2cvt_dat_wr_en, wg2cvt_dat_wr_en, img2cvt_dat_wr_en}); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! Wg set two high masks") zzz_assert_never_19x (nvdla_core_clk, `ASSERT_RESET, (wg2cvt_dat_wr_en & (|cvt_wr_mask[3:2]))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! Wg set mean flag") zzz_assert_never_22x (nvdla_core_clk, `ASSERT_RESET, (wg2cvt_dat_wr_en & cvt_wr_mean)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! Wg set uint flag") zzz_assert_never_24x (nvdla_core_clk, `ASSERT_RESET, (wg2cvt_dat_wr_en & cvt_wr_uint)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! Wg set sub h flag") zzz_assert_never_26x (nvdla_core_clk, `ASSERT_RESET, (wg2cvt_dat_wr_en & (|cvt_wr_sub_h))); // spyglass disable W504 SelfDeterminedExpr-ML 
+  nv_assert_zero_one_hot #(0,2,0,"Error! CVT input conflict!") zzz_assert_zero_one_hot_16x (nvdla_core_clk, `ASSERT_RESET, {dc2cvt_dat_wr_en, img2cvt_dat_wr_en}); // spyglass disable W504 SelfDeterminedExpr-ML 
   nv_assert_never #(0,0,"Error! Disable when input data") zzz_assert_never_17x (nvdla_core_clk, `ASSERT_RESET, (~op_en & cvt_wr_en)); // spyglass disable W504 SelfDeterminedExpr-ML 
   nv_assert_never #(0,0,"Error! Dc set two high masks") zzz_assert_never_18x (nvdla_core_clk, `ASSERT_RESET, (dc2cvt_dat_wr_en & (|cvt_wr_mask[3:2]))); // spyglass disable W504 SelfDeterminedExpr-ML 
   nv_assert_never #(0,0,"Error! Img set two hight masks when int8 input") zzz_assert_never_20x (nvdla_core_clk, `ASSERT_RESET, (img2cvt_dat_wr_en & (|cvt_wr_mask[3:2]) & is_input_int8[0])); // spyglass disable W504 SelfDeterminedExpr-ML 

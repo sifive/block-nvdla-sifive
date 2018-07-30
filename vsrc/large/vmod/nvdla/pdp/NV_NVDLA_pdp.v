@@ -16,6 +16,14 @@
 // File Name: NV_NVDLA_PDP_define.h
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_PDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_PDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 module NV_NVDLA_pdp (
    dla_clk_ovr_on_sync //|< i
   ,global_clk_ovr_on_sync //|< i
@@ -74,7 +82,7 @@ input tmc2slcg_disable_clock_gating;
  input [62:0] csb2pdp_req_pd;
  input cvif2pdp_rd_rsp_valid;
  output cvif2pdp_rd_rsp_ready;
- input [( 512 + (512/8/32) )-1:0] cvif2pdp_rd_rsp_pd;
+ input [( 256 + (256/8/32) )-1:0] cvif2pdp_rd_rsp_pd;
  input cvif2pdp_wr_rsp_complete;
  output pdp2cvif_rd_cdt_lat_fifo_pop;
  output pdp2cvif_rd_req_valid;
@@ -82,10 +90,10 @@ input tmc2slcg_disable_clock_gating;
  output [64 +14:0] pdp2cvif_rd_req_pd;
  output pdp2cvif_wr_req_valid;
  input pdp2cvif_wr_req_ready;
- output [( 512 + (512/8/32) + 1 )-1:0] pdp2cvif_wr_req_pd;
+ output [( 256 + (256/8/32) + 1 )-1:0] pdp2cvif_wr_req_pd;
  input mcif2pdp_rd_rsp_valid;
  output mcif2pdp_rd_rsp_ready;
- input [( 512 + (512/8/32) )-1:0] mcif2pdp_rd_rsp_pd;
+ input [( 256 + (256/8/32) )-1:0] mcif2pdp_rd_rsp_pd;
  input mcif2pdp_wr_rsp_complete;
  output pdp2csb_resp_valid;
  output [33:0] pdp2csb_resp_pd;
@@ -96,7 +104,7 @@ input tmc2slcg_disable_clock_gating;
  output [64 +14:0] pdp2mcif_rd_req_pd;
  output pdp2mcif_wr_req_valid;
  input pdp2mcif_wr_req_ready;
- output [( 512 + (512/8/32) + 1 )-1:0] pdp2mcif_wr_req_pd;
+ output [( 256 + (256/8/32) + 1 )-1:0] pdp2mcif_wr_req_pd;
  output pdp_rdma2csb_resp_valid;
  output [33:0] pdp_rdma2csb_resp_pd;
  input [31:0] pwrbus_ram_pd;
@@ -110,7 +118,7 @@ input tmc2slcg_disable_clock_gating;
  wire dp2reg_done;
  wire mon_op_en_neg;
  wire mon_op_en_pos;
- wire [8*8 +11:0] nan_preproc_pd;
+ wire [8*8 +13:0] nan_preproc_pd;
  wire nan_preproc_prdy;
  wire nan_preproc_pvld;
  wire nvdla_op_gated_clk_core;
@@ -118,7 +126,7 @@ input tmc2slcg_disable_clock_gating;
  wire [8*8 -1:0] pdp_dp2wdma_pd;
  wire pdp_dp2wdma_ready;
  wire pdp_dp2wdma_valid;
- wire [8*8 +11:0] pdp_rdma2dp_pd;
+ wire [8*8 +13:0] pdp_rdma2dp_pd;
  wire pdp_rdma2dp_ready;
  wire pdp_rdma2dp_valid;
  wire rdma2wdma_done;

@@ -52,7 +52,7 @@ output eg_done;
 input [15:0] cq2eg_pd;
 input cq2eg_pvld;
 output cq2eg_prdy;
-input [514 -1:0] lat_fifo_rd_pd;
+input [257 -1:0] lat_fifo_rd_pd;
 input lat_fifo_rd_pvld;
 output lat_fifo_rd_prdy;
 output dma_rd_cdt_lat_fifo_pop;
@@ -136,7 +136,6 @@ assign cfg_mode_1bytex1 = cfg_data_size_1byte & cfg_mode_single;
 assign cfg_mode_2bytex1 = cfg_data_size_2byte & cfg_mode_single;
 assign cfg_mode_1bytex2 = cfg_data_size_1byte & cfg_mode_both;
 assign cfg_mode_2bytex2 = cfg_data_size_2byte & cfg_mode_both;
-wire cfg_mode_multi_batch = reg2dp_batch_number!=0;
 assign cfg_dp_8 = reg2dp_proc_precision== 0 ;
 assign cfg_do_8 = reg2dp_out_precision== 0 ;
 assign cfg_alu_en = cfg_mode_alu_only || cfg_mode_both;
@@ -148,7 +147,7 @@ assign dma_rd_cdt_lat_fifo_pop = lat_fifo_rd_pvld & lat_fifo_rd_prdy;
 //==============
 // Latency FIFO to buffer return DATA
 //==============
-wire [3:0] lat_fifo_rd_mask = {{(4-2){1'b0}},lat_fifo_rd_pd[514 -1:512]};
+wire [3:0] lat_fifo_rd_mask = {{(4-1){1'b0}},lat_fifo_rd_pd[257 -1:256]};
 wire [2:0] lat_fifo_rd_size = lat_fifo_rd_mask[3]+lat_fifo_rd_mask[2]+lat_fifo_rd_mask[1]+lat_fifo_rd_mask[0];
 //==================================================================
 // Context Queue: read
@@ -223,7 +222,7 @@ wire lat_fifo_rd_beat_end = is_last_beat;
 NV_NVDLA_SDP_RDMA_unpack u_rdma_unpack (
    .nvdla_core_clk (nvdla_core_clk)
   ,.nvdla_core_rstn (nvdla_core_rstn)
-  ,.inp_data (lat_fifo_rd_pd[514 -1:0])
+  ,.inp_data (lat_fifo_rd_pd[257 -1:0])
   ,.inp_pvld (lat_fifo_rd_pvld)
   ,.inp_prdy (lat_fifo_rd_prdy)
   ,.inp_end (lat_fifo_rd_beat_end)
@@ -538,8 +537,6 @@ NV_NVDLA_SDP_RDMA_EG_ro u_alu (
   ,.cfg_dp_8 (cfg_dp_8)
   ,.cfg_dp_size_1byte (cfg_data_size_1byte)
   ,.cfg_mode_per_element (cfg_mode_per_element)
-  ,.cfg_mode_multi_batch (cfg_mode_multi_batch)
-  ,.reg2dp_batch_number (reg2dp_batch_number[4:0])
   ,.reg2dp_channel (reg2dp_channel[12:0])
   ,.reg2dp_height (reg2dp_height[12:0])
   ,.reg2dp_width (reg2dp_width[12:0])
@@ -565,8 +562,6 @@ NV_NVDLA_SDP_RDMA_EG_ro u_mul (
   ,.cfg_dp_8 (cfg_dp_8)
   ,.cfg_dp_size_1byte (cfg_data_size_1byte)
   ,.cfg_mode_per_element (cfg_mode_per_element)
-  ,.cfg_mode_multi_batch (cfg_mode_multi_batch)
-  ,.reg2dp_batch_number (reg2dp_batch_number[4:0])
   ,.reg2dp_channel (reg2dp_channel[12:0])
   ,.reg2dp_height (reg2dp_height[12:0])
   ,.reg2dp_width (reg2dp_width[12:0])

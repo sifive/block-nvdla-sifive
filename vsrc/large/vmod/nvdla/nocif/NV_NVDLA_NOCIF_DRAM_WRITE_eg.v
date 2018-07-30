@@ -17,11 +17,17 @@
 // File Name: NV_NVDLA_define.h
 ///////////////////////////////////////////////////
 //
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  512 )
+//    #define LARGE_MEMBUS
+//#endif
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  64 )
+//    #define SMALL_MEMBUS
+//#endif
 module NV_NVDLA_NOCIF_DRAM_WRITE_eg (
    nvdla_core_clk
   ,nvdla_core_rstn
 //:my $i;
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //: ,cq_rd${i}_pvld
 //: ,cq_rd${i}_pd
@@ -46,16 +52,6 @@ module NV_NVDLA_NOCIF_DRAM_WRITE_eg (
 ,cq_rd2_prdy
 ,mcif2client2_wr_rsp_complete
 
-,cq_rd3_pvld
-,cq_rd3_pd
-,cq_rd3_prdy
-,mcif2client3_wr_rsp_complete
-
-,cq_rd4_pvld
-,cq_rd4_pd
-,cq_rd4_prdy
-,mcif2client4_wr_rsp_complete
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
   ,noc2mcif_axi_b_bid
   ,noc2mcif_axi_b_bvalid
@@ -66,7 +62,7 @@ module NV_NVDLA_NOCIF_DRAM_WRITE_eg (
 input nvdla_core_clk;
 input nvdla_core_rstn;
 //:my $i;
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //:output mcif2client${i}_wr_rsp_complete;
 //:input cq_rd${i}_pvld;
@@ -91,16 +87,6 @@ input cq_rd2_pvld;
 output cq_rd2_prdy;
 input [2:0] cq_rd2_pd;
 
-output mcif2client3_wr_rsp_complete;
-input cq_rd3_pvld;
-output cq_rd3_prdy;
-input [2:0] cq_rd3_pd;
-
-output mcif2client4_wr_rsp_complete;
-input cq_rd4_pvld;
-output cq_rd4_prdy;
-input [2:0] cq_rd4_pd;
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 input noc2mcif_axi_b_bvalid; /* data valid */
 output noc2mcif_axi_b_bready; /* data return handshake */
@@ -108,7 +94,7 @@ input [7:0] noc2mcif_axi_b_bid;
 output [1:0] eg2ig_axi_len;
 output eg2ig_axi_vld;
 //:my $i;
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //:reg mcif2client${i}_wr_rsp_complete;
 //:wire [1:0] cq_rd${i}_len;
@@ -133,16 +119,6 @@ wire [1:0] cq_rd2_len;
 wire cq_rd2_require_ack;
 wire dma2_vld;
 
-reg mcif2client3_wr_rsp_complete;
-wire [1:0] cq_rd3_len;
-wire cq_rd3_require_ack;
-wire dma3_vld;
-
-reg mcif2client4_wr_rsp_complete;
-wire [1:0] cq_rd4_len;
-wire cq_rd4_require_ack;
-wire dma4_vld;
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 reg [1:0] eg2ig_axi_len;
 reg [2:0] iflop_axi_axid;
@@ -155,7 +131,7 @@ reg iflop_axi_vld;
 //
 wire cq_vld =
 //:my $i;
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //: (!cq_rd${i}_pvld & cq_rd${i}_prdy) |
 //:);
@@ -167,10 +143,6 @@ wire cq_vld =
 (!cq_rd1_pvld & cq_rd1_prdy) |
 
 (!cq_rd2_pvld & cq_rd2_prdy) |
-
-(!cq_rd3_pvld & cq_rd3_prdy) |
-
-(!cq_rd4_pvld & cq_rd4_prdy) |
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 0;
@@ -246,7 +218,7 @@ end
 `endif // SPYGLASS_ASSERT_ON
 // EG===Contect Qeueu
 //:my $i;
-//:my @dma_index = (1, 1,1, 1,1, 0, 0, 0, 0,0,0,0,0,0,0);
+//:my @dma_index = (0, 1,1, 1,0, 0, 0, 0, 0,0,0,0,0,0,0);
 //:my @client_id = (0,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0);
 //:my @remap_clientid = (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 //:my $nindex = 0;
@@ -256,7 +228,7 @@ end
 //: $nindex++;
 //: }
 //:}
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //:assign dma${i}_vld = iflop_axi_vld & (iflop_axi_axid == $remap_clientid[$i]);
 //:assign cq_rd${i}_prdy = dma${i}_vld;
@@ -273,7 +245,7 @@ end
 //:}
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign dma0_vld = iflop_axi_vld & (iflop_axi_axid == 0);
+assign dma0_vld = iflop_axi_vld & (iflop_axi_axid == 1);
 assign cq_rd0_prdy = dma0_vld;
 assign cq_rd0_require_ack = cq_rd0_pd[0:0];
 assign cq_rd0_len = cq_rd0_pd[2:1];
@@ -285,7 +257,7 @@ mcif2client0_wr_rsp_complete <= dma0_vld & cq_rd0_pvld & cq_rd0_require_ack;
 end
 end
 
-assign dma1_vld = iflop_axi_vld & (iflop_axi_axid == 1);
+assign dma1_vld = iflop_axi_vld & (iflop_axi_axid == 2);
 assign cq_rd1_prdy = dma1_vld;
 assign cq_rd1_require_ack = cq_rd1_pd[0:0];
 assign cq_rd1_len = cq_rd1_pd[2:1];
@@ -297,7 +269,7 @@ mcif2client1_wr_rsp_complete <= dma1_vld & cq_rd1_pvld & cq_rd1_require_ack;
 end
 end
 
-assign dma2_vld = iflop_axi_vld & (iflop_axi_axid == 2);
+assign dma2_vld = iflop_axi_vld & (iflop_axi_axid == 3);
 assign cq_rd2_prdy = dma2_vld;
 assign cq_rd2_require_ack = cq_rd2_pd[0:0];
 assign cq_rd2_len = cq_rd2_pd[2:1];
@@ -309,30 +281,6 @@ mcif2client2_wr_rsp_complete <= dma2_vld & cq_rd2_pvld & cq_rd2_require_ack;
 end
 end
 
-assign dma3_vld = iflop_axi_vld & (iflop_axi_axid == 3);
-assign cq_rd3_prdy = dma3_vld;
-assign cq_rd3_require_ack = cq_rd3_pd[0:0];
-assign cq_rd3_len = cq_rd3_pd[2:1];
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-if (!nvdla_core_rstn) begin
-mcif2client3_wr_rsp_complete <= 1'b0;
-end else begin
-mcif2client3_wr_rsp_complete <= dma3_vld & cq_rd3_pvld & cq_rd3_require_ack;
-end
-end
-
-assign dma4_vld = iflop_axi_vld & (iflop_axi_axid == 4);
-assign cq_rd4_prdy = dma4_vld;
-assign cq_rd4_require_ack = cq_rd4_pd[0:0];
-assign cq_rd4_len = cq_rd4_pd[2:1];
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-if (!nvdla_core_rstn) begin
-mcif2client4_wr_rsp_complete <= 1'b0;
-end else begin
-mcif2client4_wr_rsp_complete <= dma4_vld & cq_rd4_pvld & cq_rd4_require_ack;
-end
-end
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 // EG2IG outstanding Counting
 assign eg2ig_axi_vld = iflop_axi_vld & noc2mcif_axi_b_bready;
@@ -340,7 +288,7 @@ always @(
 dma0_vld or
 cq_rd0_len
 //:my $i;
-//:for($i=1;$i<5;$i++) {
+//:for($i=1;$i<3;$i++) {
 //:print qq(
 //:or dma${i}_vld
 //:or cq_rd${i}_len
@@ -354,18 +302,12 @@ or cq_rd1_len
 or dma2_vld
 or cq_rd2_len
 
-or dma3_vld
-or cq_rd3_len
-
-or dma4_vld
-or cq_rd4_len
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ) begin
 //spyglass disable_block W171 W226
    case (1'b1)
 //:my $i;
-//:for($i=0;$i<5;$i++) {
+//:for($i=0;$i<3;$i++) {
 //:print qq(
 //:dma${i}_vld: eg2ig_axi_len = cq_rd${i}_len;
 //:);
@@ -377,10 +319,6 @@ dma0_vld: eg2ig_axi_len = cq_rd0_len;
 dma1_vld: eg2ig_axi_len = cq_rd1_len;
 
 dma2_vld: eg2ig_axi_len = cq_rd2_len;
-
-dma3_vld: eg2ig_axi_len = cq_rd3_len;
-
-dma4_vld: eg2ig_axi_len = cq_rd4_len;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //VCS coverage off

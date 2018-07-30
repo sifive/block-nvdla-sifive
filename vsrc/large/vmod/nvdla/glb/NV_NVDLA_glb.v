@@ -8,7 +8,6 @@
 // File Name: NV_NVDLA_glb.v
 module NV_NVDLA_glb (
    cacc2glb_done_intr_pd //|< i
-  ,bdma2glb_done_intr_pd //|< i
   ,cdma_dat2glb_done_intr_pd //|< i
   ,cdma_wt2glb_done_intr_pd //|< i
   ,cdp2glb_done_intr_pd //|< i
@@ -20,7 +19,6 @@ module NV_NVDLA_glb (
   ,nvdla_falcon_clk //|< i
   ,nvdla_falcon_rstn //|< i
   ,pdp2glb_done_intr_pd //|< i
-  ,rubik2glb_done_intr_pd //|< i
   ,sdp2glb_done_intr_pd //|< i
   ,test_mode //|< i
   ,core_intr //|> o
@@ -40,8 +38,6 @@ output core_intr;
 input [1:0] sdp2glb_done_intr_pd;
 input [1:0] cdp2glb_done_intr_pd;
 input [1:0] pdp2glb_done_intr_pd;
-input [1:0] bdma2glb_done_intr_pd;
-input [1:0] rubik2glb_done_intr_pd;
 input [1:0] cdma_wt2glb_done_intr_pd;
 input [1:0] cdma_dat2glb_done_intr_pd;
 input [1:0] cacc2glb_done_intr_pd;
@@ -51,10 +47,6 @@ input nvdla_core_rstn;
 input nvdla_falcon_rstn;
 input test_mode;
 input direct_reset_;
-wire bdma_done_mask0;
-wire bdma_done_mask1;
-wire bdma_done_status0;
-wire bdma_done_status1;
 wire cacc_done_mask0;
 wire cacc_done_mask1;
 wire cacc_done_status0;
@@ -75,10 +67,6 @@ wire pdp_done_mask0;
 wire pdp_done_mask1;
 wire pdp_done_status0;
 wire pdp_done_status1;
-wire rubik_done_mask0;
-wire rubik_done_mask1;
-wire rubik_done_status0;
-wire rubik_done_status1;
 wire sdp_done_mask0;
 wire sdp_done_mask1;
 wire sdp_done_set0_trigger;
@@ -92,8 +80,6 @@ wire [31:0] req_wdat;
 NV_NVDLA_GLB_csb u_csb (
    .nvdla_core_clk (nvdla_core_clk) //|< i
   ,.nvdla_core_rstn (nvdla_core_rstn) //|< i
-  ,.bdma_done_status0 (bdma_done_status0) //|< w
-  ,.bdma_done_status1 (bdma_done_status1) //|< w
   ,.cacc_done_status0 (cacc_done_status0) //|< w
   ,.cacc_done_status1 (cacc_done_status1) //|< w
   ,.cdma_dat_done_status0 (cdma_dat_done_status0) //|< w
@@ -106,12 +92,8 @@ NV_NVDLA_GLB_csb u_csb (
   ,.csb2glb_req_pvld (csb2glb_req_pvld) //|< i
   ,.pdp_done_status0 (pdp_done_status0) //|< w
   ,.pdp_done_status1 (pdp_done_status1) //|< w
-  ,.rubik_done_status0 (rubik_done_status0) //|< w
-  ,.rubik_done_status1 (rubik_done_status1) //|< w
   ,.sdp_done_status0 (sdp_done_status0) //|< w
   ,.sdp_done_status1 (sdp_done_status1) //|< w
-  ,.bdma_done_mask0 (bdma_done_mask0) //|> w
-  ,.bdma_done_mask1 (bdma_done_mask1) //|> w
   ,.cacc_done_mask0 (cacc_done_mask0) //|> w
   ,.cacc_done_mask1 (cacc_done_mask1) //|> w
   ,.cdma_dat_done_mask0 (cdma_dat_done_mask0) //|> w
@@ -125,8 +107,6 @@ NV_NVDLA_GLB_csb u_csb (
   ,.glb2csb_resp_valid (glb2csb_resp_valid) //|> o
   ,.pdp_done_mask0 (pdp_done_mask0) //|> w
   ,.pdp_done_mask1 (pdp_done_mask1) //|> w
-  ,.rubik_done_mask0 (rubik_done_mask0) //|> w
-  ,.rubik_done_mask1 (rubik_done_mask1) //|> w
   ,.sdp_done_mask0 (sdp_done_mask0) //|> w
   ,.sdp_done_mask1 (sdp_done_mask1) //|> w
   ,.sdp_done_set0_trigger (sdp_done_set0_trigger) //|> w
@@ -139,9 +119,6 @@ NV_NVDLA_GLB_csb u_csb (
 NV_NVDLA_GLB_ic u_ic (
    .nvdla_core_clk (nvdla_core_clk) //|< i
   ,.nvdla_core_rstn (nvdla_core_rstn) //|< i
-  ,.bdma2glb_done_intr_pd (bdma2glb_done_intr_pd[1:0]) //|< i
-  ,.bdma_done_mask0 (bdma_done_mask0) //|< w
-  ,.bdma_done_mask1 (bdma_done_mask1) //|< w
   ,.cacc2glb_done_intr_pd (cacc2glb_done_intr_pd[1:0]) //|< i
   ,.cacc_done_mask0 (cacc_done_mask0) //|< w
   ,.cacc_done_mask1 (cacc_done_mask1) //|< w
@@ -159,17 +136,12 @@ NV_NVDLA_GLB_ic u_ic (
   ,.pdp2glb_done_intr_pd (pdp2glb_done_intr_pd[1:0]) //|< i
   ,.pdp_done_mask0 (pdp_done_mask0) //|< w
   ,.pdp_done_mask1 (pdp_done_mask1) //|< w
-  ,.rubik2glb_done_intr_pd (rubik2glb_done_intr_pd[1:0]) //|< i
-  ,.rubik_done_mask0 (rubik_done_mask0) //|< w
-  ,.rubik_done_mask1 (rubik_done_mask1) //|< w
   ,.req_wdat (req_wdat[21:0]) //|< w
   ,.sdp2glb_done_intr_pd (sdp2glb_done_intr_pd[1:0]) //|< i
   ,.sdp_done_mask0 (sdp_done_mask0) //|< w
   ,.sdp_done_mask1 (sdp_done_mask1) //|< w
   ,.sdp_done_set0_trigger (sdp_done_set0_trigger) //|< w
   ,.sdp_done_status0_trigger (sdp_done_status0_trigger) //|< w
-  ,.bdma_done_status0 (bdma_done_status0) //|> w
-  ,.bdma_done_status1 (bdma_done_status1) //|> w
   ,.cacc_done_status0 (cacc_done_status0) //|> w
   ,.cacc_done_status1 (cacc_done_status1) //|> w
   ,.cdma_dat_done_status0 (cdma_dat_done_status0) //|> w
@@ -180,8 +152,6 @@ NV_NVDLA_GLB_ic u_ic (
   ,.cdp_done_status1 (cdp_done_status1) //|> w
   ,.pdp_done_status0 (pdp_done_status0) //|> w
   ,.pdp_done_status1 (pdp_done_status1) //|> w
-  ,.rubik_done_status0 (rubik_done_status0) //|> w
-  ,.rubik_done_status1 (rubik_done_status1) //|> w
   ,.sdp_done_status0 (sdp_done_status0) //|> w
   ,.sdp_done_status1 (sdp_done_status1) //|> w
   ,.core_intr (core_intr) //|> o

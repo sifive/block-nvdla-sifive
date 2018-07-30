@@ -140,7 +140,7 @@ input nvdla_core_rstn;
 reg [31:0] reg_rd_data;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 always @(*) begin
-  case ({20'h0,reg_offset})
+  case (reg_offset)
      (32'h0 & 32'h00000fff): reg_rd_data = 32'h10001 ;
      (32'h4 & 32'h00000fff): reg_rd_data = 32'h1 ;
      (32'h8 & 32'h00000fff): reg_rd_data = 32'h180002 ;

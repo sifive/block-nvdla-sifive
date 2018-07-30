@@ -17,6 +17,12 @@
 //#define CDMA_SBUF_SDATA_BITS            256
 //DorisL-S----------------
 //
+// #if ( NVDLA_MEMORY_ATOMIC_SIZE  ==  32 )
+//     #define IMG_LARGE
+// #endif
+// #if ( NVDLA_MEMORY_ATOMIC_SIZE == 8 )
+//     #define IMG_SMALL
+// #endif
 //DorisL-E----------------
 //--------------------------------------------------
 module NV_NVDLA_CDMA_dc (
@@ -28,15 +34,15 @@ module NV_NVDLA_CDMA_dc (
 ,output [( 64 + 15 )-1:0] dc_dat2mcif_rd_req_pd
 ,input mcif2dc_dat_rd_rsp_valid
 ,output mcif2dc_dat_rd_rsp_ready
-,input [( 512 + (512/8/32) )-1:0] mcif2dc_dat_rd_rsp_pd
+,input [( 256 + (256/8/32) )-1:0] mcif2dc_dat_rd_rsp_pd
 ,output dc_dat2cvif_rd_req_valid
 ,input dc_dat2cvif_rd_req_ready
 ,output [( 64 + 15 )-1:0] dc_dat2cvif_rd_req_pd
 ,input cvif2dc_dat_rd_rsp_valid
 ,output cvif2dc_dat_rd_rsp_ready
-,input [( 512 + (512/8/32) )-1:0] cvif2dc_dat_rd_rsp_pd
+,input [( 256 + (256/8/32) )-1:0] cvif2dc_dat_rd_rsp_pd
 ,output dc2cvt_dat_wr_en
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
 //: my $k = int(log(int($atmc/$dmaif))/log(2));
@@ -64,8 +70,9 @@ module NV_NVDLA_CDMA_dc (
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+,output [1-1:0] dc2cvt_dat_wr_sel
 ,output [16:0] dc2cvt_dat_wr_addr
-,output [512-1:0] dc2cvt_dat_wr_data
+,output [256-1:0] dc2cvt_dat_wr_data
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ,output [11:0] dc2cvt_dat_wr_info_pd
@@ -77,7 +84,7 @@ module NV_NVDLA_CDMA_dc (
 ,input [13:0] status2dma_valid_slices
 ,input [14:0] status2dma_free_entries
 ,input [14:0] status2dma_wr_idx
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm = 32*8; ##atomic_m BW
 //: my $M = $dmaif/$atmm; ##atomic_m number per dma transaction
 //: foreach my $i (0..$M-1) {
@@ -98,13 +105,6 @@ module NV_NVDLA_CDMA_dc (
 ,output reg dc2sbuf_p0_rd_en
 ,output reg [7:0] dc2sbuf_p0_rd_addr
 ,input [256-1:0] dc2sbuf_p0_rd_data
-
-,output dc2sbuf_p1_wr_en
-,output [7:0] dc2sbuf_p1_wr_addr
-,output [256-1:0] dc2sbuf_p1_wr_data
-,output reg dc2sbuf_p1_rd_en
-,output reg [7:0] dc2sbuf_p1_rd_addr
-,input [256-1:0] dc2sbuf_p1_rd_data
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ,input sc2cdma_dat_pending_req
@@ -150,8 +150,8 @@ module NV_NVDLA_CDMA_dc (
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 reg cbuf_is_ready;
-//: my $dmabw=512;
-//: my $dmaif=512/8/32;
+//: my $dmabw=256;
+//: my $dmaif=256/8/32;
 //: my $atmc=64/32;
 //: my $m = int($dmaif/$atmc+0.99);
 //: foreach my $i (0..$m-1) {
@@ -171,7 +171,7 @@ wire [16:0] cbuf_wr_addr_d0_0;
 reg [16:0] cbuf_wr_addr_d1_0;
 reg [16:0] cbuf_wr_addr_d2_0;
 reg [16:0] cbuf_wr_addr_d3_0;
-reg [512-1:0] cbuf_wr_data_d3_0;
+reg [256-1:0] cbuf_wr_data_d3_0;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 reg cbuf_wr_en;
@@ -264,7 +264,7 @@ reg [3:0] dma_rsp_size_cnt;
 //reg [31:0] dp2reg_dc_rd_latency;
 //reg [31:0] dp2reg_dc_rd_stall;
 reg [17:0] entry_per_batch_d2;
-reg [11:0] fetch_grain;
+reg [12:0] fetch_grain;
 reg [14:0] idx_base;
 reg [17:0] idx_batch_offset;
 reg [17:0] idx_ch_offset;
@@ -300,14 +300,22 @@ reg pending_req_d1;
 //bw of below two signals
 reg [0:0] pre_gen_sel;
 reg [0:0] req_csm_sel;
+//: my $req_cur_atomic_size=13;
 //: foreach my $i (0..1){
 //: print qq(
 //: wire pre_reg_en_d2_g${i};
-//: reg [13:0] req_atomic_${i}_d3;
+//: reg [${req_cur_atomic_size}:0] req_atomic_${i}_d3;
 //: reg [17:0] req_entry_${i}_d3;
 //: reg req_pre_valid_${i}_d3;
 //: );
 //: }
+//: print qq(
+//: reg [${req_cur_atomic_size}:0] req_atomic_d2;
+//: reg [${req_cur_atomic_size}:0] req_atm_cnt_0;
+//: reg [${req_cur_atomic_size}:0] req_atm_cnt_1;
+//: reg [${req_cur_atomic_size}:0] req_atm_cnt_2;
+//: reg [${req_cur_atomic_size}:0] req_atm_cnt_3;
+//: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
 wire pre_reg_en_d2_g0;
@@ -320,15 +328,16 @@ reg [13:0] req_atomic_1_d3;
 reg [17:0] req_entry_1_d3;
 reg req_pre_valid_1_d3;
 
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-reg pre_valid_d1;
-reg pre_valid_d2;
+reg [13:0] req_atomic_d2;
 reg [13:0] req_atm_cnt_0;
 reg [13:0] req_atm_cnt_1;
 reg [13:0] req_atm_cnt_2;
 reg [13:0] req_atm_cnt_3;
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
+reg pre_valid_d1;
+reg pre_valid_d2;
 reg [1:0] req_atm_sel;
-reg [13:0] req_atomic_d2;
 reg [4:0] req_batch_cnt;
 reg [10:0] req_ch_cnt;
 reg mon_req_ch_cnt;
@@ -347,7 +356,7 @@ reg [17:0] rsp_batch_entry_last;
 reg [10:0] rsp_ch_cnt;
 reg mon_rsp_ch_cnt;
 reg [2:0] rsp_cur_ch;
-reg [11:0] rsp_cur_grain;
+reg [12:0] rsp_cur_grain;
 //reg [17:0] req_entry_0_d3;
 //reg [17:0] req_entry_1_d3;
 reg [17:0] rsp_entry_init;
@@ -373,7 +382,7 @@ wire [15:0] cbuf_idx_inc;
 wire [16:0] cbuf_idx_w;
 wire cbuf_is_ready_w;
 wire cbuf_wr_en_d0;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
 //: my $k = int(log(int($atmc/$dmaif))/log(2));
@@ -387,6 +396,13 @@ wire cbuf_wr_en_d0;
 //: );
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
+
+wire [1-1:0] cbuf_wr_hsel_w;
+reg [1-1:0] cbuf_wr_hsel;
+wire [1-1:0] cbuf_wr_hsel_d0;
+reg [1-1:0] cbuf_wr_hsel_d1;
+reg [1-1:0] cbuf_wr_hsel_d2;
+reg [1-1:0] cbuf_wr_hsel_d3;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 wire [11:0] cbuf_wr_info_pd;
@@ -449,7 +465,7 @@ wire dma_rd_req_rdy;
 wire [15:0] dma_rd_req_size;
 wire dma_rd_req_type;
 wire dma_rd_req_vld;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm = 32*8; ##atomic_m BW
 //: my $M = $dmaif/$atmm; ##atomic_m number per dma transaction
 //: print qq(
@@ -464,12 +480,11 @@ wire dma_rd_req_vld;
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-wire [512+2-1:0] dma_rd_rsp_pd;
-wire [512-1:0] dma_rd_rsp_data;
+wire [256+1-1:0] dma_rd_rsp_pd;
+wire [256-1:0] dma_rd_rsp_data;
 
-wire [2-1:0] dma_rd_rsp_mask;
+wire [1-1:0] dma_rd_rsp_mask;
  wire [256-1:0] dma_rsp_data_p0; 
- wire [256-1:0] dma_rsp_data_p1; 
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 wire dma_rd_rsp_rdy;
@@ -487,7 +502,7 @@ wire dp2reg_dc_rd_stall_dec;
 wire [17:0] entry_per_batch;
 wire [17:0] entry_required;
 wire fetch_done;
-wire [11:0] fetch_grain_w;
+wire [12:0] fetch_grain_w;
 wire [17:0] idx_batch_offset_w;
 wire [17:0] idx_ch_offset_w;
 wire [17:0] idx_h_offset_w;
@@ -561,7 +576,7 @@ wire mon_rsp_ch_cnt_inc;
 wire mon_rsp_ch_left_w;
 wire need_pending;
 reg [2:0] rsp_rd_more_atmm;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm = 32*8; ##atomic_m BW
 //: my $M = $dmaif/$atmm; ##atomic_m number per dma transaction
 //: foreach my $k (0..$M-1) {
@@ -578,11 +593,6 @@ wire p0_wr_en;
 wire [7:0] p0_wr_addr;
 wire p0_rd_en_w;
 reg [7:0] p0_rd_addr_w;
-
-wire p1_wr_en;
-wire [7:0] p1_wr_addr;
-wire p1_rd_en_w;
-reg [7:0] p1_rd_addr_w;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 wire pending_req_end;
@@ -617,6 +627,17 @@ wire rd_req_rdyi;
 //: reg [12+31-${atmbw}:0] grain_addr;
 //: wire [2+31-${atmbw}:0] req_addr_ch_base_add;
 //: );
+//: my $req_cur_atomic_size=13;
+//: print qq(
+//: wire [${req_cur_atomic_size}:0] req_atm;
+//: wire [${req_cur_atomic_size}:0] req_atm_cnt;
+//: wire [${req_cur_atomic_size}:0] req_atm_cnt_0_w;
+//: wire [${req_cur_atomic_size}:0] req_atm_cnt_1_w;
+//: wire [${req_cur_atomic_size}:0] req_atm_cnt_2_w;
+//: wire [${req_cur_atomic_size}:0] req_atm_cnt_3_w;
+//: wire [${req_cur_atomic_size}:0] req_atm_cnt_inc;
+//: wire [${req_cur_atomic_size}:0] req_atm_left;
+//: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
 wire [63-5:0] req_addr;
@@ -638,7 +659,6 @@ wire [12+31-5:0] grain_addr_w;
 reg [12+31-5:0] grain_addr;
 wire [2+31-5:0] req_addr_ch_base_add;
 
-//| eperl: generated_end (DO NOT EDIT ABOVE)
 wire [13:0] req_atm;
 wire [13:0] req_atm_cnt;
 wire [13:0] req_atm_cnt_0_w;
@@ -647,6 +667,8 @@ wire [13:0] req_atm_cnt_2_w;
 wire [13:0] req_atm_cnt_3_w;
 wire [13:0] req_atm_cnt_inc;
 wire [13:0] req_atm_left;
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
 wire req_atm_reg_en;
 wire req_atm_reg_en_0;
 wire req_atm_reg_en_1;
@@ -659,7 +681,15 @@ wire req_batch_reg_en;
 wire [10:0] req_ch_left_w;
 wire [2:0] req_ch_mode;
 wire req_ch_reg_en;
+//: my $req_cur_atomic_size=13;
+//: print qq(
+//: wire [${req_cur_atomic_size}:0] req_cur_atomic;
+//: );
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+
 wire [13:0] req_cur_atomic;
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
 wire [13:0] req_cur_grain_w;
 wire [14:0] req_entry;
 wire req_grain_reg_en;
@@ -683,7 +713,7 @@ wire [10:0] rsp_ch_left_w;
 wire [2:0] rsp_ch_mode;
 wire rsp_ch_reg_en;
 wire [2:0] rsp_cur_ch_w;
-wire [11:0] rsp_cur_grain_w;
+wire [12:0] rsp_cur_grain_w;
 wire [17:0] rsp_entry;
 wire rsp_h_reg_en;
 reg rsp_rd_en;
@@ -959,7 +989,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        fetch_grain <= {12{1'b0}};
+        fetch_grain <= {13{1'b0}};
     end else begin
         if ((layer_st) == 1'b1) begin
             fetch_grain <= fetch_grain_w;
@@ -1000,8 +1030,8 @@ end
 assign pre_ready = ~pre_valid_d1 | pre_ready_d1;
 assign pre_reg_en = is_running & (req_height_cnt_d1 != data_height) & pre_ready;
 assign {mon_req_slice_left, req_slice_left} = data_height - req_height_cnt_d1;
-assign is_req_grain_last = (req_slice_left <= {2'd0,fetch_grain});
-assign req_cur_grain_w = is_req_grain_last ? req_slice_left : {2'd0,fetch_grain};
+assign is_req_grain_last = (req_slice_left <= {1'd0,fetch_grain});
+assign req_cur_grain_w = is_req_grain_last ? req_slice_left : {1'd0,fetch_grain};
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
         {mon_req_height_cnt_d1,req_height_cnt_d1} <= {15{1'b0}};
@@ -1048,7 +1078,7 @@ assign pre_ready_d1 = ~pre_valid_d2 | pre_ready_d2;
 assign pre_reg_en_d1 = pre_valid_d1 & pre_ready_d1;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atomic_d2 <= {14{1'b0}};
+        req_atomic_d2 <= 0;
     end else begin
         if ((pre_reg_en_d1) == 1'b1) begin
             req_atomic_d2 <= req_cur_atomic;
@@ -1104,7 +1134,7 @@ assign pre_reg_en_d2_init = pre_valid_d2 & pre_ready_d2 & ~is_req_grain_last_d2;
 assign pre_reg_en_d2_last = pre_valid_d2 & pre_ready_d2 & is_req_grain_last_d2;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atomic_0_d3 <= {14{1'b0}};
+        req_atomic_0_d3 <= 0;
     end else begin
         if ((pre_reg_en_d2_g0) == 1'b1) begin
             req_atomic_0_d3 <= req_atomic_d2;
@@ -1113,7 +1143,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atomic_1_d3 <= {14{1'b0}};
+        req_atomic_1_d3 <= 0;
     end else begin
         if ((pre_reg_en_d2_g1) == 1'b1) begin
             req_atomic_1_d3 <= req_atomic_d2;
@@ -1261,7 +1291,7 @@ assign is_req_batch_end = (req_batch_cnt == reg2dp_batches);
 ///////////// channel counter /////////////
 assign req_ch_mode = is_packed_1x1 ? 3'h1 :
                      /*is_data_shrink ? 3'h4 : */
-//: my $dmaif=512/8/32;
+//: my $dmaif=256/8/32;
 //: my $atmc=64/32;
 //: my $m = int($dmaif/$atmc);
 //: my $k;
@@ -1272,7 +1302,7 @@ assign req_ch_mode = is_packed_1x1 ? 3'h1 :
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-3'h2;
+3'h1;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign {mon_req_ch_left_w,req_ch_left_w} = (layer_st | is_req_ch_end) ? {1'b0,data_surface_w} : (data_surface - req_ch_cnt) - {8'd0,req_cur_ch};
@@ -1331,20 +1361,20 @@ assign is_atm_done[3] = (req_atm_cnt_3 == req_atm);
 assign req_atm_cnt = (req_atm_sel == 2'h0) ? req_atm_cnt_0 :
                      (req_atm_sel == 2'h1) ? req_atm_cnt_1 :
                      (req_atm_sel == 2'h2) ? req_atm_cnt_2 :
-                     (req_atm_sel == 2'h3) ? req_atm_cnt_3 : 14'd0;
+                     (req_atm_sel == 2'h3) ? req_atm_cnt_3 : 0;
 assign {mon_req_atm_cnt_inc, req_atm_cnt_inc} = req_atm_cnt + req_atm_size;
 assign cur_atm_done = (req_atm_sel == 2'h0) ? is_atm_done[0] :
                       (req_atm_sel == 2'h1) ? is_atm_done[1] :
                       (req_atm_sel == 2'h2) ? is_atm_done[2] :
                       (req_atm_sel == 2'h3) ? is_atm_done[3] : 1'b0;
 assign {mon_req_atm_left, req_atm_left} = req_atm - req_atm_cnt;
-assign {mon_req_atm_size_addr_limit, req_atm_size_addr_limit} = (req_atm_cnt == 14'b0) ? (4'h8 - req_addr[2:0]) : 4'h8;
+assign {mon_req_atm_size_addr_limit, req_atm_size_addr_limit} = (req_atm_cnt == 0) ? (4'h8 - req_addr[2:0]) : 4'h8;
 assign req_atm_size = (req_atm_left < {{10{1'b0}}, req_atm_size_addr_limit}) ? req_atm_left[3:0] : req_atm_size_addr_limit;
 assign {mon_req_atm_size_out, req_atm_size_out} = req_atm_size - 1'b1;
-assign req_atm_cnt_0_w = (~is_running | is_req_atm_end) ? 14'b0 : req_atm_cnt_inc;
-assign req_atm_cnt_1_w = (~is_running | is_req_atm_end) ? 14'b0 : req_atm_cnt_inc;
-assign req_atm_cnt_2_w = (~is_running | is_req_atm_end) ? 14'b0 : req_atm_cnt_inc;
-assign req_atm_cnt_3_w = (~is_running | is_req_atm_end) ? 14'b0 : req_atm_cnt_inc;
+assign req_atm_cnt_0_w = (~is_running | is_req_atm_end) ? 0 : req_atm_cnt_inc;
+assign req_atm_cnt_1_w = (~is_running | is_req_atm_end) ? 0 : req_atm_cnt_inc;
+assign req_atm_cnt_2_w = (~is_running | is_req_atm_end) ? 0 : req_atm_cnt_inc;
+assign req_atm_cnt_3_w = (~is_running | is_req_atm_end) ? 0 : req_atm_cnt_inc;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
         req_atm_sel <= {2{1'b0}};
@@ -1362,7 +1392,7 @@ end
 assign is_req_atm_sel_end = ({2'd0,req_atm_sel} == (req_cur_ch-1));
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atm_cnt_0 <= {14{1'b0}};
+        req_atm_cnt_0 <= 0;
     end else begin
         if ((layer_st | req_atm_reg_en_0) == 1'b1) begin
             req_atm_cnt_0 <= req_atm_cnt_0_w;
@@ -1371,7 +1401,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atm_cnt_1 <= {14{1'b0}};
+        req_atm_cnt_1 <= 0;
     end else begin
         if ((layer_st | req_atm_reg_en_1) == 1'b1) begin
             req_atm_cnt_1 <= req_atm_cnt_1_w;
@@ -1380,7 +1410,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atm_cnt_2 <= {14{1'b0}};
+        req_atm_cnt_2 <= 0;
     end else begin
         if ((layer_st | req_atm_reg_en_2) == 1'b1) begin
             req_atm_cnt_2 <= req_atm_cnt_2_w;
@@ -1389,7 +1419,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atm_cnt_3 <= {14{1'b0}};
+        req_atm_cnt_3 <= 0;
     end else begin
         if ((layer_st | req_atm_reg_en_3) == 1'b1) begin
             req_atm_cnt_3 <= req_atm_cnt_3_w;
@@ -1402,7 +1432,7 @@ assign {mon_req_addr_grain_base_inc,req_addr_grain_base_inc} = req_addr_grain_ba
 assign {mon_req_addr_batch_base_inc,req_addr_batch_base_inc} = req_addr_batch_base + reg2dp_batch_stride;
 assign req_addr_ch_base_add = /*(is_data_shrink) ? {reg2dp_surf_stride, 2'b0} : */
 //{1'b0, reg2dp_surf_stride, 1'b0};
-//: my $dmaif=512/8/32;
+//: my $dmaif=256/8/32;
 //: my $atmc=64/32;
 //: my $k;
 //: if(${dmaif} < ${atmc}) {
@@ -1418,7 +1448,7 @@ assign req_addr_ch_base_add = /*(is_data_shrink) ? {reg2dp_surf_stride, 2'b0} : 
 //: print "{reg2dp_surf_stride, 2'b0};          \n";
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-{1'b0, reg2dp_surf_stride, 1'b0};    
+{2'b0, reg2dp_surf_stride};          
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign {mon_req_addr_ch_base_inc, req_addr_ch_base_inc} = req_addr_ch_base + req_addr_ch_base_add;
@@ -1614,12 +1644,12 @@ assign dma_req_fifo_data = {req_ch_idx_d1, req_size_d1};
 ////:       assign dma_rd_rsp_mask[${M}-1:0] =    dma_rd_rsp_pd[${dmaif}+${M}-1:${dmaif}];
 ////:   );
 ////: }
-assign dma_rd_rsp_data[512 -1:0] = dma_rd_rsp_pd[512 -1:0];
-assign dma_rd_rsp_mask[( 512 + (512/8/32) )-512 -1:0] = dma_rd_rsp_pd[( 512 + (512/8/32) )-1:512];
+assign dma_rd_rsp_data[256 -1:0] = dma_rd_rsp_pd[256 -1:0];
+assign dma_rd_rsp_mask[( 256 + (256/8/32) )-256 -1:0] = dma_rd_rsp_pd[( 256 + (256/8/32) )-1:256];
 assign {dma_rsp_ch_idx, dma_rsp_size} = dma_rsp_fifo_data;
 wire [1:0] active_atom_num;
 assign active_atom_num = 2'd0
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm = 32*8; ##atomic_m BW
 //: my $M = $dmaif/$atmm; ##atomic_m number per dma transaction
 //: foreach my $k (0..$M-1){
@@ -1631,13 +1661,11 @@ assign active_atom_num = 2'd0
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
 + dma_rd_rsp_mask[0]
-
-+ dma_rd_rsp_mask[1]
 ; 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign {mon_dma_rsp_size_cnt_inc,dma_rsp_size_cnt_inc} = dma_rsp_size_cnt + active_atom_num;
 assign {
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm = 32*8; ##atomic_m BW
 //: my $M = $dmaif/$atmm; ##atomic_m number per dma transaction
 //: if($M>1) {
@@ -1648,7 +1676,7 @@ assign {
 //: }
 //: print qq( dma_rsp_data_p0} = dma_rd_rsp_data; );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
- dma_rsp_data_p1,  dma_rsp_data_p0} = dma_rd_rsp_data; 
+ dma_rsp_data_p0} = dma_rd_rsp_data; 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign dma_rsp_size_cnt_w = (dma_rsp_size_cnt_inc == dma_rsp_size) ? 4'b0 : dma_rsp_size_cnt_inc;
 assign dma_rsp_fifo_ready = (dma_rd_rsp_vld & ~is_blocking & (dma_rsp_size_cnt_inc == dma_rsp_size));
@@ -1731,7 +1759,7 @@ assign ch3_p1_wr_addr = {2'h3, ch3_p1_wr_addr_cnt[0], ch3_p1_wr_addr_cnt[8 -3:1]
 ////////////////////////////////////////////////////////////////////////
 // Shared buffer write signals //
 ////////////////////////////////////////////////////////////////////////
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm = 32*8; ##atomic_m BW
 //: my $M = $dmaif/$atmm; ##atomic_m number per dma transaction
 //: foreach my $k (0..$M-1) {
@@ -1756,7 +1784,7 @@ assign ch3_p1_wr_addr = {2'h3, ch3_p1_wr_addr_cnt[0], ch3_p1_wr_addr_cnt[8 -3:1]
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign p0_wr_en = is_running & dma_rd_rsp_vld & ~is_blocking & dma_rd_rsp_mask[0];
+assign p0_wr_en = is_running & dma_rd_rsp_vld & ~is_blocking;
 
 assign p0_wr_addr = ({8 {p0_wr_en & is_rsp_ch0}} & ch0_p0_wr_addr)
 | ({8 {p0_wr_en & is_rsp_ch1}} & ch1_p0_wr_addr)
@@ -1765,16 +1793,6 @@ assign p0_wr_addr = ({8 {p0_wr_en & is_rsp_ch0}} & ch0_p0_wr_addr)
 assign dc2sbuf_p0_wr_en = p0_wr_en;
 assign dc2sbuf_p0_wr_addr = p0_wr_addr;
 assign dc2sbuf_p0_wr_data = dma_rsp_data_p0;
-
-assign p1_wr_en = is_running & dma_rd_rsp_vld & ~is_blocking & dma_rd_rsp_mask[1];
-
-assign p1_wr_addr = ({8 {p1_wr_en & is_rsp_ch0}} & ch0_p1_wr_addr)
-| ({8 {p1_wr_en & is_rsp_ch1}} & ch1_p1_wr_addr)
-| ({8 {p1_wr_en & is_rsp_ch2}} & ch2_p1_wr_addr)
-| ({8 {p1_wr_en & is_rsp_ch3}} & ch3_p1_wr_addr);
-assign dc2sbuf_p1_wr_en = p1_wr_en;
-assign dc2sbuf_p1_wr_addr = p1_wr_addr;
-assign dc2sbuf_p1_wr_data = dma_rsp_data_p1;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////////////////////////////////////////////////////////////////////////
@@ -1835,7 +1853,7 @@ assign {mon_rsp_all_h_cnt_inc,
         rsp_all_h_cnt_inc} = rsp_all_h_cnt + rsp_cur_grain;
 assign {mon_rsp_all_h_left_w,
         rsp_all_h_left_w} = layer_st ? {1'b0, data_height_w} : data_height - rsp_all_h_cnt_inc;
-assign rsp_cur_grain_w = (rsp_all_h_left_w > {{2{1'b0}}, fetch_grain_w}) ? fetch_grain_w : rsp_all_h_left_w[11:0];
+assign rsp_cur_grain_w = (rsp_all_h_left_w > {{1{1'b0}}, fetch_grain_w}) ? fetch_grain_w : rsp_all_h_left_w[12:0];
 assign is_rsp_all_h_end = (rsp_all_h_cnt_inc == data_height);
 assign is_rsp_done = ~reg2dp_op_en | (rsp_all_h_cnt == data_height);
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -1851,7 +1869,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        rsp_cur_grain <= {12{1'b0}};
+        rsp_cur_grain <= {13{1'b0}};
     end else begin
         if ((layer_st | rsp_all_h_reg_en) == 1'b1) begin
             rsp_cur_grain <= rsp_cur_grain_w;
@@ -1965,7 +1983,7 @@ assign rsp_ch0_rd_one = ~(rsp_cur_ch == 3'h1) |
 // ((rsp_cur_ch == 3'h3) & is_data_shrink & rsp_ch_cnt[2] & rsp_rd_ch2ch3);
 always @(*)
 begin
-//: my $dmaif=512/8/32;
+//: my $dmaif=256/8/32;
 //: my $atmc=64/32;
 //: ##my $m = int($dmaif/$atmc);
 //: ##if(($dmaif==1) && ($atmc==1)) {
@@ -2058,14 +2076,7 @@ begin
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-if(rsp_cur_ch == 3'd2)
-rsp_rd_more_atmm[2:0] = 3'b001;
-else begin
-if(rsp_w_left1)
-rsp_rd_more_atmm[2:0] = 3'b000;
-else
-rsp_rd_more_atmm[2:0] = 3'b001;
-end
+rsp_rd_more_atmm[2:0] = 3'd0;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 end
@@ -2099,7 +2110,7 @@ assign ch3_aval = (|ch3_cnt);
 always @(*)
 begin
     if(~is_rsp_done & is_running) begin
-//: my $dmaif=512/8/32;
+//: my $dmaif=256/8/32;
 //: my $atmc=64/32;
 //: ##my $m = int($dmaif/$atmc);
 //: ##if(($dmaif==1) && ($atmc==1)) {
@@ -2201,11 +2212,8 @@ begin
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+rsp_rd_en = ch0_aval;
 rsp_w_cnt_add = 3'd1;
-if(rsp_cur_ch == 3'd2)
-rsp_rd_en = ch0_aval & ch1_aval;
-else //rsp_cur_ch==1
-rsp_rd_en = (ch0_cnt >= {2'b0, rsp_w_cnt_add});
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
     end else begin
@@ -2215,7 +2223,7 @@ rsp_rd_en = (ch0_cnt >= {2'b0, rsp_w_cnt_add});
 end
 assign p0_rd_en_w = rsp_rd_en;
 // assign p1_rd_en_w = rsp_rd_en & ~rsp_rd_one;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm = 32*8; ##atomic_m BW
 //: my $M = $dmaif/$atmm; ##atomic_m number per dma transaction
 //: if($M > 1) {
@@ -2227,8 +2235,6 @@ assign p0_rd_en_w = rsp_rd_en;
 //: }
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-
-assign p1_rd_en_w = rsp_rd_en & rsp_rd_more_atmm[0];
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ///////////// channel address counter /////////////
@@ -2299,7 +2305,7 @@ assign ch2_p0_rd_addr = {2'h2, ch2_p0_rd_addr_cnt[0], ch2_p0_rd_addr_cnt[8 -3:1]
 assign ch3_p0_rd_addr = {2'h3, ch3_p0_rd_addr_cnt[0], ch3_p0_rd_addr_cnt[8 -3:1]};
 ///////////// shared buffer read address /////////////
 always @(*) begin
-//: my $dmaif=512/8/32;
+//: my $dmaif=256/8/32;
 //: my $atmc=64/32;
 //: my $m = int($dmaif/$atmc+0.99);
 //: ##foreach my $k (0..$m-1){
@@ -2436,13 +2442,7 @@ always @(*) begin
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-if(rsp_cur_ch == 3'd2) begin
 p0_rd_addr_w = ch0_p0_rd_addr;
-p1_rd_addr_w = ch1_p0_rd_addr;
-end else begin //rsp_cur_ch==1
-p0_rd_addr_w = ch0_p0_rd_addr;
-p1_rd_addr_w = ch0_p1_rd_addr;
-end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 end
@@ -2462,7 +2462,7 @@ end
 ///////////// output to shared buffer /////////////
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm = 32*8; ##atomic_m BW
 //: my $M = $dmaif/$atmm; ##atomic_m number per dma transaction
 //: foreach my $k (0..$M-1) {
@@ -2482,18 +2482,14 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
 dc2sbuf_p0_rd_en <= 1'b0;
 
-dc2sbuf_p1_rd_en <= 1'b0;
-
 end else begin
 
 dc2sbuf_p0_rd_en <= p0_rd_en_w;
 
-dc2sbuf_p1_rd_en <= p1_rd_en_w;
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
     end
 end
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm = 32*8; ##atomic_m BW
 //: my $M = $dmaif/$atmm; ##atomic_m number per dma transaction
 //: foreach my $k (0..$M-1) {
@@ -2517,19 +2513,11 @@ dc2sbuf_p0_rd_addr <= p0_rd_addr_w;
 end
 end
 
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-if (!nvdla_core_rstn) begin
-dc2sbuf_p1_rd_addr <= {8{1'b0}};
-end else if (p1_rd_en_w) begin
-dc2sbuf_p1_rd_addr <= p1_rd_addr_w;
-end
-end
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////////////////////////////////////////////////////////////////////////
 // generate write signal to convertor //
 ////////////////////////////////////////////////////////////////////////
-//: my $dmaif=512/8/32;
+//: my $dmaif=256/8/32;
 //: my $atmc=64/32;
 //: if(($dmaif==1) && ($atmc==1)) {
 //: print qq(
@@ -2547,7 +2535,7 @@ end
 //: (is_rsp_ch_end) ? {1'b0, idx_batch_offset_w} :
 //: (rsp_ch_cnt[0]) ? idx_ch_offset + data_width : idx_ch_offset;
 //: assign is_w_cnt_div4 = 1'b0;
-//: assign is_w_cnt_div2 = (is_data_normal & is_rsp_ch_end & ~rsp_ch_cnt[0] & (rsp_cur_ch == 3'h2));
+//: assign is_w_cnt_div2 = (is_data_normal & is_rsp_ch_end & ~rsp_ch_cnt[0]);
 //: assign cbuf_wr_hsel_w = (is_w_cnt_div2 & rsp_w_cnt[0]) | (is_data_normal & rsp_ch_cnt[0]) ;
 //: );
 //: } elsif(($dmaif==1) && ($atmc==4)) {
@@ -2608,7 +2596,8 @@ idx_ch_offset_w} = (layer_st) ? 18'b0 :
 (is_rsp_ch_end) ? {1'b0, idx_batch_offset_w} :
 (rsp_ch_cnt[0]) ? idx_ch_offset + data_width : idx_ch_offset;
 assign is_w_cnt_div4 = 1'b0;
-assign is_w_cnt_div2 = (is_data_normal & is_rsp_ch_end & ~rsp_ch_cnt[0] & (rsp_cur_ch == 3'h2));
+assign is_w_cnt_div2 = (is_data_normal & is_rsp_ch_end & ~rsp_ch_cnt[0]);
+assign cbuf_wr_hsel_w = (is_w_cnt_div2 & rsp_w_cnt[0]) | (is_data_normal & rsp_ch_cnt[0]) ;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign {mon_idx_batch_offset_w, idx_batch_offset_w} = (layer_st | is_rsp_batch_end) ? 19'b0 : (idx_batch_offset + data_entries);
@@ -2628,8 +2617,19 @@ assign {mon_idx_h_offset_w,
 //assign idx_w_offset_add = is_w_cnt_div4 ? {rsp_w_cnt[12 +2:2]} : ( is_w_cnt_div2 ? rsp_w_cnt[12+1 :1] : rsp_w_cnt[12:0] );
 assign idx_w_offset_add = is_w_cnt_div4 ? {1'b0,rsp_w_cnt[15:2]} : ( is_w_cnt_div2 ? rsp_w_cnt[14+1 :1] : rsp_w_cnt[14:0] );
 assign {mon_cbuf_idx_inc[2:0], cbuf_idx_inc} = idx_base + (idx_grain_offset + idx_h_offset) + idx_w_offset_add;
+//: my $bank_depth_bits = int( log(512)/log(2) );
+//: print qq(
+//: assign is_cbuf_idx_wrap = cbuf_idx_inc >= {1'b0, data_bank, ${bank_depth_bits}'b0};
+//: assign cbuf_idx_w = ~is_cbuf_idx_wrap ? {2'b0, cbuf_idx_inc[14:0]} : {2'd0,cbuf_idx_inc[14 :0]} - {2'b0, data_bank, ${bank_depth_bits}'b0};
+//: );
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+
 assign is_cbuf_idx_wrap = cbuf_idx_inc >= {1'b0, data_bank, 9'b0};
 assign cbuf_idx_w = ~is_cbuf_idx_wrap ? {2'b0, cbuf_idx_inc[14:0]} : {2'd0,cbuf_idx_inc[14 :0]} - {2'b0, data_bank, 9'b0};
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
+//assign is_cbuf_idx_wrap = cbuf_idx_inc >= {1'b0, data_bank, 9'b0};
+//assign cbuf_idx_w = ~is_cbuf_idx_wrap ? {2'b0, cbuf_idx_inc[14:0]} : {2'd0,cbuf_idx_inc[14 :0]} - {2'b0, data_bank, 9'b0};
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
         idx_base <= 0;
@@ -2683,7 +2683,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     end
 end
 //
-//: my $dmaif=512/8/32;
+//: my $dmaif=256/8/32;
 //: my $atmc=64/32;
 //: my $m = int($dmaif/$atmc+0.99);
 //: foreach my $i (0..$m-1) {
@@ -2697,7 +2697,7 @@ end
 //: end
 //: );
 //: }
-//: my $dmaif=512/8/32;
+//: my $dmaif=256/8/32;
 //: my $atmc=64/32;
 //: if($dmaif < $atmc) {
 //: print qq(
@@ -2746,12 +2746,22 @@ cbuf_wr_addr_0 <= cbuf_idx_w + 0;
 end
 end
 
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+if (!nvdla_core_rstn) begin
+cbuf_wr_hsel <= 0;
+end else begin
+if ((rsp_w_reg_en) == 1'b1) begin
+cbuf_wr_hsel <= cbuf_wr_hsel_w;
+end
+end
+end
+
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
         cbuf_wr_info_mask <= 0;
     end else begin
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmm = 32*8; ##atomic_m BW
 //: my $M = $dmaif/$atmm; ##atomic_m number per dma transaction
 //: print " cbuf_wr_info_mask <= {{(4-$M){1'b0}}   ";
@@ -2760,7 +2770,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 //: print " ,p${i}_rd_en_w  ";
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
- cbuf_wr_info_mask <= {{(4-2){1'b0}}    ,p1_rd_en_w   ,p0_rd_en_w  
+ cbuf_wr_info_mask <= {{(4-1){1'b0}}    ,p0_rd_en_w  
 //| eperl: generated_end (DO NOT EDIT ABOVE)
        };
     end
@@ -2778,7 +2788,7 @@ assign cbuf_wr_info_pd[11:9] = 3'd0;//cbuf_wr_info_sub_h[2:0];
 assign cbuf_wr_en_d0 = cbuf_wr_en;
 assign cbuf_wr_info_pd_d0 = cbuf_wr_info_pd;
 //
-//: my $dmaif=512/8/32;
+//: my $dmaif=256/8/32;
 //: my $atmc=64/32;
 //: my $latency = (2 +1);
 //:
@@ -2831,6 +2841,30 @@ assign cbuf_wr_info_pd_d0 = cbuf_wr_info_pd;
 //: }
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
+ assign cbuf_wr_hsel_d0 = cbuf_wr_hsel; 
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+if (!nvdla_core_rstn) begin
+cbuf_wr_hsel_d1 <= 1'b0;
+end else if (cbuf_wr_en_d0) begin
+cbuf_wr_hsel_d1 <= cbuf_wr_hsel_d0;
+end
+end
+
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+if (!nvdla_core_rstn) begin
+cbuf_wr_hsel_d2 <= 1'b0;
+end else if (cbuf_wr_en_d1) begin
+cbuf_wr_hsel_d2 <= cbuf_wr_hsel_d1;
+end
+end
+
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+if (!nvdla_core_rstn) begin
+cbuf_wr_hsel_d3 <= 1'b0;
+end else if (cbuf_wr_en_d2) begin
+cbuf_wr_hsel_d3 <= cbuf_wr_hsel_d2;
+end
+end
 
 assign cbuf_wr_addr_d0_0 = cbuf_wr_addr_0;
 
@@ -2935,7 +2969,7 @@ end
 // ###################################################################
 //: my $latency = (2 +1);
 //: my $lb = $latency - 1;
-//: my $dmaif=512/8/32;
+//: my $dmaif=256/8/32;
 //: my $atmc=64/32;
 //: if($dmaif <= $atmc) {
 //: print qq (
@@ -3013,7 +3047,7 @@ end
 always @(posedge nvdla_core_clk) begin
 if (cbuf_wr_en_d2) begin
 cbuf_wr_data_d3_0 <= {
- dc2sbuf_p1_rd_data, 
+
 dc2sbuf_p0_rd_data};
 end
 end
@@ -3023,6 +3057,8 @@ assign dc2cvt_dat_wr_data = cbuf_wr_data_d3_0;
 
 assign dc2cvt_dat_wr_en = cbuf_wr_en_d3;
 assign dc2cvt_dat_wr_info_pd = cbuf_wr_info_pd_d3;
+
+assign dc2cvt_dat_wr_sel = cbuf_wr_hsel_d3;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //////////////////////////////////////////////////////

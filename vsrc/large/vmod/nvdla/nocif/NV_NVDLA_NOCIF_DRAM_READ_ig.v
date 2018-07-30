@@ -17,13 +17,19 @@
 // File Name: NV_NVDLA_define.h
 ///////////////////////////////////////////////////
 //
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  512 )
+//    #define LARGE_MEMBUS
+//#endif
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  64 )
+//    #define SMALL_MEMBUS
+//#endif
 module NV_NVDLA_NOCIF_DRAM_READ_ig (
    nvdla_core_clk //|< i
   ,nvdla_core_rstn //|< i
   ,pwrbus_ram_pd
   ,eg2ig_axi_vld
 //:my $i;
-//:my $k=10;
+//:my $k=8;
 //:for ($i=0;$i<$k;$i++) {
 //: print (",client${i}2mcif_lat_fifo_depth\n");
 //: print (",client${i}2mcif_rd_cdt_lat_fifo_pop\n");
@@ -90,20 +96,6 @@ module NV_NVDLA_NOCIF_DRAM_READ_ig (
 ,client72mcif_rd_req_pd
 ,client72mcif_rd_wt
 ,client72mcif_rd_axid
-,client82mcif_lat_fifo_depth
-,client82mcif_rd_cdt_lat_fifo_pop
-,client82mcif_rd_req_valid
-,client82mcif_rd_req_ready
-,client82mcif_rd_req_pd
-,client82mcif_rd_wt
-,client82mcif_rd_axid
-,client92mcif_lat_fifo_depth
-,client92mcif_rd_cdt_lat_fifo_pop
-,client92mcif_rd_req_valid
-,client92mcif_rd_req_ready
-,client92mcif_rd_req_pd
-,client92mcif_rd_wt
-,client92mcif_rd_axid
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
   ,reg2dp_rd_os_cnt
@@ -121,7 +113,7 @@ input nvdla_core_clk;
 input nvdla_core_rstn;
 input [31:0] pwrbus_ram_pd;
 //:my $i;
-//:my $k=10;
+//:my $k=8;
 //:for ($i=0;$i<$k;$i++) {
 //: print ("input client${i}2mcif_rd_cdt_lat_fifo_pop;\n");
 //: print ("input client${i}2mcif_rd_req_valid;\n");
@@ -198,22 +190,6 @@ input [64 +14:0] client72mcif_rd_req_pd;
 input [7:0] client72mcif_rd_wt;
 input [3:0] client72mcif_rd_axid;
 input [7:0] client72mcif_lat_fifo_depth;
-input client82mcif_rd_cdt_lat_fifo_pop;
-input client82mcif_rd_req_valid;
-output client82mcif_rd_req_ready;
-
-input [64 +14:0] client82mcif_rd_req_pd;
-input [7:0] client82mcif_rd_wt;
-input [3:0] client82mcif_rd_axid;
-input [7:0] client82mcif_lat_fifo_depth;
-input client92mcif_rd_cdt_lat_fifo_pop;
-input client92mcif_rd_req_valid;
-output client92mcif_rd_req_ready;
-
-input [64 +14:0] client92mcif_rd_req_pd;
-input [7:0] client92mcif_rd_wt;
-input [3:0] client92mcif_rd_axid;
-input [7:0] client92mcif_lat_fifo_depth;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 output cq_wr_pvld; /* data valid */
@@ -231,7 +207,7 @@ wire [64 +10:0] arb2spt_req_pd;
 wire arb2spt_req_ready;
 wire arb2spt_req_valid;
 //:my $i;
-//:my $k=10;
+//:my $k=8;
 //:for ($i=0;$i<$k;$i++) {
 //: print qq(
 //: wire [64 +10:0] bpt2arb_req${i}_pd;
@@ -240,7 +216,7 @@ wire arb2spt_req_valid;
 //: print ("wire  bpt2arb_req${i}_valid;\n");
 //:}
 //:my $i;
-//:my $k=10;
+//:my $k=8;
 //:for ($i=0;$i<$k;$i++) {
 //: print("NV_NVDLA_NOCIF_DRAM_READ_IG_bpt u_bpt${i} (\n");
 //: print (".nvdla_core_clk(nvdla_core_clk)\n");
@@ -289,14 +265,6 @@ wire  bpt2arb_req6_valid;
 wire [64 +10:0] bpt2arb_req7_pd;
 wire  bpt2arb_req7_ready;
 wire  bpt2arb_req7_valid;
-
-wire [64 +10:0] bpt2arb_req8_pd;
-wire  bpt2arb_req8_ready;
-wire  bpt2arb_req8_valid;
-
-wire [64 +10:0] bpt2arb_req9_pd;
-wire  bpt2arb_req9_ready;
-wire  bpt2arb_req9_valid;
 NV_NVDLA_NOCIF_DRAM_READ_IG_bpt u_bpt0 (
 .nvdla_core_clk(nvdla_core_clk)
 ,.nvdla_core_rstn(nvdla_core_rstn)
@@ -401,32 +369,6 @@ NV_NVDLA_NOCIF_DRAM_READ_IG_bpt u_bpt7 (
 ,.tieoff_axid(client72mcif_rd_axid)
 ,.tieoff_lat_fifo_depth(client72mcif_lat_fifo_depth)
 );
-NV_NVDLA_NOCIF_DRAM_READ_IG_bpt u_bpt8 (
-.nvdla_core_clk(nvdla_core_clk)
-,.nvdla_core_rstn(nvdla_core_rstn)
-,.dma2bpt_req_valid(client82mcif_rd_req_valid)
-,.dma2bpt_req_ready(client82mcif_rd_req_ready)
-,.dma2bpt_req_pd(client82mcif_rd_req_pd)
-,.dma2bpt_cdt_lat_fifo_pop(client82mcif_rd_cdt_lat_fifo_pop)
-,.bpt2arb_req_valid(bpt2arb_req8_valid)
-,.bpt2arb_req_ready(bpt2arb_req8_ready)
-,.bpt2arb_req_pd(bpt2arb_req8_pd)
-,.tieoff_axid(client82mcif_rd_axid)
-,.tieoff_lat_fifo_depth(client82mcif_lat_fifo_depth)
-);
-NV_NVDLA_NOCIF_DRAM_READ_IG_bpt u_bpt9 (
-.nvdla_core_clk(nvdla_core_clk)
-,.nvdla_core_rstn(nvdla_core_rstn)
-,.dma2bpt_req_valid(client92mcif_rd_req_valid)
-,.dma2bpt_req_ready(client92mcif_rd_req_ready)
-,.dma2bpt_req_pd(client92mcif_rd_req_pd)
-,.dma2bpt_cdt_lat_fifo_pop(client92mcif_rd_cdt_lat_fifo_pop)
-,.bpt2arb_req_valid(bpt2arb_req9_valid)
-,.bpt2arb_req_ready(bpt2arb_req9_ready)
-,.bpt2arb_req_pd(bpt2arb_req9_pd)
-,.tieoff_axid(client92mcif_rd_axid)
-,.tieoff_lat_fifo_depth(client92mcif_lat_fifo_depth)
-);
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 wire [64 +10:0] spt2cvt_req_pd;
@@ -463,7 +405,7 @@ NV_NVDLA_NOCIF_DRAM_READ_IG_cvt u_cvt (
 NV_NVDLA_NOCIF_DRAM_READ_IG_arb u_arb (
    .nvdla_core_clk(nvdla_core_clk)
    ,.nvdla_core_rstn(nvdla_core_rstn)
-//:my $k=10;
+//:my $k=8;
 //:my $i;
 //:for($i=0;$i<$k;$i++) {
 //:print(",.bpt2arb_req${i}_valid (bpt2arb_req${i}_valid)\n");
@@ -504,14 +446,6 @@ NV_NVDLA_NOCIF_DRAM_READ_IG_arb u_arb (
 ,.bpt2arb_req7_ready (bpt2arb_req7_ready)
 ,.bpt2arb_req7_pd (bpt2arb_req7_pd)
 ,.client72mcif_rd_wt (client72mcif_rd_wt)
-,.bpt2arb_req8_valid (bpt2arb_req8_valid)
-,.bpt2arb_req8_ready (bpt2arb_req8_ready)
-,.bpt2arb_req8_pd (bpt2arb_req8_pd)
-,.client82mcif_rd_wt (client82mcif_rd_wt)
-,.bpt2arb_req9_valid (bpt2arb_req9_valid)
-,.bpt2arb_req9_ready (bpt2arb_req9_ready)
-,.bpt2arb_req9_pd (bpt2arb_req9_pd)
-,.client92mcif_rd_wt (client92mcif_rd_wt)
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
   ,.arb2spt_req_valid (arb2spt_req_valid) //|> w

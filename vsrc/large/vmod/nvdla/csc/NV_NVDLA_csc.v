@@ -23,10 +23,10 @@
     //atomK
     //atomK
     //atomK*2
+//notice, for image case, first atom OP within one strip OP must fetch from entry align place, in the middle of an entry is not supported.
+//thus, when atomC/atomK=4, stripe=4*atomK, feature data still keeps atomK*2
     `define CC_ATOMC_DIV_ATOMK_EQUAL_2
-//image stripe keep 2*atomK
 //batch keep 1
-`define CBUF_WEIGHT_COMPRESSED //whether need read WMB
 // ================================================================
 // NVDLA Open Source Project
 // 
@@ -35,9 +35,9 @@
 // this distribution for more information.
 // ================================================================
 // File Name: NV_NVDLA_CBUF.h
-    `define CBUF_BANK_RAM_CASE1
-//ram case could be 0/1/2/3/4  0:1ram/bank; 1:1*2ram/bank; 2:2*1ram/bank; 3:2*2ram/bank  4:4*1ram/bank
-    `define CBUF_WEIGHT_COMPRESSED //whether need read WMB
+    `define CBUF_BANK_RAM_CASE2
+    `define CBUF_NO_SUPPORT_READ_JUMPING
+//ram case could be 0/1/2/3/4/5  0:1ram/bank; 1:1*2ram/bank; 2:2*1ram/bank; 3:2*2ram/bank  4:4*1ram/bank  5:4*2ram/bank
 `define CDMA2CBUF_DEBUG_PRINT //open debug print
 module NV_NVDLA_csc (
    accu2sc_credit_size //|< i

@@ -16,6 +16,14 @@
 // File Name: NV_NVDLA_PDP_define.h
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_PDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_PDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 module NV_NVDLA_PDP_CORE_unit1d (
    nvdla_core_clk //|< i
   ,nvdla_core_rstn //|< i
@@ -42,7 +50,7 @@ input nvdla_core_rstn;
 input average_pooling_en;
 input cur_datin_disable;
 input last_out_en;
-input [8*(8 +3)+6:0] pdma2pdp_pd;
+input [8*(8 +3)+8:0] pdma2pdp_pd;
 input pdma2pdp_pvld;
 input pdp_din_lc_f;
 input pooling_din_1st;
@@ -163,7 +171,7 @@ reg [2:0] pooling_size;
 //assign fp_mean_pool_cfg = (reg2dp_fp16_en & average_pooling_en);
 // interface
 assign pdp_din_wpos = pdma2pdp_pd[8*(8 +3)+3:8*(8 +3)];
-assign pdp_din_cpos = {2'd0,pdma2pdp_pd[8*(8 +3)+6:8*(8 +3)+4]};
+assign pdp_din_cpos = pdma2pdp_pd[8*(8 +3)+8:8*(8 +3)+4];
 assign buf_sel = pdp_din_cpos;
 assign load_din = pdma2pdp_pvld & pdma2pdp_prdy_f & (~cur_datin_disable) & pooling_unit_en;
 assign pdma2pdp_prdy_f = pipe_in_rdy;

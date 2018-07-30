@@ -16,6 +16,14 @@
 // File Name: NV_NVDLA_PDP_define.h
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_PDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_PDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 module NV_NVDLA_PDP_CORE_cal1d (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -70,7 +78,7 @@ input nvdla_core_rstn;
 input datin_src_cfg;
 input dp2reg_done;
 input [2:0] padding_h_cfg;
-input [8*8 +11:0] pdp_rdma2dp_pd;
+input [8*8 +13:0] pdp_rdma2dp_pd;
 input pdp_rdma2dp_valid;
 input pooling1d_prdy;
 input [12:0] pooling_channel_cfg;
@@ -104,7 +112,7 @@ input [18:0] reg2dp_pad_value_4x_cfg;
 input [18:0] reg2dp_pad_value_5x_cfg;
 input [18:0] reg2dp_pad_value_6x_cfg;
 input [18:0] reg2dp_pad_value_7x_cfg;
-input [8*8 +11:0] sdp2pdp_pd;
+input [8*8 +13:0] sdp2pdp_pd;
 input sdp2pdp_valid;
 output pdp_op_start;
 output pdp_rdma2dp_ready;
@@ -127,7 +135,7 @@ wire [12:0] cube_out_channel;
 wire [3:0] cube_width_in;
 wire cur_datin_disable_sync;
 wire [8*(8 +3)-1:0] datain_ext;
-wire [8*(8 +3)+8:0] datin_buf;
+wire [8*(8 +3)+10:0] datin_buf;
 wire [2:0] first_out_num_dec2;
 wire first_splitw;
 wire first_splitw_en;
@@ -187,10 +195,10 @@ wire [2:0] padding_stride4_num;
 wire [10:0] partial_w_last;
 wire pdp_cube_end;
 wire pdp_cube_sync;
-wire [8*(8 +3) + 12:0] pdp_datin_pd;
-wire [8*(8 +3) + 12:0] pdp_datin_pd_f0;
-wire [8*8 +11:0] pdp_datin_pd_f_0;
-wire [8*8 +11:0] pdp_datin_pd_f_mux0;
+wire [8*(8 +3) + 14:0] pdp_datin_pd;
+wire [8*(8 +3) + 14:0] pdp_datin_pd_f0;
+wire [8*8 +13:0] pdp_datin_pd_f_0;
+wire [8*8 +13:0] pdp_datin_pd_f_mux0;
 wire pdp_datin_prdy;
 wire pdp_datin_prdy_0;
 wire pdp_datin_prdy_1;
@@ -363,9 +371,6 @@ reg [7:0] pad_r_remain;
 reg [18:0] pad_table_out;
 reg [2:0] padding_left;
 reg [2:0] padding_stride_num;
-//reg [8*(8 +3) + 12:0] pdp_datin_pd0;
-//reg pdp_datin_prdy_f0;
-//reg pdp_datin_pvld0;
 reg pdp_op_pending;
 reg pdpw_active_en;
 reg [8*(8 +6)-1:0] pooling1d_data_pad;
@@ -432,7 +437,7 @@ assign pdp_datin_pvld_f = pdp_datin_pvld_mux0;
 //---------------------------------------------------------------
 //: my $dbw = 8*8;
 //: my $Enum = 32/8 -1;
-//: print " assign posc_last = (pdp_datin_pd_f_0[${dbw}+6:${dbw}+4]==${Enum}); \n";
+//: print " assign posc_last = (pdp_datin_pd_f_0[${dbw}+8:${dbw}+4]==${Enum}); \n";
 //: my $k = 8;
 //: my $b = 8;
 //: foreach my $m (0..$k-1) {
@@ -441,7 +446,7 @@ assign pdp_datin_pvld_f = pdp_datin_pvld_mux0;
 //: );
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
- assign posc_last = (pdp_datin_pd_f_0[64+6:64+4]==3); 
+ assign posc_last = (pdp_datin_pd_f_0[64+8:64+4]==3); 
 
 assign pdp_din_0 = {{3{pdp_datin_pd_f_0[8*0+8-1]}},pdp_datin_pd_f_0[8*0+8-1:8*0]};
 
@@ -472,24 +477,24 @@ assign datain_ext = {
 pdp_din_7, pdp_din_6, pdp_din_5, pdp_din_4, pdp_din_3, pdp_din_2, pdp_din_1, 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 pdp_din_0};
-assign pdp_datin_pd_f0 = {posc_last,pdp_datin_pd_f_0[8*8 +11:8*8],datain_ext};
-//: my $k = 8*(8 +3) + 13;
+assign pdp_datin_pd_f0 = {posc_last,pdp_datin_pd_f_0[8*8 +13:8*8],datain_ext};
+//: my $k = 8*(8 +3) + 15;
 //: &eperl::pipe(" -wid $k -is -do pdp_datin_pd0 -vo pdp_datin_pvld0 -ri pdp_datin_prdy -di pdp_datin_pd_f0 -vi pdp_datin_pvld_f -ro pdp_datin_prdy_f0 ");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 // Reg
 reg pdp_datin_prdy_f0;
 reg skid_flop_pdp_datin_prdy_f0;
 reg skid_flop_pdp_datin_pvld_f;
-reg [101-1:0] skid_flop_pdp_datin_pd_f0;
+reg [103-1:0] skid_flop_pdp_datin_pd_f0;
 reg pipe_skid_pdp_datin_pvld_f;
-reg [101-1:0] pipe_skid_pdp_datin_pd_f0;
+reg [103-1:0] pipe_skid_pdp_datin_pd_f0;
 // Wire
 wire skid_pdp_datin_pvld_f;
-wire [101-1:0] skid_pdp_datin_pd_f0;
+wire [103-1:0] skid_pdp_datin_pd_f0;
 wire skid_pdp_datin_prdy_f0;
 wire pipe_skid_pdp_datin_prdy_f0;
 wire pdp_datin_pvld0;
-wire [101-1:0] pdp_datin_pd0;
+wire [103-1:0] pdp_datin_pd0;
 // Code
 // SKID READY
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -517,10 +522,10 @@ assign skid_pdp_datin_pvld_f = (skid_flop_pdp_datin_prdy_f0) ? pdp_datin_pvld_f 
 // SKID DATA
 always @(posedge nvdla_core_clk) begin
     if (skid_flop_pdp_datin_prdy_f0 & pdp_datin_pvld_f) begin
-        skid_flop_pdp_datin_pd_f0[101-1:0] <= pdp_datin_pd_f0[101-1:0];
+        skid_flop_pdp_datin_pd_f0[103-1:0] <= pdp_datin_pd_f0[103-1:0];
     end
 end
-assign skid_pdp_datin_pd_f0[101-1:0] = (skid_flop_pdp_datin_prdy_f0) ? pdp_datin_pd_f0[101-1:0] : skid_flop_pdp_datin_pd_f0[101-1:0];
+assign skid_pdp_datin_pd_f0[103-1:0] = (skid_flop_pdp_datin_prdy_f0) ? pdp_datin_pd_f0[103-1:0] : skid_flop_pdp_datin_pd_f0[103-1:0];
 
 
 // PIPE READY
@@ -540,7 +545,7 @@ end
 // PIPE DATA
 always @(posedge nvdla_core_clk) begin
     if (skid_pdp_datin_prdy_f0 && skid_pdp_datin_pvld_f) begin
-        pipe_skid_pdp_datin_pd_f0[101-1:0] <= skid_pdp_datin_pd_f0[101-1:0];
+        pipe_skid_pdp_datin_pd_f0[103-1:0] <= skid_pdp_datin_pd_f0[103-1:0];
     end
 end
 
@@ -559,12 +564,9 @@ assign pdp_datin_prdy_0 = ~ cur_datin_disable;
 //==============================================================
 //new splitw
 //---------------------------------------------------------------
-//assign bsync = pdp_datin_pd[95];
-//assign splitw_end_sync = load_din ? pdp_datin_pd[98] : 1'b0;
-//assign pdp_cube_sync = pdp_datin_pd[99];
-assign bsync = pdp_datin_pd[8*(8 +3)+7];
-assign splitw_end_sync = load_din ? pdp_datin_pd[8*(8 +3)+10] : 1'b0;
-assign pdp_cube_sync = pdp_datin_pd[8*(8 +3)+11];
+assign bsync = pdp_datin_pd[8*(8 +3)+9];
+assign splitw_end_sync = load_din ? pdp_datin_pd[8*(8 +3)+12] : 1'b0;
+assign pdp_cube_sync = pdp_datin_pd[8*(8 +3)+13];
 assign pdp_cube_end = pdp_cube_sync & bsync & load_din;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
@@ -795,7 +797,7 @@ assign load_din = pdp_datin_prdy & pdp_datin_pvld;
 assign pooling_size_h[3:0] = pooling_size_h_cfg[2:0] + 3'd1;
 assign strip_recieve_done = load_din & pdp_din_lc;
 //assign pdp_din_lc = pdp_datin_pd[100];
-assign pdp_din_lc = pdp_datin_pd[8*(8 +3)+12];
+assign pdp_din_lc = pdp_datin_pd[8*(8 +3)+14];
 assign stride_end = strip_recieve_done & (strip_xcnt_stride==pooling_stride_h_cfg[3:0]);
 assign init_cnt = line_last_stripe_done | pdp_op_start;
 always @(*) begin
@@ -1586,9 +1588,7 @@ end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //////////////////////////////////////////////////////////////////////////////////////
-//assign datin_buf = pdp_datin_pd[96:0];
-//assign datin_buf_1 = {pdp_datin_pd[96:88],pdp_datin_pd0[87:0]};
-assign datin_buf = pdp_datin_pd[8*(8 +3)+8:0];
+assign datin_buf = pdp_datin_pd[8*(8 +3)+10:0];
 assign pdp_datin_prdy_1 = &unit1d_prdy & pdp_info_in_prdy;
 assign pdp_full_pvld = pdp_datin_pvld | cur_datin_disable;
 assign unit1d_pvld[0] = pdp_full_pvld & pdp_info_in_prdy & (&{unit1d_prdy[7:1]});
@@ -1631,7 +1631,7 @@ assign {pdp_din_lc_sync,last_c_sync, last_out_en_sync,cur_datin_disable_sync,poo
 //: ,.average_pooling_en (average_pooling_en) //|< w
 //: ,.cur_datin_disable (cur_datin_disable) //|< r
 //: ,.last_out_en ((last_out_en_sync | cur_datin_disable_sync)) //|< ?
-//: ,.pdma2pdp_pd (datin_buf[8*(8 +3)+6:0]) //|< w
+//: ,.pdma2pdp_pd (datin_buf[8*(8 +3)+8:0]) //|< w
 //: ,.pdma2pdp_pvld (unit1d_pvld[$i]) //|< w
 //: ,.pdp_din_lc_f (pdp_din_lc) //|< w
 //: ,.pooling_din_1st ((pooling_din_1st_$i )) //|< r
@@ -1657,7 +1657,7 @@ NV_NVDLA_PDP_CORE_unit1d unit1d_0 (
 ,.average_pooling_en (average_pooling_en) //|< w
 ,.cur_datin_disable (cur_datin_disable) //|< r
 ,.last_out_en ((last_out_en_sync | cur_datin_disable_sync)) //|< ?
-,.pdma2pdp_pd (datin_buf[8*(8 +3)+6:0]) //|< w
+,.pdma2pdp_pd (datin_buf[8*(8 +3)+8:0]) //|< w
 ,.pdma2pdp_pvld (unit1d_pvld[0]) //|< w
 ,.pdp_din_lc_f (pdp_din_lc) //|< w
 ,.pooling_din_1st ((pooling_din_1st_0 )) //|< r
@@ -1680,7 +1680,7 @@ NV_NVDLA_PDP_CORE_unit1d unit1d_1 (
 ,.average_pooling_en (average_pooling_en) //|< w
 ,.cur_datin_disable (cur_datin_disable) //|< r
 ,.last_out_en ((last_out_en_sync | cur_datin_disable_sync)) //|< ?
-,.pdma2pdp_pd (datin_buf[8*(8 +3)+6:0]) //|< w
+,.pdma2pdp_pd (datin_buf[8*(8 +3)+8:0]) //|< w
 ,.pdma2pdp_pvld (unit1d_pvld[1]) //|< w
 ,.pdp_din_lc_f (pdp_din_lc) //|< w
 ,.pooling_din_1st ((pooling_din_1st_1 )) //|< r
@@ -1703,7 +1703,7 @@ NV_NVDLA_PDP_CORE_unit1d unit1d_2 (
 ,.average_pooling_en (average_pooling_en) //|< w
 ,.cur_datin_disable (cur_datin_disable) //|< r
 ,.last_out_en ((last_out_en_sync | cur_datin_disable_sync)) //|< ?
-,.pdma2pdp_pd (datin_buf[8*(8 +3)+6:0]) //|< w
+,.pdma2pdp_pd (datin_buf[8*(8 +3)+8:0]) //|< w
 ,.pdma2pdp_pvld (unit1d_pvld[2]) //|< w
 ,.pdp_din_lc_f (pdp_din_lc) //|< w
 ,.pooling_din_1st ((pooling_din_1st_2 )) //|< r
@@ -1726,7 +1726,7 @@ NV_NVDLA_PDP_CORE_unit1d unit1d_3 (
 ,.average_pooling_en (average_pooling_en) //|< w
 ,.cur_datin_disable (cur_datin_disable) //|< r
 ,.last_out_en ((last_out_en_sync | cur_datin_disable_sync)) //|< ?
-,.pdma2pdp_pd (datin_buf[8*(8 +3)+6:0]) //|< w
+,.pdma2pdp_pd (datin_buf[8*(8 +3)+8:0]) //|< w
 ,.pdma2pdp_pvld (unit1d_pvld[3]) //|< w
 ,.pdp_din_lc_f (pdp_din_lc) //|< w
 ,.pooling_din_1st ((pooling_din_1st_3 )) //|< r
@@ -1749,7 +1749,7 @@ NV_NVDLA_PDP_CORE_unit1d unit1d_4 (
 ,.average_pooling_en (average_pooling_en) //|< w
 ,.cur_datin_disable (cur_datin_disable) //|< r
 ,.last_out_en ((last_out_en_sync | cur_datin_disable_sync)) //|< ?
-,.pdma2pdp_pd (datin_buf[8*(8 +3)+6:0]) //|< w
+,.pdma2pdp_pd (datin_buf[8*(8 +3)+8:0]) //|< w
 ,.pdma2pdp_pvld (unit1d_pvld[4]) //|< w
 ,.pdp_din_lc_f (pdp_din_lc) //|< w
 ,.pooling_din_1st ((pooling_din_1st_4 )) //|< r
@@ -1772,7 +1772,7 @@ NV_NVDLA_PDP_CORE_unit1d unit1d_5 (
 ,.average_pooling_en (average_pooling_en) //|< w
 ,.cur_datin_disable (cur_datin_disable) //|< r
 ,.last_out_en ((last_out_en_sync | cur_datin_disable_sync)) //|< ?
-,.pdma2pdp_pd (datin_buf[8*(8 +3)+6:0]) //|< w
+,.pdma2pdp_pd (datin_buf[8*(8 +3)+8:0]) //|< w
 ,.pdma2pdp_pvld (unit1d_pvld[5]) //|< w
 ,.pdp_din_lc_f (pdp_din_lc) //|< w
 ,.pooling_din_1st ((pooling_din_1st_5 )) //|< r
@@ -1795,7 +1795,7 @@ NV_NVDLA_PDP_CORE_unit1d unit1d_6 (
 ,.average_pooling_en (average_pooling_en) //|< w
 ,.cur_datin_disable (cur_datin_disable) //|< r
 ,.last_out_en ((last_out_en_sync | cur_datin_disable_sync)) //|< ?
-,.pdma2pdp_pd (datin_buf[8*(8 +3)+6:0]) //|< w
+,.pdma2pdp_pd (datin_buf[8*(8 +3)+8:0]) //|< w
 ,.pdma2pdp_pvld (unit1d_pvld[6]) //|< w
 ,.pdp_din_lc_f (pdp_din_lc) //|< w
 ,.pooling_din_1st ((pooling_din_1st_6 )) //|< r
@@ -1818,7 +1818,7 @@ NV_NVDLA_PDP_CORE_unit1d unit1d_7 (
 ,.average_pooling_en (average_pooling_en) //|< w
 ,.cur_datin_disable (cur_datin_disable) //|< r
 ,.last_out_en ((last_out_en_sync | cur_datin_disable_sync)) //|< ?
-,.pdma2pdp_pd (datin_buf[8*(8 +3)+6:0]) //|< w
+,.pdma2pdp_pd (datin_buf[8*(8 +3)+8:0]) //|< w
 ,.pdma2pdp_pvld (unit1d_pvld[7]) //|< w
 ,.pdp_din_lc_f (pdp_din_lc) //|< w
 ,.pooling_din_1st ((pooling_din_1st_7 )) //|< r

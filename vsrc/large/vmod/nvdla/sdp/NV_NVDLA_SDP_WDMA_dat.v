@@ -76,7 +76,7 @@ input reg2dp_output_dst;
 input [1:0] reg2dp_proc_precision;
 input [12:0] reg2dp_width;
 input reg2dp_winograd;
-output [515 -1:0] dma_wr_req_pd;
+output [258 -1:0] dma_wr_req_pd;
 output dma_wr_req_vld;
 output dp2reg_done;
 output [31:0] dp2reg_status_nan_output_num;
@@ -159,7 +159,7 @@ NV_NVDLA_SDP_WDMA_DAT_out u_out (
   ,.dp2reg_done (dp2reg_done) //|> o
   ,.dp2reg_status_unequal (dp2reg_status_unequal) //|> o
   ,.dma_wr_req_rdy (dma_wr_req_rdy) //|< i
-  ,.dma_wr_req_pd (dma_wr_req_pd[515 -1:0]) //|> o
+  ,.dma_wr_req_pd (dma_wr_req_pd[258 -1:0]) //|> o
   ,.dma_wr_req_vld (dma_wr_req_vld) //|> o
   ,.intr_req_ptr (intr_req_ptr) //|> o
   ,.intr_req_pvld (intr_req_pvld) //|> o

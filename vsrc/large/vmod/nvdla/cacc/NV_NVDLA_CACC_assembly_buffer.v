@@ -80,6 +80,7 @@ end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 wire [34*32 -1:0] abuf_rd_raw_data = abuf_rd_data_ecc;
+// spygalss disable_block STARC-2.10.1.6
 // spyglass disable_block STARC05-3.3.1.4b
 //: my $kk=34*32;
 //: &eperl::flop("-wid ${kk} -norst -q abuf_rd_raw_data_d1 -en \"abuf_rd_en_d1\" -d \"abuf_rd_raw_data\" -clk nvdla_core_clk");
@@ -98,6 +99,7 @@ end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 // spyglass enable_block NoWidthInBasedNum-ML
+// spyglass enable_block STARC-2.10.1.6
 // spyglass enable_block STARC05-3.3.1.4b
 assign abuf_rd_data = abuf_rd_raw_data_d1;
 endmodule // NV_NVDLA_CACC_assembly_buffer

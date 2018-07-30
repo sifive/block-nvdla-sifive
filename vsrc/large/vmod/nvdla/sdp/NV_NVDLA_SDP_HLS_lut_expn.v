@@ -49,7 +49,7 @@ wire log2_pvld;
 wire [34:0] lut_frac_final;
 wire [31:0] lut_index_sub;
 wire [8:0] lut_index_sub_mid;
-wire [8:0] lut_index_sub_mid_tmp;
+wire [9:0] lut_index_sub_mid_tmp;
 wire [31:0] lut_index_sub_reg;
 wire [31:0] lut_index_sub_tmp;
 wire lut_oflow_final;
@@ -59,7 +59,7 @@ wire lut_uflow_mid;
 wire lut_uflow_reg;
 wire lut_uflow_reg2;
 wire mon_lutin_sub_c;
-wire [1:0] mon_lutmid_sub_c;
+wire mon_lutmid_sub_c;
 wire sub_prdy;
 wire sub_pvld;
 // synoff nets
@@ -87,8 +87,9 @@ NV_NVDLA_SDP_HLS_LUT_EXPN_pipe_p1 pipe_p1 (
   ,.sub_pvld (sub_pvld) //|> w
   );
 //log2 function
-NV_DW_lsd #(.a_width(32 )) log2_dw_lsd(.a(lut_index_sub_reg[31:0]), .enc(leadzero[4:0]), .dec()); //unsigned 
-assign log2_lut_index[31:0] = (lut_uflow_reg | !(|lut_index_sub_reg)) ? {32 {1'b0}} : (32 -2 - leadzero[4:0]); //morework
+wire loadzero_nc;
+NV_DW_lsd #(.a_width(33)) log2_dw_lsd(.a({1'b0,lut_index_sub_reg[31:0]}), .enc({leadzero_nc, leadzero[4:0]}), .dec()); //unsigned 
+assign log2_lut_index[31:0] = (lut_uflow_reg | !(|lut_index_sub_reg)) ? {32{1'b0}} : (31 - leadzero[4:0]); //morework
 assign filter_frac[31:0] = (1 << log2_lut_index) - 1 ;
 assign log2_lut_frac[31:0] = lut_index_sub_reg & filter_frac;
 //log2 end
@@ -109,8 +110,9 @@ NV_NVDLA_SDP_HLS_LUT_EXPN_pipe_p2 pipe_p2 (
   );
 assign cfg_lut_offset_ext[8:0] = {{1{cfg_lut_offset[7]}}, cfg_lut_offset[7:0]};
 assign lut_uflow_mid = $signed({1'b0,log2_lut_index_reg[8:0]}) < $signed(cfg_lut_offset_ext[8:0]); //morework 
-assign {mon_lutmid_sub_c[1:0],lut_index_sub_mid_tmp[8:0]} = $signed({1'b0,log2_lut_index_reg[8:0]}) - $signed(cfg_lut_offset_ext[8:0]); //morework
-assign lut_index_sub_mid[8:0] = (lut_uflow_reg2 | lut_uflow_mid) ? 0 : lut_index_sub_mid_tmp[8:0];
+//10bit signed to 9bit unsigned,need saturation
+assign {mon_lutmid_sub_c,lut_index_sub_mid_tmp[9:0]} = $signed({1'b0,log2_lut_index_reg[8:0]}) - $signed(cfg_lut_offset_ext[8:0]); // spyglass disable W164b
+assign lut_index_sub_mid[8:0] = (lut_uflow_reg2 | lut_uflow_mid) ? 0 : lut_index_sub_mid_tmp[9] ? 9'h1ff: lut_index_sub_mid_tmp[8:0];
 assign lut_oflow_final = (lut_index_sub_mid >= LUT_DEPTH -1);
 assign lut_uflow_final = lut_uflow_reg2 | lut_uflow_mid;
 //index integar

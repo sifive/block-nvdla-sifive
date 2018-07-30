@@ -1,11 +1,6 @@
-// ================================================================
-// NVDLA Open Source Project
-//
-// Copyright(c) 2016 - 2017 NVIDIA Corporation. Licensed under the
-// NVDLA Open Hardware License; Check "LICENSE" which comes with
-// this distribution for more information.
-// ================================================================
-// File Name: RAMDP_16X256_GL_M1_E2.v
+//RAM : RAMDP_16X256_GL_M1_E2
+//Technology : TSMC16FFLR
+//Compiler version: FINAL.1 - 2017-05-23.14:46:11
 `timescale 10ps/1ps
 `celldefine
 module RAMDP_16X256_GL_M1_E2 (CLK_R, CLK_W, RE, WE

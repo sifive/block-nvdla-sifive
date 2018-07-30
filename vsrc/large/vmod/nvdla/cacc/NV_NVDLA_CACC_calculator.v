@@ -303,107 +303,115 @@ wire calc_wr_en = calc_valid & (~calc_channel_end);
 //: my $pp= 34;
 //: my $bb= 22;
 //: for(my $i = 0; $i <32; $i ++) {
+//: if($hh == 0) {
+//: print qq(
+//: wire [21:0]calc_op0_${i} = {calc_elem_${i}};
+//: wire [${pp}-1:0] calc_op1_${i} = abuf_in_data_${i};
+//: );
+//: }
+//: elsif($hh > 0) {
 //: print qq(
 //: wire [21:0]calc_op0_${i} = {{${hh}{calc_elem_${i}[${bb}-1]}},calc_elem_${i}};
 //: wire [${pp}-1:0] calc_op1_${i} = abuf_in_data_${i};
 //: );
 //: }
+//: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-wire [21:0]calc_op0_0 = {{0{calc_elem_0[22-1]}},calc_elem_0};
+wire [21:0]calc_op0_0 = {calc_elem_0};
 wire [34-1:0] calc_op1_0 = abuf_in_data_0;
 
-wire [21:0]calc_op0_1 = {{0{calc_elem_1[22-1]}},calc_elem_1};
+wire [21:0]calc_op0_1 = {calc_elem_1};
 wire [34-1:0] calc_op1_1 = abuf_in_data_1;
 
-wire [21:0]calc_op0_2 = {{0{calc_elem_2[22-1]}},calc_elem_2};
+wire [21:0]calc_op0_2 = {calc_elem_2};
 wire [34-1:0] calc_op1_2 = abuf_in_data_2;
 
-wire [21:0]calc_op0_3 = {{0{calc_elem_3[22-1]}},calc_elem_3};
+wire [21:0]calc_op0_3 = {calc_elem_3};
 wire [34-1:0] calc_op1_3 = abuf_in_data_3;
 
-wire [21:0]calc_op0_4 = {{0{calc_elem_4[22-1]}},calc_elem_4};
+wire [21:0]calc_op0_4 = {calc_elem_4};
 wire [34-1:0] calc_op1_4 = abuf_in_data_4;
 
-wire [21:0]calc_op0_5 = {{0{calc_elem_5[22-1]}},calc_elem_5};
+wire [21:0]calc_op0_5 = {calc_elem_5};
 wire [34-1:0] calc_op1_5 = abuf_in_data_5;
 
-wire [21:0]calc_op0_6 = {{0{calc_elem_6[22-1]}},calc_elem_6};
+wire [21:0]calc_op0_6 = {calc_elem_6};
 wire [34-1:0] calc_op1_6 = abuf_in_data_6;
 
-wire [21:0]calc_op0_7 = {{0{calc_elem_7[22-1]}},calc_elem_7};
+wire [21:0]calc_op0_7 = {calc_elem_7};
 wire [34-1:0] calc_op1_7 = abuf_in_data_7;
 
-wire [21:0]calc_op0_8 = {{0{calc_elem_8[22-1]}},calc_elem_8};
+wire [21:0]calc_op0_8 = {calc_elem_8};
 wire [34-1:0] calc_op1_8 = abuf_in_data_8;
 
-wire [21:0]calc_op0_9 = {{0{calc_elem_9[22-1]}},calc_elem_9};
+wire [21:0]calc_op0_9 = {calc_elem_9};
 wire [34-1:0] calc_op1_9 = abuf_in_data_9;
 
-wire [21:0]calc_op0_10 = {{0{calc_elem_10[22-1]}},calc_elem_10};
+wire [21:0]calc_op0_10 = {calc_elem_10};
 wire [34-1:0] calc_op1_10 = abuf_in_data_10;
 
-wire [21:0]calc_op0_11 = {{0{calc_elem_11[22-1]}},calc_elem_11};
+wire [21:0]calc_op0_11 = {calc_elem_11};
 wire [34-1:0] calc_op1_11 = abuf_in_data_11;
 
-wire [21:0]calc_op0_12 = {{0{calc_elem_12[22-1]}},calc_elem_12};
+wire [21:0]calc_op0_12 = {calc_elem_12};
 wire [34-1:0] calc_op1_12 = abuf_in_data_12;
 
-wire [21:0]calc_op0_13 = {{0{calc_elem_13[22-1]}},calc_elem_13};
+wire [21:0]calc_op0_13 = {calc_elem_13};
 wire [34-1:0] calc_op1_13 = abuf_in_data_13;
 
-wire [21:0]calc_op0_14 = {{0{calc_elem_14[22-1]}},calc_elem_14};
+wire [21:0]calc_op0_14 = {calc_elem_14};
 wire [34-1:0] calc_op1_14 = abuf_in_data_14;
 
-wire [21:0]calc_op0_15 = {{0{calc_elem_15[22-1]}},calc_elem_15};
+wire [21:0]calc_op0_15 = {calc_elem_15};
 wire [34-1:0] calc_op1_15 = abuf_in_data_15;
 
-wire [21:0]calc_op0_16 = {{0{calc_elem_16[22-1]}},calc_elem_16};
+wire [21:0]calc_op0_16 = {calc_elem_16};
 wire [34-1:0] calc_op1_16 = abuf_in_data_16;
 
-wire [21:0]calc_op0_17 = {{0{calc_elem_17[22-1]}},calc_elem_17};
+wire [21:0]calc_op0_17 = {calc_elem_17};
 wire [34-1:0] calc_op1_17 = abuf_in_data_17;
 
-wire [21:0]calc_op0_18 = {{0{calc_elem_18[22-1]}},calc_elem_18};
+wire [21:0]calc_op0_18 = {calc_elem_18};
 wire [34-1:0] calc_op1_18 = abuf_in_data_18;
 
-wire [21:0]calc_op0_19 = {{0{calc_elem_19[22-1]}},calc_elem_19};
+wire [21:0]calc_op0_19 = {calc_elem_19};
 wire [34-1:0] calc_op1_19 = abuf_in_data_19;
 
-wire [21:0]calc_op0_20 = {{0{calc_elem_20[22-1]}},calc_elem_20};
+wire [21:0]calc_op0_20 = {calc_elem_20};
 wire [34-1:0] calc_op1_20 = abuf_in_data_20;
 
-wire [21:0]calc_op0_21 = {{0{calc_elem_21[22-1]}},calc_elem_21};
+wire [21:0]calc_op0_21 = {calc_elem_21};
 wire [34-1:0] calc_op1_21 = abuf_in_data_21;
 
-wire [21:0]calc_op0_22 = {{0{calc_elem_22[22-1]}},calc_elem_22};
+wire [21:0]calc_op0_22 = {calc_elem_22};
 wire [34-1:0] calc_op1_22 = abuf_in_data_22;
 
-wire [21:0]calc_op0_23 = {{0{calc_elem_23[22-1]}},calc_elem_23};
+wire [21:0]calc_op0_23 = {calc_elem_23};
 wire [34-1:0] calc_op1_23 = abuf_in_data_23;
 
-wire [21:0]calc_op0_24 = {{0{calc_elem_24[22-1]}},calc_elem_24};
+wire [21:0]calc_op0_24 = {calc_elem_24};
 wire [34-1:0] calc_op1_24 = abuf_in_data_24;
 
-wire [21:0]calc_op0_25 = {{0{calc_elem_25[22-1]}},calc_elem_25};
+wire [21:0]calc_op0_25 = {calc_elem_25};
 wire [34-1:0] calc_op1_25 = abuf_in_data_25;
 
-wire [21:0]calc_op0_26 = {{0{calc_elem_26[22-1]}},calc_elem_26};
+wire [21:0]calc_op0_26 = {calc_elem_26};
 wire [34-1:0] calc_op1_26 = abuf_in_data_26;
 
-wire [21:0]calc_op0_27 = {{0{calc_elem_27[22-1]}},calc_elem_27};
+wire [21:0]calc_op0_27 = {calc_elem_27};
 wire [34-1:0] calc_op1_27 = abuf_in_data_27;
 
-wire [21:0]calc_op0_28 = {{0{calc_elem_28[22-1]}},calc_elem_28};
+wire [21:0]calc_op0_28 = {calc_elem_28};
 wire [34-1:0] calc_op1_28 = abuf_in_data_28;
 
-wire [21:0]calc_op0_29 = {{0{calc_elem_29[22-1]}},calc_elem_29};
+wire [21:0]calc_op0_29 = {calc_elem_29};
 wire [34-1:0] calc_op1_29 = abuf_in_data_29;
 
-wire [21:0]calc_op0_30 = {{0{calc_elem_30[22-1]}},calc_elem_30};
+wire [21:0]calc_op0_30 = {calc_elem_30};
 wire [34-1:0] calc_op1_30 = abuf_in_data_30;
 
-wire [21:0]calc_op0_31 = {{0{calc_elem_31[22-1]}},calc_elem_31};
+wire [21:0]calc_op0_31 = {calc_elem_31};
 wire [34-1:0] calc_op1_31 = abuf_in_data_31;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)

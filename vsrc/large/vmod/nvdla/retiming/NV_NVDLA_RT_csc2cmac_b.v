@@ -23,10 +23,10 @@
     //atomK
     //atomK
     //atomK*2
+//notice, for image case, first atom OP within one strip OP must fetch from entry align place, in the middle of an entry is not supported.
+//thus, when atomC/atomK=4, stripe=4*atomK, feature data still keeps atomK*2
     `define CC_ATOMC_DIV_ATOMK_EQUAL_2
-//image stripe keep 2*atomK
 //batch keep 1
-`define CBUF_WEIGHT_COMPRESSED //whether need read WMB
 module NV_NVDLA_RT_csc2cmac_b(
    nvdla_core_clk
   ,nvdla_core_rstn

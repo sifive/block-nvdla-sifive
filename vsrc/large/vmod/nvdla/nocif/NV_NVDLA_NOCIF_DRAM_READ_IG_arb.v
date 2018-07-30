@@ -17,13 +17,19 @@
 // File Name: NV_NVDLA_define.h
 ///////////////////////////////////////////////////
 //
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  512 )
+//    #define LARGE_MEMBUS
+//#endif
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  64 )
+//    #define SMALL_MEMBUS
+//#endif
 module NV_NVDLA_NOCIF_DRAM_READ_IG_arb (
    arb2spt_req_ready //|< i
    ,arb2spt_req_valid
    ,arb2spt_req_pd
    ,nvdla_core_clk
    ,nvdla_core_rstn
-//:my $k=10;
+//:my $k=8;
 //:my $i;
 //:for ($i=0;$i<$k;$i++) {
 //:print(",bpt2arb_req${i}_pd\n");
@@ -64,14 +70,6 @@ module NV_NVDLA_NOCIF_DRAM_READ_IG_arb (
 ,bpt2arb_req7_valid
 ,bpt2arb_req7_ready
 ,client72mcif_rd_wt
-,bpt2arb_req8_pd
-,bpt2arb_req8_valid
-,bpt2arb_req8_ready
-,client82mcif_rd_wt
-,bpt2arb_req9_pd
-,bpt2arb_req9_valid
-,bpt2arb_req9_ready
-,client92mcif_rd_wt
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 );
@@ -80,7 +78,7 @@ input nvdla_core_rstn;
 input arb2spt_req_ready;
 output arb2spt_req_valid;
 output [64 +10:0] arb2spt_req_pd;
-//:my $k=10;
+//:my $k=8;
 //:my $i;
 //:for ($i=0;$i<$k;$i++) {
 //:print("input bpt2arb_req${i}_valid;\n");
@@ -131,22 +129,12 @@ output bpt2arb_req7_ready;
 
 input [64 +10:0] bpt2arb_req7_pd;
 input [7:0] client72mcif_rd_wt;
-input bpt2arb_req8_valid;
-output bpt2arb_req8_ready;
-
-input [64 +10:0] bpt2arb_req8_pd;
-input [7:0] client82mcif_rd_wt;
-input bpt2arb_req9_valid;
-output bpt2arb_req9_ready;
-
-input [64 +10:0] bpt2arb_req9_pd;
-input [7:0] client92mcif_rd_wt;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 reg [64 +10:0] arb_pd;
-wire [10 -1:0] arb_gnt;
+wire [15:0] arb_gnt;
 wire gnt_busy;
-//:my $k=10;
+//:my $k=8;
 //:my $i;
 //:my $w=eval(64 +10);
 //:for ($i=0;$i<$k;$i++) {
@@ -188,26 +176,18 @@ wire  src7_req;
 wire  src7_gnt;
 wire [7:0]  wt7;
 wire [74:0] arb_src7_pd;
-wire  src8_req;
-wire  src8_gnt;
-wire [7:0]  wt8;
-wire [74:0] arb_src8_pd;
-wire  src9_req;
-wire  src9_gnt;
-wire [7:0]  wt9;
-wire [74:0] arb_src9_pd;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //
-//:my $k=10;
+//:my $k=8;
 //:my $i;
 //:my $w=eval(64 +10);
-//:for ($i=10;$i<16;$i++) {
+//:for ($i=8;$i<16;$i++) {
 //: print("wire [$w:0] arb_src${i}_pd;\n");
 //: print("wire  src${i}_req;\n");
 //: print("wire  src${i}_gnt;\n");
 //:}
-//:my $k=10;
+//:my $k=8;
 //:my $i;
 //:for ($i=0;$i<$k;$i++) {
 //:my $wid = 64 +11;
@@ -230,6 +210,12 @@ wire [74:0] arb_src9_pd;
 //:);
 //:}
 //| eperl: generated_beg (DO NOT EDIT BELOW)
+wire [74:0] arb_src8_pd;
+wire  src8_req;
+wire  src8_gnt;
+wire [74:0] arb_src9_pd;
+wire  src9_req;
+wire  src9_gnt;
 wire [74:0] arb_src10_pd;
 wire  src10_req;
 wire  src10_gnt;
@@ -369,50 +355,45 @@ NV_NVDLA_NOCIF_DRAM_READ_IG_ARB_pipe_p1 pipe_p1_7 (
 assign src7_req = arb_src7_vld;
 assign arb_src7_rdy = src7_gnt;
 
-wire arb_src8_rdy, arb_src8_vld;
-NV_NVDLA_NOCIF_DRAM_READ_IG_ARB_pipe_p1 pipe_p1_8 (
-.nvdla_core_clk(nvdla_core_clk)
-,.nvdla_core_rstn(nvdla_core_rstn)
-,.arb_src0_rdy(arb_src8_rdy)
-,.bpt2arb_req0_pd(bpt2arb_req8_pd)
-,.bpt2arb_req0_valid(bpt2arb_req8_valid)
-,.arb_src0_pd(arb_src8_pd)
-,.arb_src0_vld(arb_src8_vld)
-,.bpt2arb_req0_ready(bpt2arb_req8_ready)
-);
-
-assign src8_req = arb_src8_vld;
-assign arb_src8_rdy = src8_gnt;
-
-wire arb_src9_rdy, arb_src9_vld;
-NV_NVDLA_NOCIF_DRAM_READ_IG_ARB_pipe_p1 pipe_p1_9 (
-.nvdla_core_clk(nvdla_core_clk)
-,.nvdla_core_rstn(nvdla_core_rstn)
-,.arb_src0_rdy(arb_src9_rdy)
-,.bpt2arb_req0_pd(bpt2arb_req9_pd)
-,.bpt2arb_req0_valid(bpt2arb_req9_valid)
-,.arb_src0_pd(arb_src9_pd)
-,.arb_src0_vld(arb_src9_vld)
-,.bpt2arb_req0_ready(bpt2arb_req9_ready)
-);
-
-assign src9_req = arb_src9_vld;
-assign arb_src9_rdy = src9_gnt;
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //&eperl::pipe("-is -wid 75 -do arb_src${i}_pd -vo arb_src${i}_vld -ri  bpt2arb_req${i}_ready -di bpt2arb_req${i}_pd -vi bpt2arb_req${i}_valid -ro arc_src${i}_rdy");
-//:my $k=10;
+//:my $k=8;
 //:my $i;
-//:for($i=10;$i<10;$i++) {
+//:for($i=8;$i<16;$i++) {
 //: print("assign src${i}_req = 1'b0;\n");
+//: print("assign arb_src${i}_rdy = 1'b1;\n");
 //: print("wire [7:0] wt${i} = 0;\n");
 //:}
-//:my $k=10;
+//:my $k=8;
 //:my $i;
 //:for ($i=0;$i<$k;$i++) {
 //:print("assign wt${i} = client${i}2mcif_rd_wt;\n");
 //:}
 //| eperl: generated_beg (DO NOT EDIT BELOW)
+assign src8_req = 1'b0;
+assign arb_src8_rdy = 1'b1;
+wire [7:0] wt8 = 0;
+assign src9_req = 1'b0;
+assign arb_src9_rdy = 1'b1;
+wire [7:0] wt9 = 0;
+assign src10_req = 1'b0;
+assign arb_src10_rdy = 1'b1;
+wire [7:0] wt10 = 0;
+assign src11_req = 1'b0;
+assign arb_src11_rdy = 1'b1;
+wire [7:0] wt11 = 0;
+assign src12_req = 1'b0;
+assign arb_src12_rdy = 1'b1;
+wire [7:0] wt12 = 0;
+assign src13_req = 1'b0;
+assign arb_src13_rdy = 1'b1;
+wire [7:0] wt13 = 0;
+assign src14_req = 1'b0;
+assign arb_src14_rdy = 1'b1;
+wire [7:0] wt14 = 0;
+assign src15_req = 1'b0;
+assign arb_src15_rdy = 1'b1;
+wire [7:0] wt15 = 0;
 assign wt0 = client02mcif_rd_wt;
 assign wt1 = client12mcif_rd_wt;
 assign wt2 = client22mcif_rd_wt;
@@ -421,8 +402,6 @@ assign wt4 = client42mcif_rd_wt;
 assign wt5 = client52mcif_rd_wt;
 assign wt6 = client62mcif_rd_wt;
 assign wt7 = client72mcif_rd_wt;
-assign wt8 = client82mcif_rd_wt;
-assign wt9 = client92mcif_rd_wt;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 read_ig_arb u_read_ig_arb (
@@ -436,12 +415,12 @@ read_ig_arb u_read_ig_arb (
   ,.req7 (src7_req) //|< w
   ,.req8 (src8_req) //|< w
   ,.req9 (src9_req) //|< w
-//,.req10 (src10_req) //|< w
-//,.req11 (src11_req) //|< w
-//,.req12 (src12_req) //|< w
-//,.req13 (src13_req) //|< w
-//,.req14 (src14_req) //|< w
-//,.req15 (src15_req) //|< w
+  ,.req10 (src10_req) //|< w
+  ,.req11 (src11_req) //|< w
+  ,.req12 (src12_req) //|< w
+  ,.req13 (src13_req) //|< w
+  ,.req14 (src14_req) //|< w
+  ,.req15 (src15_req) //|< w
   ,.wt0 (wt0[7:0]) //|< w
   ,.wt1 (wt1[7:0]) //|< w
   ,.wt2 (wt2[7:0]) //|< w
@@ -452,12 +431,12 @@ read_ig_arb u_read_ig_arb (
   ,.wt7 (wt7[7:0]) //|< w
   ,.wt8 (wt8[7:0]) //|< w
   ,.wt9 (wt9[7:0]) //|< w
-//,.wt10 (wt10[7:0]) //|< w
-//,.wt11 (wt11[7:0]) //|< w
-//,.wt12 (wt12[7:0]) //|< w
-//,.wt13 (wt13[7:0]) //|< w
-//,.wt14 (wt14[7:0]) //|< w
-//,.wt15 (wt15[7:0]) //|< w
+  ,.wt10 (wt10[7:0]) //|< w
+  ,.wt11 (wt11[7:0]) //|< w
+  ,.wt12 (wt12[7:0]) //|< w
+  ,.wt13 (wt13[7:0]) //|< w
+  ,.wt14 (wt14[7:0]) //|< w
+  ,.wt15 (wt15[7:0]) //|< w
   ,.gnt_busy (gnt_busy) //|< w
   ,.clk (nvdla_core_clk) //|< i
   ,.reset_ (nvdla_core_rstn) //|< i
@@ -471,12 +450,12 @@ read_ig_arb u_read_ig_arb (
   ,.gnt7 (src7_gnt) //|> w
   ,.gnt8 (src8_gnt) //|> w
   ,.gnt9 (src9_gnt) //|> w
-//,.gnt10 (src10_gnt) //|> w
-//,.gnt11 (src11_gnt) //|> w
-//,.gnt12 (src12_gnt) //|> w
-//,.gnt13 (src13_gnt) //|> w
-//,.gnt14 (src14_gnt) //|> w
-//,.gnt15 (src15_gnt) //|> w
+  ,.gnt10 (src10_gnt) //|> w
+  ,.gnt11 (src11_gnt) //|> w
+  ,.gnt12 (src12_gnt) //|> w
+  ,.gnt13 (src13_gnt) //|> w
+  ,.gnt14 (src14_gnt) //|> w
+  ,.gnt15 (src15_gnt) //|> w
   );
 // MUX OUT
 always @(
@@ -494,24 +473,24 @@ always @(
   or arb_src5_pd
   or src6_gnt
   or arb_src6_pd
-//or src7_gnt
-//or arb_src7_pd
-//or src8_gnt
-//or arb_src8_pd
-//or src9_gnt
-//or arb_src9_pd
-//or src10_gnt
-//or arb_src10_pd
-//or src11_gnt
-//or arb_src11_pd
-//or src12_gnt
-//or arb_src12_pd
-//or src13_gnt
-//or arb_src13_pd
-//or src14_gnt
-//or arb_src14_pd
-//or src15_gnt
-//or arb_src15_pd
+  or src7_gnt
+  or arb_src7_pd
+  or src8_gnt
+  or arb_src8_pd
+  or src9_gnt
+  or arb_src9_pd
+  or src10_gnt
+  or arb_src10_pd
+  or src11_gnt
+  or arb_src11_pd
+  or src12_gnt
+  or arb_src12_pd
+  or src13_gnt
+  or arb_src13_pd
+  or src14_gnt
+  or arb_src14_pd
+  or src15_gnt
+  or arb_src15_pd
   ) begin
 //spyglass disable_block W171 W226
     case (1'b1 )
@@ -522,15 +501,15 @@ always @(
        src4_gnt: arb_pd = arb_src4_pd;
        src5_gnt: arb_pd = arb_src5_pd;
        src6_gnt: arb_pd = arb_src6_pd;
-//src7_gnt: arb_pd = arb_src7_pd;
-//src8_gnt: arb_pd = arb_src8_pd;
-//src9_gnt: arb_pd = arb_src9_pd;
-//src10_gnt: arb_pd = arb_src10_pd;
-//src11_gnt: arb_pd = arb_src11_pd;
-//src12_gnt: arb_pd = arb_src12_pd;
-//src13_gnt: arb_pd = arb_src13_pd;
-//src14_gnt: arb_pd = arb_src14_pd;
-//src15_gnt: arb_pd = arb_src15_pd;
+       src7_gnt: arb_pd = arb_src7_pd;
+       src8_gnt: arb_pd = arb_src8_pd;
+       src9_gnt: arb_pd = arb_src9_pd;
+       src10_gnt: arb_pd = arb_src10_pd;
+       src11_gnt: arb_pd = arb_src11_pd;
+       src12_gnt: arb_pd = arb_src12_pd;
+       src13_gnt: arb_pd = arb_src13_pd;
+       src14_gnt: arb_pd = arb_src14_pd;
+       src15_gnt: arb_pd = arb_src15_pd;
 //VCS coverage off
     default : begin
                 arb_pd[64 +10:0] = {64 +11{`x_or_0}};
@@ -539,7 +518,7 @@ always @(
     endcase
 //spyglass enable_block W171 W226
 end
-assign arb_gnt = {/*src15_gnt, src14_gnt, src13_gnt, src12_gnt, src11_gnt, src10_gnt, src9_gnt, src8_gnt, src7_gnt,*/ src6_gnt, src5_gnt, src4_gnt, src3_gnt, src2_gnt, src1_gnt, src0_gnt};
+assign arb_gnt = {src15_gnt, src14_gnt, src13_gnt, src12_gnt, src11_gnt, src10_gnt, src9_gnt, src8_gnt, src7_gnt, src6_gnt, src5_gnt, src4_gnt, src3_gnt, src2_gnt, src1_gnt, src0_gnt};
 assign arb2spt_req_valid = |arb_gnt;
 assign gnt_busy = !arb2spt_req_ready;
 assign arb2spt_req_pd = arb_pd;

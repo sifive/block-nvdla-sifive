@@ -15,6 +15,14 @@
 // ================================================================
 // File Name: NV_NVDLA_CDP_define.h
 ///////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_CDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_CDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 `include "simulate_x_tick.vh"
 module NV_NVDLA_CDP_DP_bufferin_tp1 (
    nvdla_core_clk
@@ -28,11 +36,11 @@ module NV_NVDLA_CDP_DP_bufferin_tp1 (
   );
 //////////////////////////////////////////////
 parameter buf2sq_data_bw = (8 +1)*(8 +8);
-parameter buf2sq_dp_bw = buf2sq_data_bw + 15;
+parameter buf2sq_dp_bw = buf2sq_data_bw + 17;
 //////////////////////////////////////////////
 input nvdla_core_clk;
 input nvdla_core_rstn;
-input [8*(8 +1)+15-1:0] cdp_rdma2dp_pd;
+input [8*(8 +1)+17-1:0] cdp_rdma2dp_pd;
 input cdp_rdma2dp_valid;
 input normalz_buf_data_prdy;
 output cdp_rdma2dp_ready;
@@ -49,22 +57,24 @@ reg buffer_data_vld;
 reg buffer_last_c;
 reg buffer_last_h;
 reg buffer_last_w;
-reg [2:0] buffer_pos_c;
+reg [4:0] buffer_pos_c;
 reg [3:0] buffer_pos_w;
 reg [3:0] buffer_width;
 wire cdp_rdma2dp_ready;
 reg [3:0] cube_end_width_cnt;
 //: my $tp = 8;
 //: my $bpe = (8 +1);
+//: my $reg_num = int(8/$tp + 1);
+//: my $reg_1stc_num = int(4/$tp);
 //: foreach my $m (0..7) {
-//: foreach my $k (0..8) {
+//: foreach my $k (0..$reg_num -1) {
 //: print qq(
 //: reg [${tp}*${bpe}-1:0] data_shift_${k}${m};
 //: );
 //: }
 //: }
 //: foreach my $m (0..7) {
-//: foreach my $k (0..4) {
+//: foreach my $k (0..$reg_1stc_num -1) {
 //: print qq(
 //: reg [${tp}*${bpe}-1:0] data_1stC_${k}${m};
 //: );
@@ -76,225 +86,33 @@ reg [8*9-1:0] data_shift_00;
 
 reg [8*9-1:0] data_shift_10;
 
-reg [8*9-1:0] data_shift_20;
-
-reg [8*9-1:0] data_shift_30;
-
-reg [8*9-1:0] data_shift_40;
-
-reg [8*9-1:0] data_shift_50;
-
-reg [8*9-1:0] data_shift_60;
-
-reg [8*9-1:0] data_shift_70;
-
-reg [8*9-1:0] data_shift_80;
-
 reg [8*9-1:0] data_shift_01;
 
 reg [8*9-1:0] data_shift_11;
-
-reg [8*9-1:0] data_shift_21;
-
-reg [8*9-1:0] data_shift_31;
-
-reg [8*9-1:0] data_shift_41;
-
-reg [8*9-1:0] data_shift_51;
-
-reg [8*9-1:0] data_shift_61;
-
-reg [8*9-1:0] data_shift_71;
-
-reg [8*9-1:0] data_shift_81;
 
 reg [8*9-1:0] data_shift_02;
 
 reg [8*9-1:0] data_shift_12;
 
-reg [8*9-1:0] data_shift_22;
-
-reg [8*9-1:0] data_shift_32;
-
-reg [8*9-1:0] data_shift_42;
-
-reg [8*9-1:0] data_shift_52;
-
-reg [8*9-1:0] data_shift_62;
-
-reg [8*9-1:0] data_shift_72;
-
-reg [8*9-1:0] data_shift_82;
-
 reg [8*9-1:0] data_shift_03;
 
 reg [8*9-1:0] data_shift_13;
-
-reg [8*9-1:0] data_shift_23;
-
-reg [8*9-1:0] data_shift_33;
-
-reg [8*9-1:0] data_shift_43;
-
-reg [8*9-1:0] data_shift_53;
-
-reg [8*9-1:0] data_shift_63;
-
-reg [8*9-1:0] data_shift_73;
-
-reg [8*9-1:0] data_shift_83;
 
 reg [8*9-1:0] data_shift_04;
 
 reg [8*9-1:0] data_shift_14;
 
-reg [8*9-1:0] data_shift_24;
-
-reg [8*9-1:0] data_shift_34;
-
-reg [8*9-1:0] data_shift_44;
-
-reg [8*9-1:0] data_shift_54;
-
-reg [8*9-1:0] data_shift_64;
-
-reg [8*9-1:0] data_shift_74;
-
-reg [8*9-1:0] data_shift_84;
-
 reg [8*9-1:0] data_shift_05;
 
 reg [8*9-1:0] data_shift_15;
-
-reg [8*9-1:0] data_shift_25;
-
-reg [8*9-1:0] data_shift_35;
-
-reg [8*9-1:0] data_shift_45;
-
-reg [8*9-1:0] data_shift_55;
-
-reg [8*9-1:0] data_shift_65;
-
-reg [8*9-1:0] data_shift_75;
-
-reg [8*9-1:0] data_shift_85;
 
 reg [8*9-1:0] data_shift_06;
 
 reg [8*9-1:0] data_shift_16;
 
-reg [8*9-1:0] data_shift_26;
-
-reg [8*9-1:0] data_shift_36;
-
-reg [8*9-1:0] data_shift_46;
-
-reg [8*9-1:0] data_shift_56;
-
-reg [8*9-1:0] data_shift_66;
-
-reg [8*9-1:0] data_shift_76;
-
-reg [8*9-1:0] data_shift_86;
-
 reg [8*9-1:0] data_shift_07;
 
 reg [8*9-1:0] data_shift_17;
-
-reg [8*9-1:0] data_shift_27;
-
-reg [8*9-1:0] data_shift_37;
-
-reg [8*9-1:0] data_shift_47;
-
-reg [8*9-1:0] data_shift_57;
-
-reg [8*9-1:0] data_shift_67;
-
-reg [8*9-1:0] data_shift_77;
-
-reg [8*9-1:0] data_shift_87;
-
-reg [8*9-1:0] data_1stC_00;
-
-reg [8*9-1:0] data_1stC_10;
-
-reg [8*9-1:0] data_1stC_20;
-
-reg [8*9-1:0] data_1stC_30;
-
-reg [8*9-1:0] data_1stC_40;
-
-reg [8*9-1:0] data_1stC_01;
-
-reg [8*9-1:0] data_1stC_11;
-
-reg [8*9-1:0] data_1stC_21;
-
-reg [8*9-1:0] data_1stC_31;
-
-reg [8*9-1:0] data_1stC_41;
-
-reg [8*9-1:0] data_1stC_02;
-
-reg [8*9-1:0] data_1stC_12;
-
-reg [8*9-1:0] data_1stC_22;
-
-reg [8*9-1:0] data_1stC_32;
-
-reg [8*9-1:0] data_1stC_42;
-
-reg [8*9-1:0] data_1stC_03;
-
-reg [8*9-1:0] data_1stC_13;
-
-reg [8*9-1:0] data_1stC_23;
-
-reg [8*9-1:0] data_1stC_33;
-
-reg [8*9-1:0] data_1stC_43;
-
-reg [8*9-1:0] data_1stC_04;
-
-reg [8*9-1:0] data_1stC_14;
-
-reg [8*9-1:0] data_1stC_24;
-
-reg [8*9-1:0] data_1stC_34;
-
-reg [8*9-1:0] data_1stC_44;
-
-reg [8*9-1:0] data_1stC_05;
-
-reg [8*9-1:0] data_1stC_15;
-
-reg [8*9-1:0] data_1stC_25;
-
-reg [8*9-1:0] data_1stC_35;
-
-reg [8*9-1:0] data_1stC_45;
-
-reg [8*9-1:0] data_1stC_06;
-
-reg [8*9-1:0] data_1stC_16;
-
-reg [8*9-1:0] data_1stC_26;
-
-reg [8*9-1:0] data_1stC_36;
-
-reg [8*9-1:0] data_1stC_46;
-
-reg [8*9-1:0] data_1stC_07;
-
-reg [8*9-1:0] data_1stC_17;
-
-reg [8*9-1:0] data_1stC_27;
-
-reg [8*9-1:0] data_1stC_37;
-
-reg [8*9-1:0] data_1stC_47;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 reg data_shift_valid;
@@ -312,10 +130,10 @@ reg [3:0] last_width;
 reg less2more_dly;
 reg less2more_dly2;
 reg more2less_dly;
-reg [8*(8 +1)+15-1:0] nvdla_cdp_rdma2dp_pd;
+reg [8*(8 +1)+17-1:0] nvdla_cdp_rdma2dp_pd;
 reg nvdla_cdp_rdma2dp_valid;
-reg [2:0] pos_c_align;
-reg [2:0] pos_c_dly1;
+reg [4:0] pos_c_align;
+reg [4:0] pos_c_dly1;
 reg [3:0] pos_w_align;
 reg [3:0] pos_w_dly1;
 reg [2:0] stat_cur;
@@ -345,14 +163,14 @@ wire [8*(8 +1)-1:0] dp_data;
 wire dp_last_c;
 wire dp_last_h;
 wire dp_last_w;
-wire [2:0] dp_pos_c;
+wire [4:0] dp_pos_c;
 wire [3:0] dp_pos_w;
 wire [3:0] dp_width;
 wire is_b_sync;
 wire is_last_c;
 wire is_last_h;
 wire is_last_w;
-wire [2:0] is_pos_c;
+wire [4:0] is_pos_c;
 wire [3:0] is_pos_w;
 wire [3:0] is_width;
 wire [3:0] is_width_f;
@@ -383,7 +201,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn)
-    nvdla_cdp_rdma2dp_pd <= {8*(8 +1)+15{1'b0}};
+    nvdla_cdp_rdma2dp_pd <= {8*(8 +1)+17{1'b0}};
   else if(cdp_rdma2dp_valid & cdp_rdma2dp_ready)
     nvdla_cdp_rdma2dp_pd <= cdp_rdma2dp_pd;
 end
@@ -394,11 +212,11 @@ end
 assign dp_data[8*(8 +1)-1:0] = nvdla_cdp_rdma2dp_pd[8*(8 +1)-1:0];
 assign dp_pos_w[3:0] = nvdla_cdp_rdma2dp_pd[8*(8 +1)+3:8*(8 +1)];
 assign dp_width[3:0] = nvdla_cdp_rdma2dp_pd[8*(8 +1)+7:8*(8 +1)+4];
-assign dp_pos_c[2:0] = nvdla_cdp_rdma2dp_pd[8*(8 +1)+10:8*(8 +1)+8];
-assign dp_b_sync = nvdla_cdp_rdma2dp_pd[8*(8 +1)+11];
-assign dp_last_w = nvdla_cdp_rdma2dp_pd[8*(8 +1)+12];
-assign dp_last_h = nvdla_cdp_rdma2dp_pd[8*(8 +1)+13];
-assign dp_last_c = nvdla_cdp_rdma2dp_pd[8*(8 +1)+14];
+assign dp_pos_c[4:0] = nvdla_cdp_rdma2dp_pd[8*(8 +1)+12:8*(8 +1)+8];
+assign dp_b_sync = nvdla_cdp_rdma2dp_pd[8*(8 +1)+13];
+assign dp_last_w = nvdla_cdp_rdma2dp_pd[8*(8 +1)+14];
+assign dp_last_h = nvdla_cdp_rdma2dp_pd[8*(8 +1)+15];
+assign dp_last_c = nvdla_cdp_rdma2dp_pd[8*(8 +1)+16];
 assign is_pos_w = dp_pos_w;
 assign is_width_f = dp_width[3:0];
 assign is_width[3:0] = is_width_f - 1'b1;
@@ -446,10 +264,10 @@ always @(*) begin
 //: my $atmm = 32;
 //: if($atmm == 4) {
 //: print qq(
-//: if(is_last_c & is_last_h & is_last_w) begin
+//: if(is_posc_end & is_last_c & is_last_h & is_last_w) begin
 //: NormalC2CubeEnd = 1;
 //: stat_nex = CUBE_END;
-//: end else if(is_last_c & (~(is_last_h & is_last_w))) begin
+//: end else if(is_posc_end & is_last_c) begin
 //: stat_nex = FIRST_C;
 //: end else begin
 //: stat_nex = NORMAL_C;
@@ -468,10 +286,10 @@ stat_nex = NORMAL_C;
         end
       end
       NORMAL_C: begin
-        if ((is_b_sync & is_posc_end & is_last_c & is_last_h & is_last_w & load_din)) begin
+        if (is_b_sync & is_posc_end & is_last_c & is_last_h & is_last_w & load_din) begin
           NormalC2CubeEnd = 1;
           stat_nex = CUBE_END;
-        end else if ((is_b_sync & is_posc_end & is_last_c) & (~(is_last_h & is_last_w) & load_din)) begin
+        end else if (is_b_sync & is_posc_end & is_last_c & load_din) begin
           stat_nex = FIRST_C;
         end
       end
@@ -481,9 +299,9 @@ stat_nex = NORMAL_C;
 //: my $atmm = 32;
 //: if($atmm == 4) {
 //: print qq(
-//: if(is_last_c & is_last_h & is_last_w)
+//: if(is_posc_end & is_last_c & is_last_h & is_last_w)
 //: stat_nex = CUBE_END;
-//: else if(is_posc_end)
+//: else if(is_posc_end & is_last_c)
 //: stat_nex = FIRST_C;
 //: else
 //: stat_nex = SECOND_C;
@@ -541,15 +359,17 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
 //: my $tp = 8;
 //: my $bpe = (8 +1);
+//: my $reg_num = int(8/$tp + 1);
+//: my $reg_1stc_num = int(4/$tp);
 //: foreach my $m (0..7) {
-//: foreach my $k (0..8) {
+//: foreach my $k (0..$reg_num -1) {
 //: print qq(
 //: data_shift_${k}${m} <= {${tp}*${bpe}{1'd0}};
 //: );
 //: }
 //: }
 //: foreach my $m (0..7) {
-//: foreach my $k (0..3) {
+//: foreach my $k (0..$reg_1stc_num -1) {
 //: print qq(
 //: data_1stC_${k}${m} <= {${tp}*${bpe}{1'd0}};
 //: );
@@ -561,209 +381,33 @@ data_shift_00 <= {8*9{1'd0}};
 
 data_shift_10 <= {8*9{1'd0}};
 
-data_shift_20 <= {8*9{1'd0}};
-
-data_shift_30 <= {8*9{1'd0}};
-
-data_shift_40 <= {8*9{1'd0}};
-
-data_shift_50 <= {8*9{1'd0}};
-
-data_shift_60 <= {8*9{1'd0}};
-
-data_shift_70 <= {8*9{1'd0}};
-
-data_shift_80 <= {8*9{1'd0}};
-
 data_shift_01 <= {8*9{1'd0}};
 
 data_shift_11 <= {8*9{1'd0}};
-
-data_shift_21 <= {8*9{1'd0}};
-
-data_shift_31 <= {8*9{1'd0}};
-
-data_shift_41 <= {8*9{1'd0}};
-
-data_shift_51 <= {8*9{1'd0}};
-
-data_shift_61 <= {8*9{1'd0}};
-
-data_shift_71 <= {8*9{1'd0}};
-
-data_shift_81 <= {8*9{1'd0}};
 
 data_shift_02 <= {8*9{1'd0}};
 
 data_shift_12 <= {8*9{1'd0}};
 
-data_shift_22 <= {8*9{1'd0}};
-
-data_shift_32 <= {8*9{1'd0}};
-
-data_shift_42 <= {8*9{1'd0}};
-
-data_shift_52 <= {8*9{1'd0}};
-
-data_shift_62 <= {8*9{1'd0}};
-
-data_shift_72 <= {8*9{1'd0}};
-
-data_shift_82 <= {8*9{1'd0}};
-
 data_shift_03 <= {8*9{1'd0}};
 
 data_shift_13 <= {8*9{1'd0}};
-
-data_shift_23 <= {8*9{1'd0}};
-
-data_shift_33 <= {8*9{1'd0}};
-
-data_shift_43 <= {8*9{1'd0}};
-
-data_shift_53 <= {8*9{1'd0}};
-
-data_shift_63 <= {8*9{1'd0}};
-
-data_shift_73 <= {8*9{1'd0}};
-
-data_shift_83 <= {8*9{1'd0}};
 
 data_shift_04 <= {8*9{1'd0}};
 
 data_shift_14 <= {8*9{1'd0}};
 
-data_shift_24 <= {8*9{1'd0}};
-
-data_shift_34 <= {8*9{1'd0}};
-
-data_shift_44 <= {8*9{1'd0}};
-
-data_shift_54 <= {8*9{1'd0}};
-
-data_shift_64 <= {8*9{1'd0}};
-
-data_shift_74 <= {8*9{1'd0}};
-
-data_shift_84 <= {8*9{1'd0}};
-
 data_shift_05 <= {8*9{1'd0}};
 
 data_shift_15 <= {8*9{1'd0}};
-
-data_shift_25 <= {8*9{1'd0}};
-
-data_shift_35 <= {8*9{1'd0}};
-
-data_shift_45 <= {8*9{1'd0}};
-
-data_shift_55 <= {8*9{1'd0}};
-
-data_shift_65 <= {8*9{1'd0}};
-
-data_shift_75 <= {8*9{1'd0}};
-
-data_shift_85 <= {8*9{1'd0}};
 
 data_shift_06 <= {8*9{1'd0}};
 
 data_shift_16 <= {8*9{1'd0}};
 
-data_shift_26 <= {8*9{1'd0}};
-
-data_shift_36 <= {8*9{1'd0}};
-
-data_shift_46 <= {8*9{1'd0}};
-
-data_shift_56 <= {8*9{1'd0}};
-
-data_shift_66 <= {8*9{1'd0}};
-
-data_shift_76 <= {8*9{1'd0}};
-
-data_shift_86 <= {8*9{1'd0}};
-
 data_shift_07 <= {8*9{1'd0}};
 
 data_shift_17 <= {8*9{1'd0}};
-
-data_shift_27 <= {8*9{1'd0}};
-
-data_shift_37 <= {8*9{1'd0}};
-
-data_shift_47 <= {8*9{1'd0}};
-
-data_shift_57 <= {8*9{1'd0}};
-
-data_shift_67 <= {8*9{1'd0}};
-
-data_shift_77 <= {8*9{1'd0}};
-
-data_shift_87 <= {8*9{1'd0}};
-
-data_1stC_00 <= {8*9{1'd0}};
-
-data_1stC_10 <= {8*9{1'd0}};
-
-data_1stC_20 <= {8*9{1'd0}};
-
-data_1stC_30 <= {8*9{1'd0}};
-
-data_1stC_01 <= {8*9{1'd0}};
-
-data_1stC_11 <= {8*9{1'd0}};
-
-data_1stC_21 <= {8*9{1'd0}};
-
-data_1stC_31 <= {8*9{1'd0}};
-
-data_1stC_02 <= {8*9{1'd0}};
-
-data_1stC_12 <= {8*9{1'd0}};
-
-data_1stC_22 <= {8*9{1'd0}};
-
-data_1stC_32 <= {8*9{1'd0}};
-
-data_1stC_03 <= {8*9{1'd0}};
-
-data_1stC_13 <= {8*9{1'd0}};
-
-data_1stC_23 <= {8*9{1'd0}};
-
-data_1stC_33 <= {8*9{1'd0}};
-
-data_1stC_04 <= {8*9{1'd0}};
-
-data_1stC_14 <= {8*9{1'd0}};
-
-data_1stC_24 <= {8*9{1'd0}};
-
-data_1stC_34 <= {8*9{1'd0}};
-
-data_1stC_05 <= {8*9{1'd0}};
-
-data_1stC_15 <= {8*9{1'd0}};
-
-data_1stC_25 <= {8*9{1'd0}};
-
-data_1stC_35 <= {8*9{1'd0}};
-
-data_1stC_06 <= {8*9{1'd0}};
-
-data_1stC_16 <= {8*9{1'd0}};
-
-data_1stC_26 <= {8*9{1'd0}};
-
-data_1stC_36 <= {8*9{1'd0}};
-
-data_1stC_07 <= {8*9{1'd0}};
-
-data_1stC_17 <= {8*9{1'd0}};
-
-data_1stC_27 <= {8*9{1'd0}};
-
-data_1stC_37 <= {8*9{1'd0}};
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
   end else begin
@@ -772,21 +416,38 @@ data_1stC_37 <= {8*9{1'd0}};
           if(load_din) begin
 //: my $tp = 8;
 //: my $bpe = (8 +1);
+//: my $reg_num = int(8/$tp + 1);
 //: foreach my $m (0..7) {
 //: print qq(
 //: if(is_pos_w==4'd${m}) begin
 //: data_shift_0${m} <= dp_data[${tp}*${bpe}-1:0];
-//: data_shift_1${m} <= data_shift_0${m};
-//: data_shift_2${m} <= data_shift_1${m};
-//: data_shift_3${m} <= data_shift_2${m};
+//: );
+//: my $p = 4/$tp-2;
+//: foreach my $s (0..$p) {
+//: my $q = $s +1;
+//: print qq(
+//: data_shift_${q}${m} <= data_shift_${s}${m};
+//: );
+//: }
+//: print qq(
 //: end
 //: );
 //: }
-//: foreach my $k (0..4) {
-//: my $m = $k + 4;
-//: foreach my $j (0..7) {
+//: print " // reset all of un-used register in WAIT status  \n";
+//: my $reg_1stc_num = int(4/$tp);
+//: foreach my $m (0..7) {
+//: foreach my $k (0..$reg_1stc_num -1) {
 //: print qq(
-//: data_shift_${m}${j} <= {${tp}*${bpe}{1'd0}};
+//: data_1stC_${k}${m} <= {${tp}*${bpe}{1'd0}};
+//: );
+//: }
+//: }
+//: my $rest = $reg_num - $reg_1stc_num;
+//: foreach my $m (0..7) {
+//: foreach my $k (0..$rest -1) {
+//: my $re = $k + $reg_1stc_num;
+//: print qq(
+//: data_shift_${re}${m} <= {${tp}*${bpe}{1'd0}};
 //: );
 //: }
 //: }
@@ -794,139 +455,76 @@ data_1stC_37 <= {8*9{1'd0}};
 
 if(is_pos_w==4'd0) begin
 data_shift_00 <= dp_data[8*9-1:0];
-data_shift_10 <= data_shift_00;
-data_shift_20 <= data_shift_10;
-data_shift_30 <= data_shift_20;
+
 end
 
 if(is_pos_w==4'd1) begin
 data_shift_01 <= dp_data[8*9-1:0];
-data_shift_11 <= data_shift_01;
-data_shift_21 <= data_shift_11;
-data_shift_31 <= data_shift_21;
+
 end
 
 if(is_pos_w==4'd2) begin
 data_shift_02 <= dp_data[8*9-1:0];
-data_shift_12 <= data_shift_02;
-data_shift_22 <= data_shift_12;
-data_shift_32 <= data_shift_22;
+
 end
 
 if(is_pos_w==4'd3) begin
 data_shift_03 <= dp_data[8*9-1:0];
-data_shift_13 <= data_shift_03;
-data_shift_23 <= data_shift_13;
-data_shift_33 <= data_shift_23;
+
 end
 
 if(is_pos_w==4'd4) begin
 data_shift_04 <= dp_data[8*9-1:0];
-data_shift_14 <= data_shift_04;
-data_shift_24 <= data_shift_14;
-data_shift_34 <= data_shift_24;
+
 end
 
 if(is_pos_w==4'd5) begin
 data_shift_05 <= dp_data[8*9-1:0];
-data_shift_15 <= data_shift_05;
-data_shift_25 <= data_shift_15;
-data_shift_35 <= data_shift_25;
+
 end
 
 if(is_pos_w==4'd6) begin
 data_shift_06 <= dp_data[8*9-1:0];
-data_shift_16 <= data_shift_06;
-data_shift_26 <= data_shift_16;
-data_shift_36 <= data_shift_26;
+
 end
 
 if(is_pos_w==4'd7) begin
 data_shift_07 <= dp_data[8*9-1:0];
-data_shift_17 <= data_shift_07;
-data_shift_27 <= data_shift_17;
-data_shift_37 <= data_shift_27;
+
 end
+ // reset all of un-used register in WAIT status  
 
-data_shift_40 <= {8*9{1'd0}};
+data_shift_00 <= {8*9{1'd0}};
 
-data_shift_41 <= {8*9{1'd0}};
+data_shift_10 <= {8*9{1'd0}};
 
-data_shift_42 <= {8*9{1'd0}};
+data_shift_01 <= {8*9{1'd0}};
 
-data_shift_43 <= {8*9{1'd0}};
+data_shift_11 <= {8*9{1'd0}};
 
-data_shift_44 <= {8*9{1'd0}};
+data_shift_02 <= {8*9{1'd0}};
 
-data_shift_45 <= {8*9{1'd0}};
+data_shift_12 <= {8*9{1'd0}};
 
-data_shift_46 <= {8*9{1'd0}};
+data_shift_03 <= {8*9{1'd0}};
 
-data_shift_47 <= {8*9{1'd0}};
+data_shift_13 <= {8*9{1'd0}};
 
-data_shift_50 <= {8*9{1'd0}};
+data_shift_04 <= {8*9{1'd0}};
 
-data_shift_51 <= {8*9{1'd0}};
+data_shift_14 <= {8*9{1'd0}};
 
-data_shift_52 <= {8*9{1'd0}};
+data_shift_05 <= {8*9{1'd0}};
 
-data_shift_53 <= {8*9{1'd0}};
+data_shift_15 <= {8*9{1'd0}};
 
-data_shift_54 <= {8*9{1'd0}};
+data_shift_06 <= {8*9{1'd0}};
 
-data_shift_55 <= {8*9{1'd0}};
+data_shift_16 <= {8*9{1'd0}};
 
-data_shift_56 <= {8*9{1'd0}};
+data_shift_07 <= {8*9{1'd0}};
 
-data_shift_57 <= {8*9{1'd0}};
-
-data_shift_60 <= {8*9{1'd0}};
-
-data_shift_61 <= {8*9{1'd0}};
-
-data_shift_62 <= {8*9{1'd0}};
-
-data_shift_63 <= {8*9{1'd0}};
-
-data_shift_64 <= {8*9{1'd0}};
-
-data_shift_65 <= {8*9{1'd0}};
-
-data_shift_66 <= {8*9{1'd0}};
-
-data_shift_67 <= {8*9{1'd0}};
-
-data_shift_70 <= {8*9{1'd0}};
-
-data_shift_71 <= {8*9{1'd0}};
-
-data_shift_72 <= {8*9{1'd0}};
-
-data_shift_73 <= {8*9{1'd0}};
-
-data_shift_74 <= {8*9{1'd0}};
-
-data_shift_75 <= {8*9{1'd0}};
-
-data_shift_76 <= {8*9{1'd0}};
-
-data_shift_77 <= {8*9{1'd0}};
-
-data_shift_80 <= {8*9{1'd0}};
-
-data_shift_81 <= {8*9{1'd0}};
-
-data_shift_82 <= {8*9{1'd0}};
-
-data_shift_83 <= {8*9{1'd0}};
-
-data_shift_84 <= {8*9{1'd0}};
-
-data_shift_85 <= {8*9{1'd0}};
-
-data_shift_86 <= {8*9{1'd0}};
-
-data_shift_87 <= {8*9{1'd0}};
+data_shift_17 <= {8*9{1'd0}};
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
       end end
@@ -934,18 +532,19 @@ data_shift_87 <= {8*9{1'd0}};
           if(load_din) begin
 //: my $tp = 8;
 //: my $bpe = (8 +1);
+//: my $reg_num = int(8/$tp + 1);
 //: foreach my $m (0..7) {
 //: print qq(
 //: if(is_pos_w==4'd${m}) begin
 //: data_shift_0${m} <= dp_data[${tp}*${bpe}-1:0];
-//: data_shift_1${m} <= data_shift_0${m};
-//: data_shift_2${m} <= data_shift_1${m};
-//: data_shift_3${m} <= data_shift_2${m};
-//: data_shift_4${m} <= data_shift_3${m};
-//: data_shift_5${m} <= data_shift_4${m};
-//: data_shift_6${m} <= data_shift_5${m};
-//: data_shift_7${m} <= data_shift_6${m};
-//: data_shift_8${m} <= data_shift_7${m};
+//: );
+//: foreach my $s (0..$reg_num -2) {
+//: my $k = $s + 1;
+//: print qq(
+//: data_shift_${k}${m} <= data_shift_${s}${m};
+//: );
+//: }
+//: print qq(
 //: end
 //: );
 //: }
@@ -953,98 +552,58 @@ data_shift_87 <= {8*9{1'd0}};
 
 if(is_pos_w==4'd0) begin
 data_shift_00 <= dp_data[8*9-1:0];
+
 data_shift_10 <= data_shift_00;
-data_shift_20 <= data_shift_10;
-data_shift_30 <= data_shift_20;
-data_shift_40 <= data_shift_30;
-data_shift_50 <= data_shift_40;
-data_shift_60 <= data_shift_50;
-data_shift_70 <= data_shift_60;
-data_shift_80 <= data_shift_70;
+
 end
 
 if(is_pos_w==4'd1) begin
 data_shift_01 <= dp_data[8*9-1:0];
+
 data_shift_11 <= data_shift_01;
-data_shift_21 <= data_shift_11;
-data_shift_31 <= data_shift_21;
-data_shift_41 <= data_shift_31;
-data_shift_51 <= data_shift_41;
-data_shift_61 <= data_shift_51;
-data_shift_71 <= data_shift_61;
-data_shift_81 <= data_shift_71;
+
 end
 
 if(is_pos_w==4'd2) begin
 data_shift_02 <= dp_data[8*9-1:0];
+
 data_shift_12 <= data_shift_02;
-data_shift_22 <= data_shift_12;
-data_shift_32 <= data_shift_22;
-data_shift_42 <= data_shift_32;
-data_shift_52 <= data_shift_42;
-data_shift_62 <= data_shift_52;
-data_shift_72 <= data_shift_62;
-data_shift_82 <= data_shift_72;
+
 end
 
 if(is_pos_w==4'd3) begin
 data_shift_03 <= dp_data[8*9-1:0];
+
 data_shift_13 <= data_shift_03;
-data_shift_23 <= data_shift_13;
-data_shift_33 <= data_shift_23;
-data_shift_43 <= data_shift_33;
-data_shift_53 <= data_shift_43;
-data_shift_63 <= data_shift_53;
-data_shift_73 <= data_shift_63;
-data_shift_83 <= data_shift_73;
+
 end
 
 if(is_pos_w==4'd4) begin
 data_shift_04 <= dp_data[8*9-1:0];
+
 data_shift_14 <= data_shift_04;
-data_shift_24 <= data_shift_14;
-data_shift_34 <= data_shift_24;
-data_shift_44 <= data_shift_34;
-data_shift_54 <= data_shift_44;
-data_shift_64 <= data_shift_54;
-data_shift_74 <= data_shift_64;
-data_shift_84 <= data_shift_74;
+
 end
 
 if(is_pos_w==4'd5) begin
 data_shift_05 <= dp_data[8*9-1:0];
+
 data_shift_15 <= data_shift_05;
-data_shift_25 <= data_shift_15;
-data_shift_35 <= data_shift_25;
-data_shift_45 <= data_shift_35;
-data_shift_55 <= data_shift_45;
-data_shift_65 <= data_shift_55;
-data_shift_75 <= data_shift_65;
-data_shift_85 <= data_shift_75;
+
 end
 
 if(is_pos_w==4'd6) begin
 data_shift_06 <= dp_data[8*9-1:0];
+
 data_shift_16 <= data_shift_06;
-data_shift_26 <= data_shift_16;
-data_shift_36 <= data_shift_26;
-data_shift_46 <= data_shift_36;
-data_shift_56 <= data_shift_46;
-data_shift_66 <= data_shift_56;
-data_shift_76 <= data_shift_66;
-data_shift_86 <= data_shift_76;
+
 end
 
 if(is_pos_w==4'd7) begin
 data_shift_07 <= dp_data[8*9-1:0];
+
 data_shift_17 <= data_shift_07;
-data_shift_27 <= data_shift_17;
-data_shift_37 <= data_shift_27;
-data_shift_47 <= data_shift_37;
-data_shift_57 <= data_shift_47;
-data_shift_67 <= data_shift_57;
-data_shift_77 <= data_shift_67;
-data_shift_87 <= data_shift_77;
+
 end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
@@ -1052,35 +611,40 @@ end
       FIRST_C: begin
 //: my $tp = 8;
 //: my $bpe = (8 +1);
+//: my $reg_num = int(8/$tp + 1);
+//: my $reg_1stc_num = int(4/$tp);
 //: foreach my $m (0..7) {
 //: print qq(
 //: if(hold_here & rdma2dp_ready_normal) begin
 //: if(width_pre_cnt==4'd${m}) begin
 //: data_shift_0${m} <= {${tp}*${bpe}{1'd0}};
-//: data_shift_1${m} <= data_shift_0${m};
-//: data_shift_2${m} <= data_shift_1${m};
-//: data_shift_3${m} <= data_shift_2${m};
-//: data_shift_4${m} <= data_shift_3${m};
-//: data_shift_5${m} <= data_shift_4${m};
-//: data_shift_6${m} <= data_shift_5${m};
-//: data_shift_7${m} <= data_shift_6${m};
-//: data_shift_8${m} <= data_shift_7${m};
+//: );
+//: foreach my $s (0..$reg_num -2) {
+//: my $k = $s + 1;
+//: print qq(
+//: data_shift_${k}${m} <= data_shift_${s}${m};
+//: );
+//: }
+//: print qq(
 //: end
 //: end else begin
 //: if((is_pos_w==4'd${m}) & load_din) begin
 //: data_1stC_0${m} <= dp_data[${tp}*${bpe}-1:0];
-//: data_1stC_1${m} <= data_1stC_0${m};
-//: data_1stC_2${m} <= data_1stC_1${m};
-//: data_1stC_3${m} <= data_1stC_2${m};
 //: data_shift_0${m} <= {${tp}*${bpe}{1'd0}};
-//: data_shift_1${m} <= data_shift_0${m};
-//: data_shift_2${m} <= data_shift_1${m};
-//: data_shift_3${m} <= data_shift_2${m};
-//: data_shift_4${m} <= data_shift_3${m};
-//: data_shift_5${m} <= data_shift_4${m};
-//: data_shift_6${m} <= data_shift_5${m};
-//: data_shift_7${m} <= data_shift_6${m};
-//: data_shift_8${m} <= data_shift_7${m};
+//: );
+//: foreach my $s (0..$reg_num -2) {
+//: my $k = $s + 1;
+//: print qq(
+//: data_shift_${k}${m} <= data_shift_${s}${m};
+//: );
+//: }
+//: foreach my $s (0..$reg_1stc_num -2) {
+//: my $k = $s + 1;
+//: print qq(
+//: data_1stC_${k}${m} <= data_1stC_${s}${m};
+//: );
+//: }
+//: print qq(
 //: end
 //: end
 //: );
@@ -1090,240 +654,136 @@ end
 if(hold_here & rdma2dp_ready_normal) begin
 if(width_pre_cnt==4'd0) begin
 data_shift_00 <= {8*9{1'd0}};
+
 data_shift_10 <= data_shift_00;
-data_shift_20 <= data_shift_10;
-data_shift_30 <= data_shift_20;
-data_shift_40 <= data_shift_30;
-data_shift_50 <= data_shift_40;
-data_shift_60 <= data_shift_50;
-data_shift_70 <= data_shift_60;
-data_shift_80 <= data_shift_70;
+
 end
 end else begin
 if((is_pos_w==4'd0) & load_din) begin
 data_1stC_00 <= dp_data[8*9-1:0];
-data_1stC_10 <= data_1stC_00;
-data_1stC_20 <= data_1stC_10;
-data_1stC_30 <= data_1stC_20;
 data_shift_00 <= {8*9{1'd0}};
+
 data_shift_10 <= data_shift_00;
-data_shift_20 <= data_shift_10;
-data_shift_30 <= data_shift_20;
-data_shift_40 <= data_shift_30;
-data_shift_50 <= data_shift_40;
-data_shift_60 <= data_shift_50;
-data_shift_70 <= data_shift_60;
-data_shift_80 <= data_shift_70;
+
 end
 end
 
 if(hold_here & rdma2dp_ready_normal) begin
 if(width_pre_cnt==4'd1) begin
 data_shift_01 <= {8*9{1'd0}};
+
 data_shift_11 <= data_shift_01;
-data_shift_21 <= data_shift_11;
-data_shift_31 <= data_shift_21;
-data_shift_41 <= data_shift_31;
-data_shift_51 <= data_shift_41;
-data_shift_61 <= data_shift_51;
-data_shift_71 <= data_shift_61;
-data_shift_81 <= data_shift_71;
+
 end
 end else begin
 if((is_pos_w==4'd1) & load_din) begin
 data_1stC_01 <= dp_data[8*9-1:0];
-data_1stC_11 <= data_1stC_01;
-data_1stC_21 <= data_1stC_11;
-data_1stC_31 <= data_1stC_21;
 data_shift_01 <= {8*9{1'd0}};
+
 data_shift_11 <= data_shift_01;
-data_shift_21 <= data_shift_11;
-data_shift_31 <= data_shift_21;
-data_shift_41 <= data_shift_31;
-data_shift_51 <= data_shift_41;
-data_shift_61 <= data_shift_51;
-data_shift_71 <= data_shift_61;
-data_shift_81 <= data_shift_71;
+
 end
 end
 
 if(hold_here & rdma2dp_ready_normal) begin
 if(width_pre_cnt==4'd2) begin
 data_shift_02 <= {8*9{1'd0}};
+
 data_shift_12 <= data_shift_02;
-data_shift_22 <= data_shift_12;
-data_shift_32 <= data_shift_22;
-data_shift_42 <= data_shift_32;
-data_shift_52 <= data_shift_42;
-data_shift_62 <= data_shift_52;
-data_shift_72 <= data_shift_62;
-data_shift_82 <= data_shift_72;
+
 end
 end else begin
 if((is_pos_w==4'd2) & load_din) begin
 data_1stC_02 <= dp_data[8*9-1:0];
-data_1stC_12 <= data_1stC_02;
-data_1stC_22 <= data_1stC_12;
-data_1stC_32 <= data_1stC_22;
 data_shift_02 <= {8*9{1'd0}};
+
 data_shift_12 <= data_shift_02;
-data_shift_22 <= data_shift_12;
-data_shift_32 <= data_shift_22;
-data_shift_42 <= data_shift_32;
-data_shift_52 <= data_shift_42;
-data_shift_62 <= data_shift_52;
-data_shift_72 <= data_shift_62;
-data_shift_82 <= data_shift_72;
+
 end
 end
 
 if(hold_here & rdma2dp_ready_normal) begin
 if(width_pre_cnt==4'd3) begin
 data_shift_03 <= {8*9{1'd0}};
+
 data_shift_13 <= data_shift_03;
-data_shift_23 <= data_shift_13;
-data_shift_33 <= data_shift_23;
-data_shift_43 <= data_shift_33;
-data_shift_53 <= data_shift_43;
-data_shift_63 <= data_shift_53;
-data_shift_73 <= data_shift_63;
-data_shift_83 <= data_shift_73;
+
 end
 end else begin
 if((is_pos_w==4'd3) & load_din) begin
 data_1stC_03 <= dp_data[8*9-1:0];
-data_1stC_13 <= data_1stC_03;
-data_1stC_23 <= data_1stC_13;
-data_1stC_33 <= data_1stC_23;
 data_shift_03 <= {8*9{1'd0}};
+
 data_shift_13 <= data_shift_03;
-data_shift_23 <= data_shift_13;
-data_shift_33 <= data_shift_23;
-data_shift_43 <= data_shift_33;
-data_shift_53 <= data_shift_43;
-data_shift_63 <= data_shift_53;
-data_shift_73 <= data_shift_63;
-data_shift_83 <= data_shift_73;
+
 end
 end
 
 if(hold_here & rdma2dp_ready_normal) begin
 if(width_pre_cnt==4'd4) begin
 data_shift_04 <= {8*9{1'd0}};
+
 data_shift_14 <= data_shift_04;
-data_shift_24 <= data_shift_14;
-data_shift_34 <= data_shift_24;
-data_shift_44 <= data_shift_34;
-data_shift_54 <= data_shift_44;
-data_shift_64 <= data_shift_54;
-data_shift_74 <= data_shift_64;
-data_shift_84 <= data_shift_74;
+
 end
 end else begin
 if((is_pos_w==4'd4) & load_din) begin
 data_1stC_04 <= dp_data[8*9-1:0];
-data_1stC_14 <= data_1stC_04;
-data_1stC_24 <= data_1stC_14;
-data_1stC_34 <= data_1stC_24;
 data_shift_04 <= {8*9{1'd0}};
+
 data_shift_14 <= data_shift_04;
-data_shift_24 <= data_shift_14;
-data_shift_34 <= data_shift_24;
-data_shift_44 <= data_shift_34;
-data_shift_54 <= data_shift_44;
-data_shift_64 <= data_shift_54;
-data_shift_74 <= data_shift_64;
-data_shift_84 <= data_shift_74;
+
 end
 end
 
 if(hold_here & rdma2dp_ready_normal) begin
 if(width_pre_cnt==4'd5) begin
 data_shift_05 <= {8*9{1'd0}};
+
 data_shift_15 <= data_shift_05;
-data_shift_25 <= data_shift_15;
-data_shift_35 <= data_shift_25;
-data_shift_45 <= data_shift_35;
-data_shift_55 <= data_shift_45;
-data_shift_65 <= data_shift_55;
-data_shift_75 <= data_shift_65;
-data_shift_85 <= data_shift_75;
+
 end
 end else begin
 if((is_pos_w==4'd5) & load_din) begin
 data_1stC_05 <= dp_data[8*9-1:0];
-data_1stC_15 <= data_1stC_05;
-data_1stC_25 <= data_1stC_15;
-data_1stC_35 <= data_1stC_25;
 data_shift_05 <= {8*9{1'd0}};
+
 data_shift_15 <= data_shift_05;
-data_shift_25 <= data_shift_15;
-data_shift_35 <= data_shift_25;
-data_shift_45 <= data_shift_35;
-data_shift_55 <= data_shift_45;
-data_shift_65 <= data_shift_55;
-data_shift_75 <= data_shift_65;
-data_shift_85 <= data_shift_75;
+
 end
 end
 
 if(hold_here & rdma2dp_ready_normal) begin
 if(width_pre_cnt==4'd6) begin
 data_shift_06 <= {8*9{1'd0}};
+
 data_shift_16 <= data_shift_06;
-data_shift_26 <= data_shift_16;
-data_shift_36 <= data_shift_26;
-data_shift_46 <= data_shift_36;
-data_shift_56 <= data_shift_46;
-data_shift_66 <= data_shift_56;
-data_shift_76 <= data_shift_66;
-data_shift_86 <= data_shift_76;
+
 end
 end else begin
 if((is_pos_w==4'd6) & load_din) begin
 data_1stC_06 <= dp_data[8*9-1:0];
-data_1stC_16 <= data_1stC_06;
-data_1stC_26 <= data_1stC_16;
-data_1stC_36 <= data_1stC_26;
 data_shift_06 <= {8*9{1'd0}};
+
 data_shift_16 <= data_shift_06;
-data_shift_26 <= data_shift_16;
-data_shift_36 <= data_shift_26;
-data_shift_46 <= data_shift_36;
-data_shift_56 <= data_shift_46;
-data_shift_66 <= data_shift_56;
-data_shift_76 <= data_shift_66;
-data_shift_86 <= data_shift_76;
+
 end
 end
 
 if(hold_here & rdma2dp_ready_normal) begin
 if(width_pre_cnt==4'd7) begin
 data_shift_07 <= {8*9{1'd0}};
+
 data_shift_17 <= data_shift_07;
-data_shift_27 <= data_shift_17;
-data_shift_37 <= data_shift_27;
-data_shift_47 <= data_shift_37;
-data_shift_57 <= data_shift_47;
-data_shift_67 <= data_shift_57;
-data_shift_77 <= data_shift_67;
-data_shift_87 <= data_shift_77;
+
 end
 end else begin
 if((is_pos_w==4'd7) & load_din) begin
 data_1stC_07 <= dp_data[8*9-1:0];
-data_1stC_17 <= data_1stC_07;
-data_1stC_27 <= data_1stC_17;
-data_1stC_37 <= data_1stC_27;
 data_shift_07 <= {8*9{1'd0}};
+
 data_shift_17 <= data_shift_07;
-data_shift_27 <= data_shift_17;
-data_shift_37 <= data_shift_27;
-data_shift_47 <= data_shift_37;
-data_shift_57 <= data_shift_47;
-data_shift_67 <= data_shift_57;
-data_shift_77 <= data_shift_67;
-data_shift_87 <= data_shift_77;
+
 end
 end
 
@@ -1333,18 +793,26 @@ end
           if(load_din) begin
 //: my $tp = 8;
 //: my $bpe = (8 +1);
+//: my $reg_num = int(8/$tp + 1);
+//: my $reg_1stc_num = int(4/$tp);
 //: foreach my $m (0..7) {
 //: print qq(
 //: if(is_pos_w==4'd${m}) begin
 //: data_shift_0${m} <= dp_data[${tp}*${bpe}-1:0];
-//: data_shift_1${m} <= data_1stC_0${m};
-//: data_shift_2${m} <= data_1stC_1${m};
-//: data_shift_3${m} <= data_1stC_2${m};
-//: data_shift_4${m} <= data_1stC_3${m};
-//: data_shift_5${m} <= {${tp}*${bpe}{1'd0}};
-//: data_shift_6${m} <= {${tp}*${bpe}{1'd0}};
-//: data_shift_7${m} <= {${tp}*${bpe}{1'd0}};
-//: data_shift_8${m} <= {${tp}*${bpe}{1'd0}};
+//: );
+//: foreach my $s (0..$reg_1stc_num -1) {
+//: my $k = $s + 1;
+//: print qq(
+//: data_shift_${k}${m} <= data_1stC_${s}${m};
+//: );
+//: }
+//: foreach my $s (0..$reg_1stc_num -1) {
+//: my $k = $s + $reg_1stc_num + 1;
+//: print qq(
+//: data_shift_${k}${m} <= {${tp}*${bpe}{1'd0}};
+//: );
+//: }
+//: print qq(
 //: end
 //: );
 //: }
@@ -1352,98 +820,42 @@ end
 
 if(is_pos_w==4'd0) begin
 data_shift_00 <= dp_data[8*9-1:0];
-data_shift_10 <= data_1stC_00;
-data_shift_20 <= data_1stC_10;
-data_shift_30 <= data_1stC_20;
-data_shift_40 <= data_1stC_30;
-data_shift_50 <= {8*9{1'd0}};
-data_shift_60 <= {8*9{1'd0}};
-data_shift_70 <= {8*9{1'd0}};
-data_shift_80 <= {8*9{1'd0}};
+
 end
 
 if(is_pos_w==4'd1) begin
 data_shift_01 <= dp_data[8*9-1:0];
-data_shift_11 <= data_1stC_01;
-data_shift_21 <= data_1stC_11;
-data_shift_31 <= data_1stC_21;
-data_shift_41 <= data_1stC_31;
-data_shift_51 <= {8*9{1'd0}};
-data_shift_61 <= {8*9{1'd0}};
-data_shift_71 <= {8*9{1'd0}};
-data_shift_81 <= {8*9{1'd0}};
+
 end
 
 if(is_pos_w==4'd2) begin
 data_shift_02 <= dp_data[8*9-1:0];
-data_shift_12 <= data_1stC_02;
-data_shift_22 <= data_1stC_12;
-data_shift_32 <= data_1stC_22;
-data_shift_42 <= data_1stC_32;
-data_shift_52 <= {8*9{1'd0}};
-data_shift_62 <= {8*9{1'd0}};
-data_shift_72 <= {8*9{1'd0}};
-data_shift_82 <= {8*9{1'd0}};
+
 end
 
 if(is_pos_w==4'd3) begin
 data_shift_03 <= dp_data[8*9-1:0];
-data_shift_13 <= data_1stC_03;
-data_shift_23 <= data_1stC_13;
-data_shift_33 <= data_1stC_23;
-data_shift_43 <= data_1stC_33;
-data_shift_53 <= {8*9{1'd0}};
-data_shift_63 <= {8*9{1'd0}};
-data_shift_73 <= {8*9{1'd0}};
-data_shift_83 <= {8*9{1'd0}};
+
 end
 
 if(is_pos_w==4'd4) begin
 data_shift_04 <= dp_data[8*9-1:0];
-data_shift_14 <= data_1stC_04;
-data_shift_24 <= data_1stC_14;
-data_shift_34 <= data_1stC_24;
-data_shift_44 <= data_1stC_34;
-data_shift_54 <= {8*9{1'd0}};
-data_shift_64 <= {8*9{1'd0}};
-data_shift_74 <= {8*9{1'd0}};
-data_shift_84 <= {8*9{1'd0}};
+
 end
 
 if(is_pos_w==4'd5) begin
 data_shift_05 <= dp_data[8*9-1:0];
-data_shift_15 <= data_1stC_05;
-data_shift_25 <= data_1stC_15;
-data_shift_35 <= data_1stC_25;
-data_shift_45 <= data_1stC_35;
-data_shift_55 <= {8*9{1'd0}};
-data_shift_65 <= {8*9{1'd0}};
-data_shift_75 <= {8*9{1'd0}};
-data_shift_85 <= {8*9{1'd0}};
+
 end
 
 if(is_pos_w==4'd6) begin
 data_shift_06 <= dp_data[8*9-1:0];
-data_shift_16 <= data_1stC_06;
-data_shift_26 <= data_1stC_16;
-data_shift_36 <= data_1stC_26;
-data_shift_46 <= data_1stC_36;
-data_shift_56 <= {8*9{1'd0}};
-data_shift_66 <= {8*9{1'd0}};
-data_shift_76 <= {8*9{1'd0}};
-data_shift_86 <= {8*9{1'd0}};
+
 end
 
 if(is_pos_w==4'd7) begin
 data_shift_07 <= dp_data[8*9-1:0];
-data_shift_17 <= data_1stC_07;
-data_shift_27 <= data_1stC_17;
-data_shift_37 <= data_1stC_27;
-data_shift_47 <= data_1stC_37;
-data_shift_57 <= {8*9{1'd0}};
-data_shift_67 <= {8*9{1'd0}};
-data_shift_77 <= {8*9{1'd0}};
-data_shift_87 <= {8*9{1'd0}};
+
 end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
@@ -1452,18 +864,20 @@ end
           if(rdma2dp_ready_normal) begin
 //: my $tp = 8;
 //: my $bpe = (8 +1);
+//: my $reg_num = int(8/$tp + 1);
+//: my $reg_1stc_num = int(4/$tp);
 //: foreach my $m (0..7) {
 //: print qq(
 //: if(cube_end_width_cnt==4'd${m}) begin
 //: data_shift_0${m} <= {${tp}*${bpe}{1'd0}};
-//: data_shift_1${m} <= data_shift_0${m};
-//: data_shift_2${m} <= data_shift_1${m};
-//: data_shift_3${m} <= data_shift_2${m};
-//: data_shift_4${m} <= data_shift_3${m};
-//: data_shift_5${m} <= data_shift_4${m};
-//: data_shift_6${m} <= data_shift_5${m};
-//: data_shift_7${m} <= data_shift_6${m};
-//: data_shift_8${m} <= data_shift_7${m};
+//: );
+//: foreach my $s (0..$reg_num -2) {
+//: my $k = $s + 1;
+//: print qq(
+//: data_shift_${k}${m} <= data_shift_${s}${m};
+//: );
+//: }
+//: print qq(
 //: end
 //: );
 //: }
@@ -1471,98 +885,58 @@ end
 
 if(cube_end_width_cnt==4'd0) begin
 data_shift_00 <= {8*9{1'd0}};
+
 data_shift_10 <= data_shift_00;
-data_shift_20 <= data_shift_10;
-data_shift_30 <= data_shift_20;
-data_shift_40 <= data_shift_30;
-data_shift_50 <= data_shift_40;
-data_shift_60 <= data_shift_50;
-data_shift_70 <= data_shift_60;
-data_shift_80 <= data_shift_70;
+
 end
 
 if(cube_end_width_cnt==4'd1) begin
 data_shift_01 <= {8*9{1'd0}};
+
 data_shift_11 <= data_shift_01;
-data_shift_21 <= data_shift_11;
-data_shift_31 <= data_shift_21;
-data_shift_41 <= data_shift_31;
-data_shift_51 <= data_shift_41;
-data_shift_61 <= data_shift_51;
-data_shift_71 <= data_shift_61;
-data_shift_81 <= data_shift_71;
+
 end
 
 if(cube_end_width_cnt==4'd2) begin
 data_shift_02 <= {8*9{1'd0}};
+
 data_shift_12 <= data_shift_02;
-data_shift_22 <= data_shift_12;
-data_shift_32 <= data_shift_22;
-data_shift_42 <= data_shift_32;
-data_shift_52 <= data_shift_42;
-data_shift_62 <= data_shift_52;
-data_shift_72 <= data_shift_62;
-data_shift_82 <= data_shift_72;
+
 end
 
 if(cube_end_width_cnt==4'd3) begin
 data_shift_03 <= {8*9{1'd0}};
+
 data_shift_13 <= data_shift_03;
-data_shift_23 <= data_shift_13;
-data_shift_33 <= data_shift_23;
-data_shift_43 <= data_shift_33;
-data_shift_53 <= data_shift_43;
-data_shift_63 <= data_shift_53;
-data_shift_73 <= data_shift_63;
-data_shift_83 <= data_shift_73;
+
 end
 
 if(cube_end_width_cnt==4'd4) begin
 data_shift_04 <= {8*9{1'd0}};
+
 data_shift_14 <= data_shift_04;
-data_shift_24 <= data_shift_14;
-data_shift_34 <= data_shift_24;
-data_shift_44 <= data_shift_34;
-data_shift_54 <= data_shift_44;
-data_shift_64 <= data_shift_54;
-data_shift_74 <= data_shift_64;
-data_shift_84 <= data_shift_74;
+
 end
 
 if(cube_end_width_cnt==4'd5) begin
 data_shift_05 <= {8*9{1'd0}};
+
 data_shift_15 <= data_shift_05;
-data_shift_25 <= data_shift_15;
-data_shift_35 <= data_shift_25;
-data_shift_45 <= data_shift_35;
-data_shift_55 <= data_shift_45;
-data_shift_65 <= data_shift_55;
-data_shift_75 <= data_shift_65;
-data_shift_85 <= data_shift_75;
+
 end
 
 if(cube_end_width_cnt==4'd6) begin
 data_shift_06 <= {8*9{1'd0}};
+
 data_shift_16 <= data_shift_06;
-data_shift_26 <= data_shift_16;
-data_shift_36 <= data_shift_26;
-data_shift_46 <= data_shift_36;
-data_shift_56 <= data_shift_46;
-data_shift_66 <= data_shift_56;
-data_shift_76 <= data_shift_66;
-data_shift_86 <= data_shift_76;
+
 end
 
 if(cube_end_width_cnt==4'd7) begin
 data_shift_07 <= {8*9{1'd0}};
+
 data_shift_17 <= data_shift_07;
-data_shift_27 <= data_shift_17;
-data_shift_37 <= data_shift_27;
-data_shift_47 <= data_shift_37;
-data_shift_57 <= data_shift_47;
-data_shift_67 <= data_shift_57;
-data_shift_77 <= data_shift_67;
-data_shift_87 <= data_shift_77;
+
 end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
@@ -1570,15 +944,17 @@ end
       default: begin
 //: my $tp = 8;
 //: my $bpe = (8 +1);
+//: my $reg_num = int(8/$tp + 1);
+//: my $reg_1stc_num = int(4/$tp);
 //: foreach my $m (0..7) {
-//: foreach my $k (0..8) {
+//: foreach my $k (0..$reg_num -1) {
 //: print qq(
 //: data_shift_${k}${m} <= {${tp}*${bpe}{1'd0}};
 //: );
 //: }
 //: }
 //: foreach my $m (0..7) {
-//: foreach my $k (0..3) {
+//: foreach my $k (0..$reg_1stc_num -1) {
 //: print qq(
 //: data_1stC_${k}${m} <= {${tp}*${bpe}{1'd0}};
 //: );
@@ -1590,209 +966,33 @@ data_shift_00 <= {8*9{1'd0}};
 
 data_shift_10 <= {8*9{1'd0}};
 
-data_shift_20 <= {8*9{1'd0}};
-
-data_shift_30 <= {8*9{1'd0}};
-
-data_shift_40 <= {8*9{1'd0}};
-
-data_shift_50 <= {8*9{1'd0}};
-
-data_shift_60 <= {8*9{1'd0}};
-
-data_shift_70 <= {8*9{1'd0}};
-
-data_shift_80 <= {8*9{1'd0}};
-
 data_shift_01 <= {8*9{1'd0}};
 
 data_shift_11 <= {8*9{1'd0}};
-
-data_shift_21 <= {8*9{1'd0}};
-
-data_shift_31 <= {8*9{1'd0}};
-
-data_shift_41 <= {8*9{1'd0}};
-
-data_shift_51 <= {8*9{1'd0}};
-
-data_shift_61 <= {8*9{1'd0}};
-
-data_shift_71 <= {8*9{1'd0}};
-
-data_shift_81 <= {8*9{1'd0}};
 
 data_shift_02 <= {8*9{1'd0}};
 
 data_shift_12 <= {8*9{1'd0}};
 
-data_shift_22 <= {8*9{1'd0}};
-
-data_shift_32 <= {8*9{1'd0}};
-
-data_shift_42 <= {8*9{1'd0}};
-
-data_shift_52 <= {8*9{1'd0}};
-
-data_shift_62 <= {8*9{1'd0}};
-
-data_shift_72 <= {8*9{1'd0}};
-
-data_shift_82 <= {8*9{1'd0}};
-
 data_shift_03 <= {8*9{1'd0}};
 
 data_shift_13 <= {8*9{1'd0}};
-
-data_shift_23 <= {8*9{1'd0}};
-
-data_shift_33 <= {8*9{1'd0}};
-
-data_shift_43 <= {8*9{1'd0}};
-
-data_shift_53 <= {8*9{1'd0}};
-
-data_shift_63 <= {8*9{1'd0}};
-
-data_shift_73 <= {8*9{1'd0}};
-
-data_shift_83 <= {8*9{1'd0}};
 
 data_shift_04 <= {8*9{1'd0}};
 
 data_shift_14 <= {8*9{1'd0}};
 
-data_shift_24 <= {8*9{1'd0}};
-
-data_shift_34 <= {8*9{1'd0}};
-
-data_shift_44 <= {8*9{1'd0}};
-
-data_shift_54 <= {8*9{1'd0}};
-
-data_shift_64 <= {8*9{1'd0}};
-
-data_shift_74 <= {8*9{1'd0}};
-
-data_shift_84 <= {8*9{1'd0}};
-
 data_shift_05 <= {8*9{1'd0}};
 
 data_shift_15 <= {8*9{1'd0}};
-
-data_shift_25 <= {8*9{1'd0}};
-
-data_shift_35 <= {8*9{1'd0}};
-
-data_shift_45 <= {8*9{1'd0}};
-
-data_shift_55 <= {8*9{1'd0}};
-
-data_shift_65 <= {8*9{1'd0}};
-
-data_shift_75 <= {8*9{1'd0}};
-
-data_shift_85 <= {8*9{1'd0}};
 
 data_shift_06 <= {8*9{1'd0}};
 
 data_shift_16 <= {8*9{1'd0}};
 
-data_shift_26 <= {8*9{1'd0}};
-
-data_shift_36 <= {8*9{1'd0}};
-
-data_shift_46 <= {8*9{1'd0}};
-
-data_shift_56 <= {8*9{1'd0}};
-
-data_shift_66 <= {8*9{1'd0}};
-
-data_shift_76 <= {8*9{1'd0}};
-
-data_shift_86 <= {8*9{1'd0}};
-
 data_shift_07 <= {8*9{1'd0}};
 
 data_shift_17 <= {8*9{1'd0}};
-
-data_shift_27 <= {8*9{1'd0}};
-
-data_shift_37 <= {8*9{1'd0}};
-
-data_shift_47 <= {8*9{1'd0}};
-
-data_shift_57 <= {8*9{1'd0}};
-
-data_shift_67 <= {8*9{1'd0}};
-
-data_shift_77 <= {8*9{1'd0}};
-
-data_shift_87 <= {8*9{1'd0}};
-
-data_1stC_00 <= {8*9{1'd0}};
-
-data_1stC_10 <= {8*9{1'd0}};
-
-data_1stC_20 <= {8*9{1'd0}};
-
-data_1stC_30 <= {8*9{1'd0}};
-
-data_1stC_01 <= {8*9{1'd0}};
-
-data_1stC_11 <= {8*9{1'd0}};
-
-data_1stC_21 <= {8*9{1'd0}};
-
-data_1stC_31 <= {8*9{1'd0}};
-
-data_1stC_02 <= {8*9{1'd0}};
-
-data_1stC_12 <= {8*9{1'd0}};
-
-data_1stC_22 <= {8*9{1'd0}};
-
-data_1stC_32 <= {8*9{1'd0}};
-
-data_1stC_03 <= {8*9{1'd0}};
-
-data_1stC_13 <= {8*9{1'd0}};
-
-data_1stC_23 <= {8*9{1'd0}};
-
-data_1stC_33 <= {8*9{1'd0}};
-
-data_1stC_04 <= {8*9{1'd0}};
-
-data_1stC_14 <= {8*9{1'd0}};
-
-data_1stC_24 <= {8*9{1'd0}};
-
-data_1stC_34 <= {8*9{1'd0}};
-
-data_1stC_05 <= {8*9{1'd0}};
-
-data_1stC_15 <= {8*9{1'd0}};
-
-data_1stC_25 <= {8*9{1'd0}};
-
-data_1stC_35 <= {8*9{1'd0}};
-
-data_1stC_06 <= {8*9{1'd0}};
-
-data_1stC_16 <= {8*9{1'd0}};
-
-data_1stC_26 <= {8*9{1'd0}};
-
-data_1stC_36 <= {8*9{1'd0}};
-
-data_1stC_07 <= {8*9{1'd0}};
-
-data_1stC_17 <= {8*9{1'd0}};
-
-data_1stC_27 <= {8*9{1'd0}};
-
-data_1stC_37 <= {8*9{1'd0}};
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
       end
@@ -1803,13 +1003,11 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     width_pre <= {4{1'b0}};
   end else begin
-//if((stat_cur==NORMAL_C) & is_last_c & is_b_sync & (is_pos_c==3'd3) & load_din)
-    if((stat_cur==NORMAL_C) & is_last_c & is_b_sync & (is_pos_c==3'd7) & load_din)
+    if((stat_cur==NORMAL_C) & is_last_c & is_b_sync & is_posc_end & load_din)
         width_pre <= is_width;
   end
 end
 always @(*) begin
-//if((stat_cur==FIRST_C) & (is_pos_w == 0))
     if((stat_cur==FIRST_C) & (is_pos_w == 0) & (is_pos_c == 0))
         width_cur_1 = is_width;
     else
@@ -1905,7 +1103,8 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if(stat_cur==CUBE_END) begin
         if(rdma2dp_ready_normal) begin
             if(cube_end_width_cnt == last_width)
-                cube_end_c_cnt <= cube_end_c_cnt + 8;
+//cube_end_c_cnt <= cube_end_c_cnt + 8;
+                cube_end_c_cnt <= cube_end_c_cnt + 1'b1;
         end
     end else
         cube_end_c_cnt <= 3'd0;
@@ -1915,7 +1114,7 @@ end
 //: if( $tp >= 4 ) {
 //: print " assign cube_done = (stat_cur==CUBE_END) & (cube_end_width_cnt == last_width) & rdma2dp_ready_normal;    \n";
 //: } elsif( $tp == 2 ) {
-//: print " assign cube_done = (stat_cur==CUBE_END) & (cube_end_width_cnt == last_width) & (cube_end_c_cnt == 3'd2) & rdma2dp_ready_normal; \n";
+//: print " assign cube_done = (stat_cur==CUBE_END) & (cube_end_width_cnt == last_width) & (cube_end_c_cnt == 3'd1) & rdma2dp_ready_normal; \n";
 //: } elsif( $tp == 1 ) {
 //: print " assign cube_done = (stat_cur==CUBE_END) & (cube_end_width_cnt == last_width) & (cube_end_c_cnt == 3'd3) & rdma2dp_ready_normal; \n";
 //: }
@@ -1996,6 +1195,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     buffer_data <= {buf2sq_data_bw{1'b0}};
   end else begin
   if(((stat_cur_dly==NORMAL_C) || (stat_cur_dly==SECOND_C) || (stat_cur_dly==CUBE_END)) & data_shift_load) begin
+//: if(8 == 1) {
 //: foreach my $m (0..7) {
 //: print qq(
 //: if(is_pos_w_dly == 4'd${m})
@@ -2003,44 +1203,21 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 //: data_shift_4${m},data_shift_5${m},data_shift_6${m},data_shift_7${m},data_shift_8${m}};
 //: );
 //: }
+//: } elsif(8 == 2) {
+//: foreach my $m (0..7) {
+//: print qq(
+//: if(is_pos_w_dly == 4'd${m})
+//: buffer_data <= {data_shift_0${m},data_shift_1${m},data_shift_2${m},data_shift_3${m},data_shift_4${m}};
+//: );
+//: }
+//: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-
-if(is_pos_w_dly == 4'd0)
-buffer_data <= {data_shift_00,data_shift_10,data_shift_20,data_shift_30,
-data_shift_40,data_shift_50,data_shift_60,data_shift_70,data_shift_80};
-
-if(is_pos_w_dly == 4'd1)
-buffer_data <= {data_shift_01,data_shift_11,data_shift_21,data_shift_31,
-data_shift_41,data_shift_51,data_shift_61,data_shift_71,data_shift_81};
-
-if(is_pos_w_dly == 4'd2)
-buffer_data <= {data_shift_02,data_shift_12,data_shift_22,data_shift_32,
-data_shift_42,data_shift_52,data_shift_62,data_shift_72,data_shift_82};
-
-if(is_pos_w_dly == 4'd3)
-buffer_data <= {data_shift_03,data_shift_13,data_shift_23,data_shift_33,
-data_shift_43,data_shift_53,data_shift_63,data_shift_73,data_shift_83};
-
-if(is_pos_w_dly == 4'd4)
-buffer_data <= {data_shift_04,data_shift_14,data_shift_24,data_shift_34,
-data_shift_44,data_shift_54,data_shift_64,data_shift_74,data_shift_84};
-
-if(is_pos_w_dly == 4'd5)
-buffer_data <= {data_shift_05,data_shift_15,data_shift_25,data_shift_35,
-data_shift_45,data_shift_55,data_shift_65,data_shift_75,data_shift_85};
-
-if(is_pos_w_dly == 4'd6)
-buffer_data <= {data_shift_06,data_shift_16,data_shift_26,data_shift_36,
-data_shift_46,data_shift_56,data_shift_66,data_shift_76,data_shift_86};
-
-if(is_pos_w_dly == 4'd7)
-buffer_data <= {data_shift_07,data_shift_17,data_shift_27,data_shift_37,
-data_shift_47,data_shift_57,data_shift_67,data_shift_77,data_shift_87};
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
   end else if(stat_cur_dly==FIRST_C) begin
       if(more2less_dly) begin
           if(data_shift_load) begin
+//: if(8 == 1) {
 //: foreach my $m (0..7) {
 //: print qq(
 //: if(is_pos_w_dly == 4'd${m})
@@ -2048,42 +1225,19 @@ data_shift_47,data_shift_57,data_shift_67,data_shift_77,data_shift_87};
 //: data_shift_4${m},data_shift_5${m},data_shift_6${m},data_shift_7${m},data_shift_8${m}};
 //: );
 //: }
+//: } elsif(8 == 2) {
+//: foreach my $m (0..7) {
+//: print qq(
+//: if(is_pos_w_dly == 4'd${m})
+//: buffer_data <= {data_shift_0${m},data_shift_1${m},data_shift_2${m},data_shift_3${m},data_shift_4${m}};
+//: );
+//: }
+//: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-
-if(is_pos_w_dly == 4'd0)
-buffer_data <= {data_shift_00,data_shift_10,data_shift_20,data_shift_30,
-data_shift_40,data_shift_50,data_shift_60,data_shift_70,data_shift_80};
-
-if(is_pos_w_dly == 4'd1)
-buffer_data <= {data_shift_01,data_shift_11,data_shift_21,data_shift_31,
-data_shift_41,data_shift_51,data_shift_61,data_shift_71,data_shift_81};
-
-if(is_pos_w_dly == 4'd2)
-buffer_data <= {data_shift_02,data_shift_12,data_shift_22,data_shift_32,
-data_shift_42,data_shift_52,data_shift_62,data_shift_72,data_shift_82};
-
-if(is_pos_w_dly == 4'd3)
-buffer_data <= {data_shift_03,data_shift_13,data_shift_23,data_shift_33,
-data_shift_43,data_shift_53,data_shift_63,data_shift_73,data_shift_83};
-
-if(is_pos_w_dly == 4'd4)
-buffer_data <= {data_shift_04,data_shift_14,data_shift_24,data_shift_34,
-data_shift_44,data_shift_54,data_shift_64,data_shift_74,data_shift_84};
-
-if(is_pos_w_dly == 4'd5)
-buffer_data <= {data_shift_05,data_shift_15,data_shift_25,data_shift_35,
-data_shift_45,data_shift_55,data_shift_65,data_shift_75,data_shift_85};
-
-if(is_pos_w_dly == 4'd6)
-buffer_data <= {data_shift_06,data_shift_16,data_shift_26,data_shift_36,
-data_shift_46,data_shift_56,data_shift_66,data_shift_76,data_shift_86};
-
-if(is_pos_w_dly == 4'd7)
-buffer_data <= {data_shift_07,data_shift_17,data_shift_27,data_shift_37,
-data_shift_47,data_shift_57,data_shift_67,data_shift_77,data_shift_87};
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
           end else if(hold_here_dly & data_shift_ready) begin
+//: if(8 == 1) {
 //: foreach my $m (0..7) {
 //: print qq(
 //: if(width_pre_cnt_dly == 4'd${m})
@@ -2091,44 +1245,21 @@ data_shift_47,data_shift_57,data_shift_67,data_shift_77,data_shift_87};
 //: data_shift_4${m},data_shift_5${m},data_shift_6${m},data_shift_7${m},data_shift_8${m}};
 //: );
 //: }
+//: } elsif(8 == 2) {
+//: foreach my $m (0..7) {
+//: print qq(
+//: if(width_pre_cnt_dly == 4'd${m})
+//: buffer_data <= {data_shift_0${m},data_shift_1${m},data_shift_2${m},data_shift_3${m},data_shift_4${m}};
+//: );
+//: }
+//: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-
-if(width_pre_cnt_dly == 4'd0)
-buffer_data <= {data_shift_00,data_shift_10,data_shift_20,data_shift_30,
-data_shift_40,data_shift_50,data_shift_60,data_shift_70,data_shift_80};
-
-if(width_pre_cnt_dly == 4'd1)
-buffer_data <= {data_shift_01,data_shift_11,data_shift_21,data_shift_31,
-data_shift_41,data_shift_51,data_shift_61,data_shift_71,data_shift_81};
-
-if(width_pre_cnt_dly == 4'd2)
-buffer_data <= {data_shift_02,data_shift_12,data_shift_22,data_shift_32,
-data_shift_42,data_shift_52,data_shift_62,data_shift_72,data_shift_82};
-
-if(width_pre_cnt_dly == 4'd3)
-buffer_data <= {data_shift_03,data_shift_13,data_shift_23,data_shift_33,
-data_shift_43,data_shift_53,data_shift_63,data_shift_73,data_shift_83};
-
-if(width_pre_cnt_dly == 4'd4)
-buffer_data <= {data_shift_04,data_shift_14,data_shift_24,data_shift_34,
-data_shift_44,data_shift_54,data_shift_64,data_shift_74,data_shift_84};
-
-if(width_pre_cnt_dly == 4'd5)
-buffer_data <= {data_shift_05,data_shift_15,data_shift_25,data_shift_35,
-data_shift_45,data_shift_55,data_shift_65,data_shift_75,data_shift_85};
-
-if(width_pre_cnt_dly == 4'd6)
-buffer_data <= {data_shift_06,data_shift_16,data_shift_26,data_shift_36,
-data_shift_46,data_shift_56,data_shift_66,data_shift_76,data_shift_86};
-
-if(width_pre_cnt_dly == 4'd7)
-buffer_data <= {data_shift_07,data_shift_17,data_shift_27,data_shift_37,
-data_shift_47,data_shift_57,data_shift_67,data_shift_77,data_shift_87};
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
           end
       end else begin
           if((is_pos_w_dly<=width_pre_dly) & data_shift_load) begin
+//: if(8 == 1) {
 //: foreach my $m (0..7) {
 //: print qq(
 //: if(is_pos_w_dly == 4'd${m})
@@ -2136,39 +1267,15 @@ data_shift_47,data_shift_57,data_shift_67,data_shift_77,data_shift_87};
 //: data_shift_4${m},data_shift_5${m},data_shift_6${m},data_shift_7${m},data_shift_8${m}};
 //: );
 //: }
+//: } elsif(8 == 2) {
+//: foreach my $m (0..7) {
+//: print qq(
+//: if(is_pos_w_dly == 4'd${m})
+//: buffer_data <= {data_shift_0${m},data_shift_1${m},data_shift_2${m},data_shift_3${m},data_shift_4${m}};
+//: );
+//: }
+//: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-
-if(is_pos_w_dly == 4'd0)
-buffer_data <= {data_shift_00,data_shift_10,data_shift_20,data_shift_30,
-data_shift_40,data_shift_50,data_shift_60,data_shift_70,data_shift_80};
-
-if(is_pos_w_dly == 4'd1)
-buffer_data <= {data_shift_01,data_shift_11,data_shift_21,data_shift_31,
-data_shift_41,data_shift_51,data_shift_61,data_shift_71,data_shift_81};
-
-if(is_pos_w_dly == 4'd2)
-buffer_data <= {data_shift_02,data_shift_12,data_shift_22,data_shift_32,
-data_shift_42,data_shift_52,data_shift_62,data_shift_72,data_shift_82};
-
-if(is_pos_w_dly == 4'd3)
-buffer_data <= {data_shift_03,data_shift_13,data_shift_23,data_shift_33,
-data_shift_43,data_shift_53,data_shift_63,data_shift_73,data_shift_83};
-
-if(is_pos_w_dly == 4'd4)
-buffer_data <= {data_shift_04,data_shift_14,data_shift_24,data_shift_34,
-data_shift_44,data_shift_54,data_shift_64,data_shift_74,data_shift_84};
-
-if(is_pos_w_dly == 4'd5)
-buffer_data <= {data_shift_05,data_shift_15,data_shift_25,data_shift_35,
-data_shift_45,data_shift_55,data_shift_65,data_shift_75,data_shift_85};
-
-if(is_pos_w_dly == 4'd6)
-buffer_data <= {data_shift_06,data_shift_16,data_shift_26,data_shift_36,
-data_shift_46,data_shift_56,data_shift_66,data_shift_76,data_shift_86};
-
-if(is_pos_w_dly == 4'd7)
-buffer_data <= {data_shift_07,data_shift_17,data_shift_27,data_shift_37,
-data_shift_47,data_shift_57,data_shift_67,data_shift_77,data_shift_87};
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
           end else if(data_shift_load) begin
@@ -2276,10 +1383,10 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    pos_c_align <= {3{1'b0}};
+    pos_c_align <= {5{1'b0}};
   end else begin
     if(FIRST_C_end)
-        pos_c_align <= 3'd0;
+        pos_c_align <= 5'd0;
     else if(is_b_sync & load_din & (~FIRST_C_bf_end))
         pos_c_align <= is_pos_c;
   end
@@ -2328,7 +1435,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     pos_w_dly1 <= {4{1'b0}};
     width_dly1 <= {4{1'b0}};
-    pos_c_dly1 <= {3{1'b0}};
+    pos_c_dly1 <= {5{1'b0}};
     b_sync_dly1 <= 1'b0;
     last_w_dly1 <= 1'b0;
     last_h_dly1 <= 1'b0;
@@ -2404,7 +1511,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    buffer_pos_c <= {3{1'b0}};
+    buffer_pos_c <= {5{1'b0}};
   end else begin
   if ((data_shift_load_all) == 1'b1) begin
     buffer_pos_c <= pos_c_dly1;
@@ -2455,22 +1562,22 @@ end
 //: assign buffer_pd[${k}-1:0] = buffer_data;
 //: assign buffer_pd[${k}+3:${k}] = buffer_pos_w[3:0];
 //: assign buffer_pd[${k}+7:${k}+4] = buffer_width[3:0];
-//: assign buffer_pd[${k}+10:${k}+8] = buffer_pos_c[2:0];
-//: assign buffer_pd[${k}+11] = buffer_b_sync ;
-//: assign buffer_pd[${k}+12] = buffer_last_w ;
-//: assign buffer_pd[${k}+13] = buffer_last_h ;
-//: assign buffer_pd[${k}+14] = buffer_last_c ;
+//: assign buffer_pd[${k}+12:${k}+8] = buffer_pos_c[4:0];
+//: assign buffer_pd[${k}+13] = buffer_b_sync ;
+//: assign buffer_pd[${k}+14] = buffer_last_w ;
+//: assign buffer_pd[${k}+15] = buffer_last_h ;
+//: assign buffer_pd[${k}+16] = buffer_last_c ;
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
 assign buffer_pd[144-1:0] = buffer_data;
 assign buffer_pd[144+3:144] = buffer_pos_w[3:0];
 assign buffer_pd[144+7:144+4] = buffer_width[3:0];
-assign buffer_pd[144+10:144+8] = buffer_pos_c[2:0];
-assign buffer_pd[144+11] = buffer_b_sync ;
-assign buffer_pd[144+12] = buffer_last_w ;
-assign buffer_pd[144+13] = buffer_last_h ;
-assign buffer_pd[144+14] = buffer_last_c ;
+assign buffer_pd[144+12:144+8] = buffer_pos_c[4:0];
+assign buffer_pd[144+13] = buffer_b_sync ;
+assign buffer_pd[144+14] = buffer_last_w ;
+assign buffer_pd[144+15] = buffer_last_h ;
+assign buffer_pd[144+16] = buffer_last_c ;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 /////////////////////////////////////////
@@ -2478,23 +1585,23 @@ assign buffer_valid = buffer_data_vld;
 /////////////////////////////////////////
 //: my $icvto = (8 +1);
 //: my $tp = 8;
-//: my $k = (${tp}+8)*${icvto}+15;
+//: my $k = (${tp}+8)*${icvto}+17;
 //: &eperl::pipe(" -is -wid $k -do normalz_buf_data -vo normalz_buf_data_pvld -ri normalz_buf_data_prdy -di buffer_pd -vi buffer_valid -ro buffer_ready ");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 // Reg
 reg buffer_ready;
 reg skid_flop_buffer_ready;
 reg skid_flop_buffer_valid;
-reg [159-1:0] skid_flop_buffer_pd;
+reg [161-1:0] skid_flop_buffer_pd;
 reg pipe_skid_buffer_valid;
-reg [159-1:0] pipe_skid_buffer_pd;
+reg [161-1:0] pipe_skid_buffer_pd;
 // Wire
 wire skid_buffer_valid;
-wire [159-1:0] skid_buffer_pd;
+wire [161-1:0] skid_buffer_pd;
 wire skid_buffer_ready;
 wire pipe_skid_buffer_ready;
 wire normalz_buf_data_pvld;
-wire [159-1:0] normalz_buf_data;
+wire [161-1:0] normalz_buf_data;
 // Code
 // SKID READY
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -2522,10 +1629,10 @@ assign skid_buffer_valid = (skid_flop_buffer_ready) ? buffer_valid : skid_flop_b
 // SKID DATA
 always @(posedge nvdla_core_clk) begin
     if (skid_flop_buffer_ready & buffer_valid) begin
-        skid_flop_buffer_pd[159-1:0] <= buffer_pd[159-1:0];
+        skid_flop_buffer_pd[161-1:0] <= buffer_pd[161-1:0];
     end
 end
-assign skid_buffer_pd[159-1:0] = (skid_flop_buffer_ready) ? buffer_pd[159-1:0] : skid_flop_buffer_pd[159-1:0];
+assign skid_buffer_pd[161-1:0] = (skid_flop_buffer_ready) ? buffer_pd[161-1:0] : skid_flop_buffer_pd[161-1:0];
 
 
 // PIPE READY
@@ -2545,7 +1652,7 @@ end
 // PIPE DATA
 always @(posedge nvdla_core_clk) begin
     if (skid_buffer_ready && skid_buffer_valid) begin
-        pipe_skid_buffer_pd[159-1:0] <= skid_buffer_pd[159-1:0];
+        pipe_skid_buffer_pd[161-1:0] <= skid_buffer_pd[161-1:0];
     end
 end
 

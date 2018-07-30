@@ -17,6 +17,12 @@
 // File Name: NV_NVDLA_define.h
 ///////////////////////////////////////////////////
 //
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  512 )
+//    #define LARGE_MEMBUS
+//#endif
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  64 )
+//    #define SMALL_MEMBUS
+//#endif
 module NV_NVDLA_NOCIF_DRAM_READ_IG_bpt (
    nvdla_core_clk //|< i
   ,nvdla_core_rstn //|< i
@@ -54,9 +60,9 @@ reg [9:0] lat_cnt_nxt;
 reg [7:0] lat_count_cnt;
 reg [0:0] lat_count_dec;
 reg [64 -1:0] out_addr;
-wire [2:0] out_size;
+reg [2:0] out_size;
 reg [15:0] req_num;
-wire [2:0] slot_needed;
+reg [2:0] slot_needed;
 wire [1:0] beat_size_NC;
 wire bpt2arb_accept;
 wire [64 -1:0] bpt2arb_addr;
@@ -112,23 +118,23 @@ NV_NVDLA_NOCIF_DRAM_READ_IG_BPT_pipe_p1 pipe_p1 (
   ,.nvdla_core_rstn (nvdla_core_rstn) //|< i
   ,.dma2bpt_req_pd (dma2bpt_req_pd[64 +14:0]) //|< i
   ,.dma2bpt_req_valid (dma2bpt_req_valid) //|< i
+  ,.in_rdy_p (in_rdy_p) //|< w
   ,.dma2bpt_req_ready (dma2bpt_req_ready) //|> o
   ,.in_pd_p (in_pd_p[64 +14:0]) //|> w
   ,.in_vld_p (in_vld_p) //|> w
-  ,.in_rdy_p (in_rdy_p) //|< w
   );
 NV_NVDLA_NOCIF_DRAM_READ_IG_BPT_pipe_p2 pipe_p2 (
    .nvdla_core_clk (nvdla_core_clk) //|< i
   ,.nvdla_core_rstn (nvdla_core_rstn) //|< i
   ,.in_pd_p (in_pd_p[64 +14:0]) //|< w
-  ,.in_vld_p (in_vld_p) //|< w
-  ,.in_rdy_p (in_rdy_p) //|> w
-  ,.in_pd (in_pd[64 +14:0]) //|> w
-  ,.in_vld (in_vld) //|> w
   ,.in_rdy (in_rdy) //|< w
+  ,.in_vld_p (in_vld_p) //|< w
+  ,.in_pd (in_pd[64 +14:0]) //|> w
+  ,.in_rdy_p (in_rdy_p) //|> w
+  ,.in_vld (in_vld) //|> w
   );
 assign in_rdy = req_rdy & is_ltran;
-assign in_vld_pd = {(64 +15){in_vld}} & in_pd;
+assign in_vld_pd = {79{in_vld}} & in_pd;
 // PKT_UNPACK_WIRE( dma_read_cmd , in_ , in_vld_pd )
 assign in_addr[64 -1:0] = in_vld_pd[64 -1:0];
 assign in_size[14:0] = in_vld_pd[64 +14:64];
@@ -178,19 +184,44 @@ assign in_size[14:0] = in_vld_pd[64 +14:64];
 // spyglass enable_block WRN_58
 // spyglass enable_block WRN_61
 `endif // SPYGLASS_ASSERT_ON
+//assign stt_addr = in_addr;
+//assign {mon_end_addr_c,end_addr} = stt_addr + in_size<<5;
+//:my $k=32;
+//:my $j=log(${k})/log(2);
+//:my $l = 256;
+//:my $m = log(${l})/log(2);
+//: if (32 == $m) {
+//: print qq(assign stt_offset[2:0] = in_addr[$j+1:$j];);
+//: print qq(assign size_offset[2:0] = in_size[1:0];);
+//: } else {
+//: print qq(assign stt_offset[2:0] = in_addr[$j+2:$j];);
+//: print qq(assign size_offset[2:0] = in_size[2:0];);
+//:}
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+assign stt_offset[2:0] = in_addr[5+2:5];assign size_offset[2:0] = in_size[2:0];
+//| eperl: generated_end (DO NOT EDIT ABOVE)
+//assign stt_offset[2:0] = in_addr[7:5];
+//assign size_offset[2:0] = in_size[2:0];
+assign {mon_end_offset_c, end_offset[2:0]} = stt_offset + size_offset;
+assign is_single_tran = (stt_offset + in_size) < (1*4);
+assign ftran_size[2:0] = is_single_tran ? size_offset : (1*4 -1) -stt_offset;
+//assign ftran_size[2:0] = is_single_tran ? size_offset : (7 -stt_offset);
+assign ftran_num[3:0] = ftran_size + 1;
+assign ltran_size[2:0] = is_single_tran ? `tick_x_or_0 : end_offset; // when single tran, size of ltran is meanningless
+assign ltran_num[3:0] = is_single_tran ? 0 : end_offset+1;
+assign mtran_num = in_size + 1 - ftran_num - ltran_num;
 //================
 // check the empty entry of lat.fifo
 //================
 //dma2bpt_cdt_lat_fifo_pop
-assign slot_needed = 1;
-/*always @(
+always @(
   is_single_tran
   or out_size
   or is_ltran
   or out_swizzle
   or is_ftran
   ) begin
-    if (NVDLA_MEMORY_ATOMIC_LOG2 == NVDLA_PRIMARY_MEMIF_WIDTH_LOG2) begin
+    if (5 == 5) begin
        slot_needed = 1;
     end
     else if (is_single_tran) begin
@@ -202,7 +233,7 @@ assign slot_needed = 1;
     end else begin
         slot_needed = 3'd4;
     end
-end*/
+end
 assign lat_fifo_stall_enable = (tieoff_lat_fifo_depth!=0);
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
@@ -349,10 +380,8 @@ assign req_enable = (!lat_fifo_stall_enable) || ({{5{1'b0}}, slot_needed} <= lat
 //================
 // bsp out: swizzle
 //================
-assign out_swizzle = 1'b0; //(NVDLA_MEMORY_ATOMIC_LOG2 == NVDLA_PRIMARY_MEMIF_WIDTH_LOG2) ? 1'b0 : (stt_offset[0]==1'b1);
-assign out_odd = 1'b0; //(NVDLA_MEMORY_ATOMIC_LOG2 == NVDLA_PRIMARY_MEMIF_WIDTH_LOG2) ? 0 : (in_size[0]==1'b0);
-assign out_size = 3'b0;
-/*
+assign out_swizzle = (5 == 5) ? 1'b0 : (stt_offset[0]==1'b1);
+assign out_odd = (5 == 5) ? 0 : (in_size[0]==1'b0);
 //================
 // bsp out: size
 //================
@@ -364,7 +393,7 @@ always @(
   or ltran_size
   ) begin
     out_size = {3{`tick_x_or_0}};
-    if (NVDLA_MEMORY_ATOMIC_LOG2 == NVDLA_PRIMARY_MEMIF_WIDTH_LOG2) begin
+    if (5 == 5) begin
        out_size = 0;
     end
     else if (is_ftran) begin
@@ -375,7 +404,6 @@ always @(
         out_size = ltran_size;
     end
 end
-*/
 //================
 // bsp out: USER: SIZE
 //================
@@ -432,23 +460,18 @@ assign {mon_out_beats_c,beat_size_NC[1:0]} = out_size[2:1] + out_inc; //stepheng
 //================
 always @(posedge nvdla_core_clk) begin
     if (bpt2arb_accept) begin
-//if (is_ftran) begin
-// //out_addr <= in_addr + ((ftran_size+1)<<(NVDLA_MEMORY_ATOMIC_LOG2));
-//if (5 == 6)
-// out_addr <= in_addr + ((1)<<(5));
-// else
-// out_addr <= in_addr + ((ftran_size+1)<<(5));
-//end else begin
-// //out_addr <= out_addr + (8<<(NVDLA_MEMORY_ATOMIC_LOG2-1));
-//if (5 == 6)
-// out_addr <= out_addr + (1<<(5));
-// else
-// out_addr <= out_addr + (8<<(5 -1));
-//end
         if (is_ftran) begin
-            out_addr <= in_addr + 8;
+//out_addr <= in_addr + ((ftran_size+1)<<(5));
+     if (5 == 5)
+               out_addr <= in_addr + ((1)<<(5));
+            else
+               out_addr <= in_addr + ((ftran_size+1)<<(5));
         end else begin
-            out_addr <= out_addr + 8;
+//out_addr <= out_addr + (8<<(5 -1));
+     if (5 == 5)
+               out_addr <= out_addr + (1<<(5));
+            else
+               out_addr <= out_addr + (8<<(5 -1));
         end
     end
 end
@@ -460,19 +483,19 @@ always @(
 //or mtran_num
   *
   ) begin
-//if (5 == 6)
+    if (5 == 5)
        req_num = in_size + 1;
-//else if (is_single_tran) begin
-// req_num = 1;
-//end else if (mtran_num==0) begin
-// req_num = 2;
-//end else begin
-// req_num = 2 + mtran_num[14:3];
-//end
+    else if (is_single_tran) begin
+        req_num = 1;
+    end else if (mtran_num==0) begin
+        req_num = 2;
+    end else begin
+        req_num = 2 + mtran_num[14:3];
+    end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    count_req <= {15{1'b0}};
+    count_req <= {14{1'b0}};
   end else begin
     if (bpt2arb_accept) begin
         if (is_ltran) begin
@@ -492,11 +515,15 @@ assign bpt2arb_swizzle = out_swizzle;
 assign bpt2arb_odd = out_odd;
 assign bpt2arb_ltran = is_ltran;
 assign bpt2arb_ftran = is_ftran;
+//assign bpt2arb_user_size = out_user_size; //stepheng.
 assign bpt2arb_axid = tieoff_axid[3:0];
+//
 assign req_rdy = req_enable & bpt2arb_req_ready;
 assign req_vld = req_enable & in_vld;
 assign bpt2arb_req_valid = req_vld;
 assign bpt2arb_accept = bpt2arb_req_valid & req_rdy;
+//
+// PKT_PACK_WIRE( cvt_read_cmd , bpt2arb_ , bpt2arb_req_pd )
 assign bpt2arb_req_pd[3:0] = bpt2arb_axid[3:0];
 assign bpt2arb_req_pd[64 +3:4] = bpt2arb_addr[64 -1:0];
 assign bpt2arb_req_pd[64 +6:64 +4] = bpt2arb_size[2:0];

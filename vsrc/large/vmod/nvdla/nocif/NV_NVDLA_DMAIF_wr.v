@@ -28,34 +28,34 @@ module NV_NVDLA_DMAIF_wr (
 input nvdla_core_clk;
 input nvdla_core_rstn;
 input reg2dp_dst_ram_type;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $mask = int($dmaif/32/8);
 //: my $dmabw = ( $dmaif + $mask );
 //: print qq( output [${dmabw}:0] cvif_wr_req_pd; \n);
 //| eperl: generated_beg (DO NOT EDIT BELOW)
- output [514:0] cvif_wr_req_pd; 
+ output [257:0] cvif_wr_req_pd; 
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 output cvif_wr_req_valid;
 input cvif_wr_req_ready;
 input cvif_wr_rsp_complete;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $mask = int($dmaif/32/8);
 //: my $dmabw = ( $dmaif + $mask );
 //: print qq( output [${dmabw}:0] mcif_wr_req_pd; \n);
 //| eperl: generated_beg (DO NOT EDIT BELOW)
- output [514:0] mcif_wr_req_pd; 
+ output [257:0] mcif_wr_req_pd; 
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 output mcif_wr_req_valid;
 input mcif_wr_req_ready;
 input mcif_wr_rsp_complete;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $mask = int($dmaif/32/8);
 //: my $dmabw = ( $dmaif + $mask );
 //: print qq( input [${dmabw}:0] dmaif_wr_req_pd; \n);
 //| eperl: generated_beg (DO NOT EDIT BELOW)
- input [514:0] dmaif_wr_req_pd; 
+ input [257:0] dmaif_wr_req_pd; 
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 input dmaif_wr_req_pvld;
@@ -82,7 +82,7 @@ assign wr_req_rdyi = mc_wr_req_rdyi | cv_wr_req_rdyi;
 assign mc_dma_wr_req_vld = dmaif_wr_req_pvld & (dma_wr_req_type == 1'b1);
 assign mc_wr_req_rdyi = mc_dma_wr_req_rdy & (dma_wr_req_type == 1'b1);
 assign dmaif_wr_req_prdy= wr_req_rdyi;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $mask = int($dmaif/32/8);
 //: my $dmabw = ( $dmaif + $mask + 1 );
 //: &eperl::pipe(" -wid $dmabw -is -do mcif_wr_req_pd -vo mcif_wr_req_valid -ri mcif_wr_req_ready -di dmaif_wr_req_pd -vi mc_dma_wr_req_vld -ro mc_dma_wr_req_rdy_f  ");
@@ -91,16 +91,16 @@ assign dmaif_wr_req_prdy= wr_req_rdyi;
 reg mc_dma_wr_req_rdy_f;
 reg skid_flop_mc_dma_wr_req_rdy_f;
 reg skid_flop_mc_dma_wr_req_vld;
-reg [515-1:0] skid_flop_dmaif_wr_req_pd;
+reg [258-1:0] skid_flop_dmaif_wr_req_pd;
 reg pipe_skid_mc_dma_wr_req_vld;
-reg [515-1:0] pipe_skid_dmaif_wr_req_pd;
+reg [258-1:0] pipe_skid_dmaif_wr_req_pd;
 // Wire
 wire skid_mc_dma_wr_req_vld;
-wire [515-1:0] skid_dmaif_wr_req_pd;
+wire [258-1:0] skid_dmaif_wr_req_pd;
 wire skid_mc_dma_wr_req_rdy_f;
 wire pipe_skid_mc_dma_wr_req_rdy_f;
 wire mcif_wr_req_valid;
-wire [515-1:0] mcif_wr_req_pd;
+wire [258-1:0] mcif_wr_req_pd;
 // Code
 // SKID READY
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -128,10 +128,10 @@ assign skid_mc_dma_wr_req_vld = (skid_flop_mc_dma_wr_req_rdy_f) ? mc_dma_wr_req_
 // SKID DATA
 always @(posedge nvdla_core_clk) begin
     if (skid_flop_mc_dma_wr_req_rdy_f & mc_dma_wr_req_vld) begin
-        skid_flop_dmaif_wr_req_pd[515-1:0] <= dmaif_wr_req_pd[515-1:0];
+        skid_flop_dmaif_wr_req_pd[258-1:0] <= dmaif_wr_req_pd[258-1:0];
     end
 end
-assign skid_dmaif_wr_req_pd[515-1:0] = (skid_flop_mc_dma_wr_req_rdy_f) ? dmaif_wr_req_pd[515-1:0] : skid_flop_dmaif_wr_req_pd[515-1:0];
+assign skid_dmaif_wr_req_pd[258-1:0] = (skid_flop_mc_dma_wr_req_rdy_f) ? dmaif_wr_req_pd[258-1:0] : skid_flop_dmaif_wr_req_pd[258-1:0];
 
 
 // PIPE READY
@@ -151,7 +151,7 @@ end
 // PIPE DATA
 always @(posedge nvdla_core_clk) begin
     if (skid_mc_dma_wr_req_rdy_f && skid_mc_dma_wr_req_vld) begin
-        pipe_skid_dmaif_wr_req_pd[515-1:0] <= skid_dmaif_wr_req_pd[515-1:0];
+        pipe_skid_dmaif_wr_req_pd[258-1:0] <= skid_dmaif_wr_req_pd[258-1:0];
     end
 end
 
@@ -163,29 +163,29 @@ assign mcif_wr_req_pd = pipe_skid_dmaif_wr_req_pd;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign mc_dma_wr_req_rdy = mc_dma_wr_req_rdy_f;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $mask = int($dmaif/32/8);
 //: my $dmabw = ( $dmaif + $mask + 1 );
 //: print " wire    [${dmabw}-1:0]  cv_dma_wr_req_pd ;  \n";
 //: print " assign cv_dma_wr_req_pd = dmaif_wr_req_pd;  \n";
 //: &eperl::pipe(" -wid $dmabw -is -do cvif_wr_req_pd -vo cvif_wr_req_valid -ri cvif_wr_req_ready -di cv_dma_wr_req_pd -vi cv_dma_wr_req_vld -ro cv_dma_wr_req_rdy_f  ");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
- wire    [515-1:0]  cv_dma_wr_req_pd ;  
+ wire    [258-1:0]  cv_dma_wr_req_pd ;  
  assign cv_dma_wr_req_pd = dmaif_wr_req_pd;  
 // Reg
 reg cv_dma_wr_req_rdy_f;
 reg skid_flop_cv_dma_wr_req_rdy_f;
 reg skid_flop_cv_dma_wr_req_vld;
-reg [515-1:0] skid_flop_cv_dma_wr_req_pd;
+reg [258-1:0] skid_flop_cv_dma_wr_req_pd;
 reg pipe_skid_cv_dma_wr_req_vld;
-reg [515-1:0] pipe_skid_cv_dma_wr_req_pd;
+reg [258-1:0] pipe_skid_cv_dma_wr_req_pd;
 // Wire
 wire skid_cv_dma_wr_req_vld;
-wire [515-1:0] skid_cv_dma_wr_req_pd;
+wire [258-1:0] skid_cv_dma_wr_req_pd;
 wire skid_cv_dma_wr_req_rdy_f;
 wire pipe_skid_cv_dma_wr_req_rdy_f;
 wire cvif_wr_req_valid;
-wire [515-1:0] cvif_wr_req_pd;
+wire [258-1:0] cvif_wr_req_pd;
 // Code
 // SKID READY
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -213,10 +213,10 @@ assign skid_cv_dma_wr_req_vld = (skid_flop_cv_dma_wr_req_rdy_f) ? cv_dma_wr_req_
 // SKID DATA
 always @(posedge nvdla_core_clk) begin
     if (skid_flop_cv_dma_wr_req_rdy_f & cv_dma_wr_req_vld) begin
-        skid_flop_cv_dma_wr_req_pd[515-1:0] <= cv_dma_wr_req_pd[515-1:0];
+        skid_flop_cv_dma_wr_req_pd[258-1:0] <= cv_dma_wr_req_pd[258-1:0];
     end
 end
-assign skid_cv_dma_wr_req_pd[515-1:0] = (skid_flop_cv_dma_wr_req_rdy_f) ? cv_dma_wr_req_pd[515-1:0] : skid_flop_cv_dma_wr_req_pd[515-1:0];
+assign skid_cv_dma_wr_req_pd[258-1:0] = (skid_flop_cv_dma_wr_req_rdy_f) ? cv_dma_wr_req_pd[258-1:0] : skid_flop_cv_dma_wr_req_pd[258-1:0];
 
 
 // PIPE READY
@@ -236,7 +236,7 @@ end
 // PIPE DATA
 always @(posedge nvdla_core_clk) begin
     if (skid_cv_dma_wr_req_rdy_f && skid_cv_dma_wr_req_vld) begin
-        pipe_skid_cv_dma_wr_req_pd[515-1:0] <= skid_cv_dma_wr_req_pd[515-1:0];
+        pipe_skid_cv_dma_wr_req_pd[258-1:0] <= skid_cv_dma_wr_req_pd[258-1:0];
     end
 end
 
@@ -264,7 +264,7 @@ wire mc_int_wr_rsp_complete;
 assign mc_int_wr_rsp_complete = mcif_wr_rsp_complete;
 wire cv_int_wr_rsp_complete;
 assign cv_int_wr_rsp_complete = cvif_wr_rsp_complete;
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $mask = int($dmaif/32/8);
 //: my $dmabw = ( $dmaif + $mask + 1 );
 //: if($dmaif > 64) {
@@ -273,7 +273,7 @@ assign cv_int_wr_rsp_complete = cvif_wr_rsp_complete;
 //: print qq( assign require_ack = (dmaif_wr_req_pd[${dmabw}-1]==0) & (dmaif_wr_req_pd[45]==1); \n);
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
- assign require_ack = (dmaif_wr_req_pd[515-1]==0) & (dmaif_wr_req_pd[77]==1); 
+ assign require_ack = (dmaif_wr_req_pd[258-1]==0) & (dmaif_wr_req_pd[77]==1); 
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 // assign require_ack = (dmaif_wr_req_pd[${dmabw}-1]==0) & (dmaif_wr_req_pd[77:77]==1);

@@ -17,6 +17,12 @@
 //#define CDMA_SBUF_SDATA_BITS            256
 //DorisL-S----------------
 //
+// #if ( NVDLA_MEMORY_ATOMIC_SIZE  ==  32 )
+//     #define IMG_LARGE
+// #endif
+// #if ( NVDLA_MEMORY_ATOMIC_SIZE == 8 )
+//     #define IMG_SMALL
+// #endif
 //DorisL-E----------------
 //--------------------------------------------------
 module NV_NVDLA_CDMA_status (
@@ -37,10 +43,6 @@ module NV_NVDLA_CDMA_status (
   ,sc2cdma_dat_pending_req
   ,sc2cdma_dat_slices
   ,sc2cdma_dat_updt
-  ,wg2status_dat_entries
-  ,wg2status_dat_slices
-  ,wg2status_dat_updt
-  ,wg2status_state
   ,wt2status_state
   ,cdma2sc_dat_entries
   ,cdma2sc_dat_pending_ack
@@ -60,9 +62,6 @@ input nvdla_core_rstn;
 input dc2status_dat_updt;
 input [14:0] dc2status_dat_entries;
 input [13:0] dc2status_dat_slices;
-input wg2status_dat_updt;
-input [14:0] wg2status_dat_entries;
-input [13:0] wg2status_dat_slices;
 input img2status_dat_updt;
 input [14:0] img2status_dat_entries;
 input [13:0] img2status_dat_slices;
@@ -76,7 +75,6 @@ output [13:0] status2dma_valid_slices;
 output [14:0] status2dma_free_entries;
 output [14:0] status2dma_wr_idx;
 input [1:0] dc2status_state;
-input [1:0] wg2status_state;
 input [1:0] img2status_state;
 input [1:0] wt2status_state;
 output dp2reg_done;
@@ -160,8 +158,6 @@ wire status2dma_wr_idx_overflow;
 wire [14:0] status2dma_wr_idx_w;
 wire update_all;
 wire update_dma;
-wire wg2status_done;
-wire wg2status_pend;
 wire wt2status_done;
 wire [1:0] wt_done_intr_w;
 input dp2reg_consumer;
@@ -171,11 +167,9 @@ input dp2reg_consumer;
 assign wt2status_done = (wt2status_state == 3 );
 assign dc2status_done = (dc2status_state == 3 );
 assign dc2status_pend = (dc2status_state == 1 );
-assign wg2status_done = (wg2status_state == 3 );
-assign wg2status_pend = (wg2status_state == 1 );
 assign img2status_done = (img2status_state == 3 );
 assign img2status_pend = (img2status_state == 1 );
-assign dat2status_done = (dc2status_done | wg2status_done | img2status_done);
+assign dat2status_done = (dc2status_done | img2status_done);
 assign status2dma_fsm_switch_w = reg2dp_op_en & ~status2dma_fsm_switch & wt2status_done & dat2status_done;
 assign wt_done_intr_w[0] = reg2dp_op_en & ~dp2reg_consumer & ~wt2status_done_d1 & wt2status_done;
 assign wt_done_intr_w[1] = reg2dp_op_en & dp2reg_consumer & ~wt2status_done_d1 & wt2status_done;
@@ -235,18 +229,16 @@ assign layer_end_w = status2dma_fsm_switch ? 1'b1 :
                      layer_end;
 assign real_bank_w = reg2dp_data_bank + 1'b1;
 assign real_bank_reg_en = reg2dp_op_en && (real_bank_w != real_bank);
-assign pending_ack_w = (reg2dp_op_en & (dc2status_pend | wg2status_pend | img2status_pend));
-assign update_dma = dc2status_dat_updt | wg2status_dat_updt | img2status_dat_updt;
+assign pending_ack_w = (reg2dp_op_en & (dc2status_pend | img2status_pend));
+assign update_dma = dc2status_dat_updt | img2status_dat_updt;
 assign update_all = update_dma | sc2cdma_dat_updt | (pending_ack & pending_req);
 assign entries_add = ({15{dc2status_dat_updt}} & dc2status_dat_entries) |
-                     ({15{wg2status_dat_updt}} & wg2status_dat_entries) |
                      ({15{img2status_dat_updt}} & img2status_dat_entries);
 assign entries_sub = sc2cdma_dat_updt ? sc2cdma_dat_entries : 15'b0;
 assign {mon_status2dma_valid_entries_w,
         status2dma_valid_entries_w} = (pending_ack & pending_req) ? 15'b0 :
                                      status2dma_valid_entries + entries_add - entries_sub;
 assign slices_add = ({14{dc2status_dat_updt}} & dc2status_dat_slices) |
-                    ({14{wg2status_dat_updt}} & wg2status_dat_slices) |
                     ({14{img2status_dat_updt}} & img2status_dat_slices);
 assign slices_sub = sc2cdma_dat_updt ? sc2cdma_dat_slices : 14'b0;
 assign {mon_status2dma_valid_slices_w,

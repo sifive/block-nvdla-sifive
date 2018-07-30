@@ -285,7 +285,12 @@ wire [5 +1 -1:0] abuf_rd_addr = accu_addr;
 //: &eperl::flop(" -q  accu_ctrl_layer_end  -en \"accu_ctrl_valid_d0\" -d  \"accu_layer_end_d0\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0");
 //: &eperl::flop(" -q  accu_ctrl_dlv_elem_mask  -en \"accu_ctrl_valid_d0\" -d  \"accu_channel_end_d0\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0");
 //: my $jj=6-$kk;
+//: if ($jj==0) {
+//: print "assign       accu_ctrl_pd[5:0]  =     {accu_ctrl_addr}; \n";
+//: }
+//: elsif ($jj>0) {
 //: print "assign       accu_ctrl_pd[5:0]  =     {{${jj}{1'b0}},accu_ctrl_addr}; \n";
+//: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 reg  accu_ctrl_valid;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -378,7 +383,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        end
    end
 end
-assign       accu_ctrl_pd[5:0]  =     {{0{1'b0}},accu_ctrl_addr}; 
+assign       accu_ctrl_pd[5:0]  =     {accu_ctrl_addr}; 
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 // spyglass enable_block NoWidthInBasedNum-ML

@@ -16,6 +16,14 @@
 // File Name: NV_NVDLA_PDP_define.h
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_PDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_PDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 module NV_NVDLA_PDP_rdma (
    csb2pdp_rdma_req_pd //|< i
   ,csb2pdp_rdma_req_pvld //|< i
@@ -57,14 +65,14 @@ module NV_NVDLA_PDP_rdma (
  input [62:0] csb2pdp_rdma_req_pd;
  input cvif2pdp_rd_rsp_valid; /* data valid */
  output cvif2pdp_rd_rsp_ready; /* data return handshake */
- input [( 512 + (512/8/32) )-1:0] cvif2pdp_rd_rsp_pd;
+ input [( 256 + (256/8/32) )-1:0] cvif2pdp_rd_rsp_pd;
  output pdp2cvif_rd_cdt_lat_fifo_pop;
  output pdp2cvif_rd_req_valid; /* data valid */
  input pdp2cvif_rd_req_ready; /* data return handshake */
  output [64 +14:0] pdp2cvif_rd_req_pd;
  input mcif2pdp_rd_rsp_valid; /* data valid */
  output mcif2pdp_rd_rsp_ready; /* data return handshake */
- input [( 512 + (512/8/32) )-1:0] mcif2pdp_rd_rsp_pd;
+ input [( 256 + (256/8/32) )-1:0] mcif2pdp_rd_rsp_pd;
  output pdp2mcif_rd_cdt_lat_fifo_pop;
  output pdp2mcif_rd_req_valid; /* data valid */
  input pdp2mcif_rd_req_ready; /* data return handshake */
@@ -73,7 +81,7 @@ module NV_NVDLA_PDP_rdma (
  output [33:0] pdp_rdma2csb_resp_pd; /* pkt_id_width=1 pkt_widths=33,33  */
  output pdp_rdma2dp_valid; /* data valid */
  input pdp_rdma2dp_ready; /* data return handshake */
- output [8*8 +11:0] pdp_rdma2dp_pd;
+ output [8*8 +13:0] pdp_rdma2dp_pd;
  input [31:0] pwrbus_ram_pd;
  input dla_clk_ovr_on_sync;
  input global_clk_ovr_on_sync;

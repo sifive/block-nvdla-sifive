@@ -15,6 +15,14 @@
 // ================================================================
 // File Name: NV_NVDLA_CDP_define.h
 ///////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_CDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_CDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 module NV_NVDLA_CDP_DP_sum (
    nvdla_core_clk //|< i
   ,nvdla_core_rstn //|< i
@@ -33,14 +41,14 @@ input nvdla_core_clk;
 input nvdla_core_rstn;
 //: my $tp=8;
 //: my $icvto=(8 +1);
-//: my $k = ${icvto}*(${tp}+8)+15;
+//: my $k = ${icvto}*(${tp}+8)+17;
 //: print qq(
 //: input [${k}-1:0] normalz_buf_data;
 //: output [${tp}*(${icvto}*2+3)-1:0] sum2itp_pd;
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-input [159-1:0] normalz_buf_data;
+input [161-1:0] normalz_buf_data;
 output [8*(9*2+3)-1:0] sum2itp_pd;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
@@ -252,20 +260,19 @@ wire sum_out_pvld;
 ///////////////////////////////////////////
 //==========================================
 //----------------------------------------
-////////::pipe -bc cdp_buf2sum_pd (cdp_buf2sum_valid,cdp_buf2sum_ready) <= normalz_buf_data[230:0] (normalz_buf_data_pvld,normalz_buf_data_prdy);
 //: my $tp=8;
 //: my $icvto=(8 +1);
-//: my $k = ${icvto}*(${tp}+8)+15;
+//: my $k = ${icvto}*(${tp}+8)+17;
 //: &eperl::pipe(" -wid $k -do cdp_buf2sum_pd -vo cdp_buf2sum_valid -ri cdp_buf2sum_ready -di normalz_buf_data -vi normalz_buf_data_pvld -ro normalz_buf_data_prdy ");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 // Reg
 reg pipe_normalz_buf_data_pvld;
-reg [159-1:0] pipe_normalz_buf_data;
+reg [161-1:0] pipe_normalz_buf_data;
 // Wire
 wire normalz_buf_data_prdy;
 wire pipe_normalz_buf_data_prdy;
 wire cdp_buf2sum_valid;
-wire [159-1:0] cdp_buf2sum_pd;
+wire [161-1:0] cdp_buf2sum_pd;
 // Code
 // PIPE READY
 assign normalz_buf_data_prdy = pipe_normalz_buf_data_prdy || !pipe_normalz_buf_data_pvld;
@@ -284,7 +291,7 @@ end
 // PIPE DATA
 always @(posedge nvdla_core_clk) begin
     if (normalz_buf_data_prdy && normalz_buf_data_pvld) begin
-        pipe_normalz_buf_data[159-1:0] <= normalz_buf_data[159-1:0];
+        pipe_normalz_buf_data[161-1:0] <= normalz_buf_data[161-1:0];
     end
 end
 

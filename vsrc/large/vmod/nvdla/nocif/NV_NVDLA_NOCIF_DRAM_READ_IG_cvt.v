@@ -17,6 +17,12 @@
 // File Name: NV_NVDLA_define.h
 ///////////////////////////////////////////////////
 //
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  512 )
+//    #define LARGE_MEMBUS
+//#endif
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  64 )
+//    #define SMALL_MEMBUS
+//#endif
 module NV_NVDLA_NOCIF_DRAM_READ_IG_cvt (
    nvdla_core_clk //|< i
   ,nvdla_core_rstn //|< i
@@ -175,7 +181,7 @@ assign cmd_ftran = spt2cvt_req_pd[64 +10];
 // spyglass enable_block WRN_61
 `endif // SPYGLASS_ASSERT_ON
 assign stt_offset = cmd_addr[7:5]; // start position within a 256B block
-assign stt_addr_is_32_align = 1'b0; //(NVDLA_MEMORY_ATOMIC_LOG2 == NVDLA_PRIMARY_MEMIF_WIDTH_LOG2) ? 1'b0 : (stt_offset[0]== 1'b1 );
+assign stt_addr_is_32_align = (5 == 5) ? 1'b0 : (stt_offset[0]== 1'b1 );
 assign {mon_end_offset_c,end_offset[2:0]} = stt_offset + cmd_size;
 `ifdef SPYGLASS_ASSERT_ON
 `else
@@ -223,7 +229,7 @@ assign {mon_end_offset_c,end_offset[2:0]} = stt_offset + cmd_size;
 // spyglass enable_block WRN_61
 `endif // SPYGLASS_ASSERT_ON
 assign end_offset_2_1_NC = end_offset[2:1]; // only need end_offset bit0 to know end addr alignment
-assign end_addr_is_32_align = 1'b0; //(NVDLA_MEMORY_ATOMIC_LOG2 == NVDLA_PRIMARY_MEMIF_WIDTH_LOG2)? 1'b0 : (end_offset[0]== 1'b0 );
+assign end_addr_is_32_align = (5 == 5)? 1'b0 : (end_offset[0]== 1'b0 );
 // IG===AXI Trans GEN
 assign axi_axid = cmd_axid;
 //assign axi_addr = cmd_addr & 40'hff_ffff_ffc0; // make [5:0]=0
@@ -247,8 +253,7 @@ assign axi_addr = axi_addr_i;
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //assign axi_size = AXSIZE_64; //stepheng. remove
 assign inc = cmd_ftran & cmd_ltran & (cmd_size[0]==1) & cmd_swizzle;
-//assign {mon_axi_len_c, axi_len[1:0]} = cmd_size[2:1] + inc;
-assign axi_len[1:0] = cmd_size[1:0];
+assign {mon_axi_len_c, axi_len[1:0]} = cmd_size[2:1] + inc;
 `ifdef SPYGLASS_ASSERT_ON
 `else
 // spyglass disable_block NoWidthInBasedNum-ML
@@ -318,9 +323,9 @@ assign cq_wr_pd[3] = ig2cq_odd ;
 assign cq_wr_pd[4] = ig2cq_ltran ;
 assign cq_wr_pd[5] = ig2cq_fdrop ;
 assign cq_wr_pd[6] = ig2cq_ldrop ;
-//:my $k = 10;
+//:my $k = 8;
 //:my $i;
-//:my @dma_index = (1, 1, 1,1, 1,1, 1, 1, 1, 1,0,0,0,0,0,0);
+//:my @dma_index = (0, 1, 1,1, 1,0, 1, 1, 1, 1,0,0,0,0,0,0);
 //:my @client_id = (0,8,9,3,2,4,1,5,7,6,0,0,0,0,0,0);
 //:my @remap_clientid = (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 //:my $nindex = 0;
@@ -336,7 +341,7 @@ assign cq_wr_pd[6] = ig2cq_ldrop ;
 //:}
 //: print qq(0;);
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-assign cq_wr_thread_id = (cmd_axid == 0) ? 0 :(cmd_axid == 8) ? 1 :(cmd_axid == 9) ? 2 :(cmd_axid == 3) ? 3 :(cmd_axid == 2) ? 4 :(cmd_axid == 4) ? 5 :(cmd_axid == 1) ? 6 :(cmd_axid == 5) ? 7 :(cmd_axid == 7) ? 8 :(cmd_axid == 6) ? 9 :0;
+assign cq_wr_thread_id = (cmd_axid == 8) ? 0 :(cmd_axid == 9) ? 1 :(cmd_axid == 3) ? 2 :(cmd_axid == 2) ? 3 :(cmd_axid == 1) ? 4 :(cmd_axid == 5) ? 5 :(cmd_axid == 7) ? 6 :(cmd_axid == 6) ? 7 :0;
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //assign cq_wr_thread_id = cmd_axid;
 // IG===AXI OUT PIPE

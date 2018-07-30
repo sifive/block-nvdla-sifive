@@ -72,13 +72,9 @@ input [31-5:0] reg2dp_dst_surface_stride;
 input [1:0] reg2dp_ew_alu_algo;
 input reg2dp_ew_alu_bypass;
 input reg2dp_ew_bypass;
-reg [64 -5 -1:0] base_addr_batch;
-reg [64 -5 -1:0] base_addr_winog;
 reg [64 -5 -1:0] base_addr_line;
 reg [64 -5 -1:0] base_addr_surf;
 reg [64 -5 -1:0] base_addr_width;
-reg mon_base_addr_batch_c;
-reg mon_base_addr_winog_c;
 reg mon_base_addr_line_c;
 reg mon_base_addr_surf_c;
 reg mon_base_addr_width_c;
@@ -100,10 +96,6 @@ wire cfg_mode_eql;
 wire cfg_mode_norml;
 wire cfg_mode_pdp;
 wire cfg_mode_quite;
-reg [4:0] count_batch;
-wire [4:0] size_of_batch;
-reg [1:0] count_wg;
-wire [1:0] size_of_wg;
 reg [13-5:0] count_c;
 reg [12:0] count_h;
 reg [13:0] count_w;
@@ -134,21 +126,6 @@ wire [13-5:0] mode_1x1_dma_size;
 wire [13-5:0] mode_1x1_spt_size;
 wire is_ftrans;
 wire is_ltrans;
-reg [2:0] mode_batch_size_of_trans;
-wire [2:0] mode_batch_dma_size;
-wire [2:0] mode_batch_size_of_ftrans;
-wire [2:0] mode_batch_size_of_ltrans;
-wire [2:0] mode_batch_size_of_mtrans;
-wire [12:0] mode_batch_size_of_reqs;
-wire [12:0] mode_batch_size_of_reqs_p;
-wire [1:0] mode_batch_spt_size;
-reg [2:0] mode_winog_size_of_trans;
-wire mode_winog_dma_size;
-wire [2:0] mode_winog_size_of_ftrans;
-wire [2:0] mode_winog_size_of_ltrans;
-wire [2:0] mode_winog_size_of_mtrans;
-wire [11:0] mode_winog_size_of_reqs;
-wire [1:0] mode_winog_spt_size;
 wire [12:0] mode_norml_dma_size;
 wire [13:0] mode_norml_spt_size;
 wire [14:0] spt_fifo_pd;
@@ -158,9 +135,8 @@ wire spt_fifo_pvld;
 assign cfg_dst_addr = {reg2dp_dst_base_addr_high,reg2dp_dst_base_addr_low};
 assign cfg_dst_surf_stride = {reg2dp_dst_surface_stride};
 assign cfg_dst_line_stride = {reg2dp_dst_line_stride};
-assign cfg_dst_batch_stride = {reg2dp_dst_batch_stride};
-assign cfg_mode_batch = (reg2dp_batch_number!=0);
-assign cfg_mode_winog = reg2dp_winograd== 1'h1 ;
+assign cfg_mode_batch = 1'b0;
+assign cfg_mode_winog = 1'b0 ;
 assign cfg_di_int8 = reg2dp_proc_precision == 0 ;
 assign cfg_di_int16 = reg2dp_proc_precision == 1 ;
 assign cfg_do_int8 = reg2dp_out_precision == 0 ;
@@ -207,81 +183,13 @@ wire is_beg_addr_odd = beg_addr_offset[0]==1'b1;
 wire [3:0] end_addr_offset = beg_addr_offset + reg2dp_width[2:0];
 wire is_end_addr_odd = end_addr_offset[0]==1'b0;
 wire odd = ((is_ftrans & is_beg_addr_odd) || (is_ltrans && is_end_addr_odd));
-// winog
-assign mode_winog_size_of_ftrans = 3'd1;
-assign mode_winog_size_of_mtrans = 3'd1;
-assign mode_winog_size_of_ltrans = 3'd1;
-assign mode_winog_size_of_reqs[11:0] = reg2dp_width[12:1];
-// batch
-assign mode_batch_size_of_ftrans = (odd) ? 3'd0 : 3'd1;
-assign mode_batch_size_of_mtrans = 3'd1;
-assign mode_batch_size_of_ltrans = is_end_addr_odd ? 3'd0 : 3'd1;
-assign {mon_mode_batch_size_of_reqs_p_c,mode_batch_size_of_reqs_p[12:0]} = reg2dp_width+is_beg_addr_odd+is_end_addr_odd;
-assign mode_batch_size_of_reqs[12:0] = mode_batch_size_of_reqs_p[12:1];
 //================================
 // SIZE of Trans
 //================================
-always @(
-  is_ftrans
-  or mode_winog_size_of_ftrans
-  or is_ltrans
-  or mode_winog_size_of_ltrans
-  or mode_winog_size_of_mtrans
-  ) begin
-   if (is_ftrans) begin
-       mode_winog_size_of_trans = mode_winog_size_of_ftrans;
-   end else if (is_ltrans) begin
-       mode_winog_size_of_trans = mode_winog_size_of_ltrans;
-   end else begin
-       mode_winog_size_of_trans = mode_winog_size_of_mtrans;
-   end
-end
-always @(
-  is_ftrans
-  or mode_batch_size_of_ftrans
-  or is_ltrans
-  or mode_batch_size_of_ltrans
-  or mode_batch_size_of_mtrans
-  ) begin
-   if (is_ftrans) begin
-       mode_batch_size_of_trans = mode_batch_size_of_ftrans;
-   end else if (is_ltrans) begin
-       mode_batch_size_of_trans = mode_batch_size_of_ltrans;
-   end else begin
-       mode_batch_size_of_trans = mode_batch_size_of_mtrans;
-   end
-end
-// COUNT WG
-assign size_of_wg = cfg_mode_winog ? 2'd3 : 2'd0;
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    count_wg <= {2{1'b0}};
-  end else begin
-    if (cfg_mode_winog) begin
-        if (cmd_accept) begin
-            if (is_last_wg) begin
-                count_wg <= 0;
-            end else begin
-                count_wg <= count_wg + 1'b1;
-            end
-        end
-    end
-  end
-end
-assign is_last_wg = count_wg==size_of_wg;
+assign is_last_wg = 1'b1;
 always @(
   reg2dp_width
-  or cfg_mode_winog
-  or mode_winog_size_of_reqs
-  or cfg_mode_batch
-  or mode_batch_size_of_reqs
   ) begin
-    if (cfg_mode_winog)
-        size_of_width = {2'b0, mode_winog_size_of_reqs};
-    else
-    if (cfg_mode_batch)
-        size_of_width = {1'b0, mode_batch_size_of_reqs};
-    else
         size_of_width = {1'b0, reg2dp_width};
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -304,7 +212,7 @@ assign is_last_e = 1'b1;
 //==============
 // HEIGHT Count:
 //==============
-assign size_of_height = cfg_mode_winog ? reg2dp_height>>2 : reg2dp_height;
+assign size_of_height = reg2dp_height;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     count_h <= {13{1'b0}};
@@ -340,75 +248,10 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
 end
 assign is_last_c = (count_c==size_of_surf);
-//==============
-// BATCH Count:
-//==============
-assign size_of_batch = reg2dp_batch_number;
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    count_batch <= {5{1'b0}};
-  end else begin
-    if (cfg_mode_batch) begin // this to gate count_batch in batch mode
-        if (cmd_accept) begin
-            if (is_last_batch) begin
-                count_batch <= 0;
-            end else begin
-                count_batch <= count_batch + 1;
-            end
-        end
-    end
-  end
-end
-assign is_last_batch = (count_batch==size_of_batch);
+assign is_last_batch = 1'b1;
 //==========================================
 // DMA Req : ADDR PREPARE
 //==========================================
-// BATCH
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    {mon_base_addr_batch_c,base_addr_batch} <= {(64 -5 +1){1'b0}};
-  end else begin
-    if (cfg_mode_batch & cfg_addr_en) begin
-        if (op_load) begin
-            {mon_base_addr_batch_c,base_addr_batch} <= {1'b0,cfg_dst_addr};
-        end else if (cmd_accept) begin
-            if (is_last_batch) begin
-                if (is_surf_end) begin
-                    {mon_base_addr_batch_c,base_addr_batch} <= base_addr_surf + cfg_dst_surf_stride;
-                end else if (is_line_end) begin
-                    {mon_base_addr_batch_c,base_addr_batch} <= base_addr_line + cfg_dst_line_stride;
-                end else begin
-                    {mon_base_addr_batch_c,base_addr_batch} <= base_addr_width + (mode_batch_size_of_trans+1);
-                end
-            end else begin
-                {mon_base_addr_batch_c,base_addr_batch} <= base_addr_batch + cfg_dst_batch_stride;
-            end
-        end
-    end
-  end
-end
-// WINOG
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    {mon_base_addr_winog_c,base_addr_winog} <= {(64 -5 +1){1'b0}};
-  end else begin
-    if (cfg_mode_winog & cfg_addr_en) begin
-        if (op_load) begin
-            {mon_base_addr_winog_c,base_addr_winog} <= {1'b0,cfg_dst_addr};
-        end else if (cmd_accept) begin
-            if (is_surf_end) begin
-                {mon_base_addr_winog_c,base_addr_winog} <= base_addr_surf + cfg_dst_surf_stride;
-            end else if (is_line_end) begin
-                {mon_base_addr_winog_c,base_addr_winog} <= base_addr_line + (cfg_dst_line_stride<<2);
-            end else if (is_winog_end) begin
-                {mon_base_addr_winog_c,base_addr_winog} <= base_addr_width + (mode_winog_size_of_trans+1);
-            end else begin
-                {mon_base_addr_winog_c,base_addr_winog} <= base_addr_winog + cfg_dst_line_stride;
-            end
-        end
-    end
-  end
-end
 // WIDTH
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
@@ -418,24 +261,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
         if (op_load) begin
             {mon_base_addr_width_c,base_addr_width} <= {1'b0,cfg_dst_addr};
         end else if (cmd_accept) begin
-            if (cfg_mode_winog ) begin
-                if (is_surf_end) begin
-                    {mon_base_addr_width_c,base_addr_width} <= base_addr_surf + cfg_dst_surf_stride;
-                end else if (is_line_end) begin
-                    {mon_base_addr_width_c,base_addr_width} <= base_addr_line + (cfg_dst_line_stride<<2);
-                end else if (is_winog_end) begin
-                    {mon_base_addr_width_c,base_addr_width} <= base_addr_width + (mode_winog_size_of_trans+1);
-                end
-            end else
-            if (cfg_mode_batch & is_last_batch ) begin
-                if (is_surf_end) begin
-                    {mon_base_addr_width_c,base_addr_width} <= base_addr_surf + cfg_dst_surf_stride;
-                end else if (is_line_end) begin
-                    {mon_base_addr_width_c,base_addr_width} <= base_addr_line + cfg_dst_line_stride;
-                end else if (is_elem_end) begin
-                    {mon_base_addr_width_c,base_addr_width} <= base_addr_width + (mode_batch_size_of_trans+1);
-                end
-            end else
             begin
                 if (is_surf_end) begin
                     {mon_base_addr_width_c,base_addr_width} <= base_addr_surf + cfg_dst_surf_stride;
@@ -456,20 +281,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
         if (op_load) begin
             {mon_base_addr_line_c,base_addr_line} <= {1'b0,cfg_dst_addr};
         end else if (cmd_accept) begin
-            if (cfg_mode_winog) begin
-                if (is_surf_end) begin
-                    {mon_base_addr_line_c,base_addr_line} <= base_addr_surf + cfg_dst_surf_stride;
-                end else if (is_line_end) begin
-                    {mon_base_addr_line_c,base_addr_line} <= base_addr_line + (cfg_dst_line_stride<<2);
-                end
-            end else
-            if (cfg_mode_batch && is_last_batch) begin
-                if (is_surf_end) begin
-                    {mon_base_addr_line_c,base_addr_line} <= base_addr_surf + cfg_dst_surf_stride;
-                end else if (is_line_end) begin
-                    {mon_base_addr_line_c,base_addr_line} <= base_addr_line + cfg_dst_line_stride;
-                end
-            end else
             begin
                 if (is_surf_end) begin
                     {mon_base_addr_line_c,base_addr_line} <= base_addr_surf + cfg_dst_surf_stride;
@@ -490,16 +301,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
         if (op_load) begin
             {mon_base_addr_surf_c,base_addr_surf} <= {1'b0,cfg_dst_addr};
         end else if (cmd_accept) begin
-            if (cfg_mode_winog) begin
-                if (is_surf_end) begin
-                    {mon_base_addr_surf_c,base_addr_surf} <= base_addr_surf + cfg_dst_surf_stride;
-                end
-            end else
-            if (cfg_mode_batch && is_last_batch) begin
-                if (is_surf_end) begin
-                    {mon_base_addr_surf_c,base_addr_surf} <= base_addr_surf + cfg_dst_surf_stride;
-                end
-            end else
             begin
                 if (is_surf_end) begin
                     {mon_base_addr_surf_c,base_addr_surf} <= base_addr_surf + cfg_dst_surf_stride;
@@ -514,17 +315,7 @@ end
 //==========================================
 always @(
   base_addr_line
-  or cfg_mode_winog
-  or base_addr_winog
-  or cfg_mode_batch
-  or base_addr_batch
   ) begin
-    if (cfg_mode_winog) begin
-        dma_addr = base_addr_winog;
-    end else
-    if (cfg_mode_batch) begin
-        dma_addr = base_addr_batch;
-    end else
     begin
         dma_addr = base_addr_line;
     end
@@ -534,50 +325,30 @@ end
 //========================
 // spt_size is to tell how many data from dp2wdma for a corresponding DMA req to MC/CF if
 // spt_size is in unit of cycle on dp2wdma
-assign mode_winog_spt_size[1:0] = 2'd1;
-assign mode_batch_spt_size[1:0] = (odd ? 2'd0 : 2'd1);
 assign mode_1x1_spt_size = (cfg_do_int8 | cfg_di_int8) ? {1'b0,reg2dp_channel[12:5]} : reg2dp_channel[12:5 -1];
 assign mode_norml_spt_size[13:0] = {1'b0,reg2dp_width};
 always @(
   cfg_mode_1x1_nbatch
   or mode_1x1_spt_size
-  or cfg_mode_winog
-  or mode_winog_spt_size
-  or cfg_mode_batch
-  or mode_batch_spt_size
   or mode_norml_spt_size
   ) begin
     if (cfg_mode_1x1_nbatch)
         spt_size = {{5{1'b0}}, mode_1x1_spt_size};
-    else if (cfg_mode_winog)
-        spt_size = {{12{1'b0}}, mode_winog_spt_size};
-    else if (cfg_mode_batch)
-        spt_size = {{12{1'b0}}, mode_batch_spt_size};
     else
         spt_size = mode_norml_spt_size;
 end
 //========================
 // Output: one for data write spt_; and one for data read dma_
 //========================
-assign mode_winog_dma_size = 1'd1;
-assign mode_batch_dma_size = mode_batch_size_of_trans;
 assign mode_1x1_dma_size = size_of_surf;
 assign mode_norml_dma_size = reg2dp_width;
 always @(
   cfg_mode_1x1_nbatch
   or mode_1x1_dma_size
-  or cfg_mode_winog
-  or mode_winog_dma_size
-  or cfg_mode_batch
-  or mode_batch_dma_size
   or mode_norml_dma_size
   ) begin
     if (cfg_mode_1x1_nbatch)
         dma_size = {{5 -1{1'b0}}, mode_1x1_dma_size};
-    else if (cfg_mode_winog)
-        dma_size = {{12{1'b0}}, mode_winog_dma_size};
-    else if (cfg_mode_batch)
-        dma_size = {{10{1'b0}}, mode_batch_dma_size};
     else
         dma_size = mode_norml_dma_size;
 end
@@ -629,54 +400,6 @@ NV_NVDLA_SDP_WDMA_CMD_dfifo u_dfifo (
   ,.cmd2dat_dma_pd (cmd2dat_dma_pd[64 -5 +13 +1:0])
   ,.pwrbus_ram_pd (pwrbus_ram_pd[31:0])
   );
-//========================
-// ASSERTIONS
-//========================
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML
-// spyglass disable_block STARC-2.10.3.2a
-// spyglass disable_block STARC05-2.1.3.1
-// spyglass disable_block STARC-2.1.4.6
-// spyglass disable_block W116
-// spyglass disable_block W154
-// spyglass disable_block W239
-// spyglass disable_block W362
-// spyglass disable_block WRN_58
-// spyglass disable_block WRN_61
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-// VCS coverage off
-  nv_assert_never #(0,0,"SDP_WDMA: no overflow is allowed") zzz_assert_never_1x (nvdla_core_clk, `ASSERT_RESET, mon_base_addr_batch_c); // spyglass disable W504 SelfDeterminedExpr-ML 
-// VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML
-// spyglass enable_block STARC-2.10.3.2a
-// spyglass enable_block STARC05-2.1.3.1
-// spyglass enable_block STARC-2.1.4.6
-// spyglass enable_block W116
-// spyglass enable_block W154
-// spyglass enable_block W239
-// spyglass enable_block W362
-// spyglass enable_block WRN_58
-// spyglass enable_block WRN_61
-`endif // SPYGLASS_ASSERT_ON
 `ifdef SPYGLASS_ASSERT_ON
 `else
 // spyglass disable_block NoWidthInBasedNum-ML
@@ -796,141 +519,6 @@ NV_NVDLA_SDP_WDMA_CMD_dfifo u_dfifo (
 `endif // FV_ASSERT_ON
 // VCS coverage off
   nv_assert_never #(0,0,"SDP_WDMA: no overflow is allowed") zzz_assert_never_5x (nvdla_core_clk, `ASSERT_RESET, mon_base_addr_surf_c); // spyglass disable W504 SelfDeterminedExpr-ML 
-// VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML
-// spyglass enable_block STARC-2.10.3.2a
-// spyglass enable_block STARC05-2.1.3.1
-// spyglass enable_block STARC-2.1.4.6
-// spyglass enable_block W116
-// spyglass enable_block W154
-// spyglass enable_block W239
-// spyglass enable_block W362
-// spyglass enable_block WRN_58
-// spyglass enable_block WRN_61
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML
-// spyglass disable_block STARC-2.10.3.2a
-// spyglass disable_block STARC05-2.1.3.1
-// spyglass disable_block STARC-2.1.4.6
-// spyglass disable_block W116
-// spyglass disable_block W154
-// spyglass disable_block W239
-// spyglass disable_block W362
-// spyglass disable_block WRN_58
-// spyglass disable_block WRN_61
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-// VCS coverage off
-  nv_assert_never #(0,0,"DST ADDR need be 64B aligned in multi-batch mode") zzz_assert_never_6x (nvdla_core_clk, `ASSERT_RESET, op_load & cfg_mode_batch & cfg_dst_addr[0]==1); // spyglass disable W504 SelfDeterminedExpr-ML 
-// VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML
-// spyglass enable_block STARC-2.10.3.2a
-// spyglass enable_block STARC05-2.1.3.1
-// spyglass enable_block STARC-2.1.4.6
-// spyglass enable_block W116
-// spyglass enable_block W154
-// spyglass enable_block W239
-// spyglass enable_block W362
-// spyglass enable_block WRN_58
-// spyglass enable_block WRN_61
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML
-// spyglass disable_block STARC-2.10.3.2a
-// spyglass disable_block STARC05-2.1.3.1
-// spyglass disable_block STARC-2.1.4.6
-// spyglass disable_block W116
-// spyglass disable_block W154
-// spyglass disable_block W239
-// spyglass disable_block W362
-// spyglass disable_block WRN_58
-// spyglass disable_block WRN_61
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-// VCS coverage off
-  nv_assert_never #(0,0,"DST LINE STRIDE need be 64B aligned in multi-batch mode") zzz_assert_never_7x (nvdla_core_clk, `ASSERT_RESET, op_load & cfg_mode_batch & cfg_dst_line_stride[0]==1 & (!cfg_mode_1x1_pack)); // spyglass disable W504 SelfDeterminedExpr-ML 
-// VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML
-// spyglass enable_block STARC-2.10.3.2a
-// spyglass enable_block STARC05-2.1.3.1
-// spyglass enable_block STARC-2.1.4.6
-// spyglass enable_block W116
-// spyglass enable_block W154
-// spyglass enable_block W239
-// spyglass enable_block W362
-// spyglass enable_block WRN_58
-// spyglass enable_block WRN_61
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML
-// spyglass disable_block STARC-2.10.3.2a
-// spyglass disable_block STARC05-2.1.3.1
-// spyglass disable_block STARC-2.1.4.6
-// spyglass disable_block W116
-// spyglass disable_block W154
-// spyglass disable_block W239
-// spyglass disable_block W362
-// spyglass disable_block WRN_58
-// spyglass disable_block WRN_61
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-// VCS coverage off
-  nv_assert_never #(0,0,"DST SURF STRIDE need be 64B aligned in multi-batch mode") zzz_assert_never_8x (nvdla_core_clk, `ASSERT_RESET, op_load & cfg_mode_batch & cfg_dst_surf_stride[0]==1 & (!cfg_mode_1x1_pack)); // spyglass disable W504 SelfDeterminedExpr-ML 
 // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON

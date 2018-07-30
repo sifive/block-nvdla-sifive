@@ -75,14 +75,14 @@ module NV_NVDLA_SDP_mrdma (
  output [79 -1:0] sdp2cvif_rd_req_pd;
  input cvif2sdp_rd_rsp_valid;
  output cvif2sdp_rd_rsp_ready;
- input [514 -1:0] cvif2sdp_rd_rsp_pd;
+ input [257 -1:0] cvif2sdp_rd_rsp_pd;
  output sdp2cvif_rd_cdt_lat_fifo_pop;
  output sdp2mcif_rd_req_valid;
  input sdp2mcif_rd_req_ready;
  output [79 -1:0] sdp2mcif_rd_req_pd;
  input mcif2sdp_rd_rsp_valid;
  output mcif2sdp_rd_rsp_ready;
- input [514 -1:0] mcif2sdp_rd_rsp_pd;
+ input [257 -1:0] mcif2sdp_rd_rsp_pd;
  output sdp2mcif_rd_cdt_lat_fifo_pop;
  output sdp_mrdma2cmux_valid;
  input sdp_mrdma2cmux_ready;
@@ -121,7 +121,7 @@ module NV_NVDLA_SDP_mrdma (
  wire dma_rd_req_rdy;
  wire dma_rd_req_vld;
  wire dma_rd_rsp_ram_type;
- wire [514 -1:0] dma_rd_rsp_pd;
+ wire [257 -1:0] dma_rd_rsp_pd;
  wire dma_rd_rsp_rdy;
  wire dma_rd_rsp_vld;
 //==============
@@ -182,7 +182,13 @@ assign dp2reg_done = eg_done;
 //=======================================
 // Context Queue: trace outstanding req, and pass info from Ig to Eg
 //---------------------------------------
- NV_NVDLA_SDP_MRDMA_cq u_cq (
+//: my $depth = (256 < 16) ? 16 : 256;
+//: my $width = 14;
+//: print "NV_NVDLA_SDP_MRDMA_cq_${depth}x${width}  u_cq ( \n";
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+NV_NVDLA_SDP_MRDMA_cq_256x14  u_cq ( 
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
     .nvdla_core_clk (nvdla_gated_clk) //|< w
    ,.nvdla_core_rstn (nvdla_core_rstn) //|< i
    ,.pwrbus_ram_pd (pwrbus_ram_pd[31:0]) //|< i
@@ -206,7 +212,7 @@ assign dp2reg_done = eg_done;
    ,.cq2eg_pvld (cq2eg_pvld) //|< w
    ,.cq2eg_prdy (cq2eg_prdy) //|> w
    ,.dma_rd_rsp_ram_type (dma_rd_rsp_ram_type) //|> w
-   ,.dma_rd_rsp_pd (dma_rd_rsp_pd[514 -1:0]) //|< w
+   ,.dma_rd_rsp_pd (dma_rd_rsp_pd[257 -1:0]) //|< w
    ,.dma_rd_rsp_rdy (dma_rd_rsp_rdy) //|> w
    ,.dma_rd_rsp_vld (dma_rd_rsp_vld) //|< w
    ,.dma_rd_cdt_lat_fifo_pop (dma_rd_cdt_lat_fifo_pop) //|> w
@@ -229,14 +235,14 @@ assign dp2reg_done = eg_done;
    ,.sdp2cvif_rd_req_pd (sdp2cvif_rd_req_pd[79 -1:0]) //|> o
    ,.sdp2cvif_rd_req_valid (sdp2cvif_rd_req_valid) //|> o
    ,.sdp2cvif_rd_req_ready (sdp2cvif_rd_req_ready) //|< i
-   ,.cvif2sdp_rd_rsp_pd (cvif2sdp_rd_rsp_pd[514 -1:0]) //|< i
+   ,.cvif2sdp_rd_rsp_pd (cvif2sdp_rd_rsp_pd[257 -1:0]) //|< i
    ,.cvif2sdp_rd_rsp_valid (cvif2sdp_rd_rsp_valid) //|< i
    ,.cvif2sdp_rd_rsp_ready (cvif2sdp_rd_rsp_ready) //|> o
    ,.sdp2mcif_rd_cdt_lat_fifo_pop (sdp2mcif_rd_cdt_lat_fifo_pop) //|> o
    ,.sdp2mcif_rd_req_pd (sdp2mcif_rd_req_pd[79 -1:0]) //|> o
    ,.sdp2mcif_rd_req_valid (sdp2mcif_rd_req_valid) //|> o
    ,.sdp2mcif_rd_req_ready (sdp2mcif_rd_req_ready) //|< i
-   ,.mcif2sdp_rd_rsp_pd (mcif2sdp_rd_rsp_pd[514 -1:0]) //|< i
+   ,.mcif2sdp_rd_rsp_pd (mcif2sdp_rd_rsp_pd[257 -1:0]) //|< i
    ,.mcif2sdp_rd_rsp_valid (mcif2sdp_rd_rsp_valid) //|< i
    ,.mcif2sdp_rd_rsp_ready (mcif2sdp_rd_rsp_ready) //|> o
    ,.dma_rd_cdt_lat_fifo_pop (dma_rd_cdt_lat_fifo_pop) //|< w
@@ -246,7 +252,7 @@ assign dp2reg_done = eg_done;
    ,.dma_rd_rsp_ram_type (dma_rd_rsp_ram_type) //|< w
    ,.dma_rd_rsp_rdy (dma_rd_rsp_rdy) //|< w
    ,.dma_rd_req_rdy (dma_rd_req_rdy) //|> w
-   ,.dma_rd_rsp_pd (dma_rd_rsp_pd[514 -1:0]) //|> w
+   ,.dma_rd_rsp_pd (dma_rd_rsp_pd[257 -1:0]) //|> w
    ,.dma_rd_rsp_vld (dma_rd_rsp_vld) //|> w
    );
 endmodule // NV_NVDLA_SDP_mrdma

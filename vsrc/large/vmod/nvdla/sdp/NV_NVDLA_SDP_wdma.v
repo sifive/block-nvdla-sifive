@@ -66,12 +66,12 @@ input nvdla_core_clk;
 input nvdla_core_rstn;
 output sdp2cvif_wr_req_valid;
 input sdp2cvif_wr_req_ready;
-output [515 -1:0] sdp2cvif_wr_req_pd;
+output [258 -1:0] sdp2cvif_wr_req_pd;
 input cvif2sdp_wr_rsp_complete;
 output [1:0] sdp2glb_done_intr_pd;
 output sdp2mcif_wr_req_valid;
 input sdp2mcif_wr_req_ready;
-output [515 -1:0] sdp2mcif_wr_req_pd;
+output [258 -1:0] sdp2mcif_wr_req_pd;
 input mcif2sdp_wr_rsp_complete;
 input sdp_dp2wdma_valid;
 output sdp_dp2wdma_ready;
@@ -112,7 +112,7 @@ wire cmd2dat_dma_pvld;
 wire [14:0] cmd2dat_spt_pd;
 wire cmd2dat_spt_prdy;
 wire cmd2dat_spt_pvld;
-wire [515 -1:0] dma_wr_req_pd;
+wire [258 -1:0] dma_wr_req_pd;
 wire dma_wr_req_rdy;
 wire dma_wr_req_type;
 wire dma_wr_req_vld;
@@ -188,7 +188,7 @@ NV_NVDLA_SDP_WDMA_dat u_dat (
   ,.sdp_dp2wdma_ready (sdp_dp2wdma_ready) //|> o
   ,.sdp_dp2wdma_pd (sdp_dp2wdma_pd[32*8 -1:0]) //|< i
   ,.dma_wr_req_rdy (dma_wr_req_rdy) //|< w
-  ,.dma_wr_req_pd (dma_wr_req_pd[515 -1:0]) //|> w
+  ,.dma_wr_req_pd (dma_wr_req_pd[258 -1:0]) //|> w
   ,.dma_wr_req_vld (dma_wr_req_vld) //|> w
   ,.reg2dp_batch_number (reg2dp_batch_number[4:0]) //|< i
   ,.reg2dp_ew_alu_algo (reg2dp_ew_alu_algo[1:0]) //|< i

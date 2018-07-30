@@ -17,6 +17,12 @@
 // File Name: NV_NVDLA_define.h
 ///////////////////////////////////////////////////
 //
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  512 )
+//    #define LARGE_MEMBUS
+//#endif
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  64 )
+//    #define SMALL_MEMBUS
+//#endif
 module NV_NVDLA_NOCIF_DRAM_READ_IG_spt (
    nvdla_core_clk //|< i
   ,nvdla_core_rstn //|< i
@@ -162,7 +168,7 @@ assign spt_req_ftran = spt_req_pd[64 +10];
 `endif // SPYGLASS_ASSERT_ON
 assign spt_req_offset = spt_req_addr[5 +2:5];
 assign {end_offset_c,end_offset[2:0]} = spt_req_offset + spt_req_size;
-//:my $i = log(512/8)/log(2);
+//:my $i = log(256/8)/log(2);
 //:if ($i == 5) {
 //: print qq(
 //: assign is_cross_256byte_boundary = 1'b0;
@@ -174,7 +180,7 @@ assign {end_offset_c,end_offset[2:0]} = spt_req_offset + spt_req_size;
 //:}
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign is_cross_256byte_boundary = spt_req_vld & end_offset_c;
+assign is_cross_256byte_boundary = 1'b0;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //assign is_cross_256byte_boundary = spt_req_vld & end_offset_c;
@@ -184,7 +190,7 @@ assign first_req_addr = spt_req_addr;
 //assign second_req_addr = {spt_req_addr[39:8],{8{1'b0}}};
 reg [64 -1:0] second_req_addr_i;
 //: my $i;
-//: $i = (log(512/8)/log(2)) + 1;
+//: $i = (log(256/8)/log(2)) + 1;
 //:print qq(
 //: always @(spt_req_addr) begin
 //: second_req_addr_i = spt_req_addr;
@@ -195,7 +201,7 @@ reg [64 -1:0] second_req_addr_i;
 
 always @(spt_req_addr) begin
 second_req_addr_i = spt_req_addr;
-second_req_addr_i[7:0] = 0;
+second_req_addr_i[6:0] = 0;
 end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)

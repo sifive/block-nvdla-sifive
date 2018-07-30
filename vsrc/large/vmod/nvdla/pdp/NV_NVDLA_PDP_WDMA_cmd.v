@@ -16,6 +16,14 @@
 // File Name: NV_NVDLA_PDP_define.h
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_PDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_PDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 `include "simulate_x_tick.vh"
 module NV_NVDLA_PDP_WDMA_cmd (
    nvdla_core_clk //|< i
@@ -201,7 +209,7 @@ assign is_mspt = cfg_mode_split & !is_fspt & !is_lspt;
 //==============
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    count_surf <= {10{1'b0}};
+    count_surf <= 0;
   end else begin
     if (cmd_fifo_wr_accpet) begin
         if (is_split_end) begin

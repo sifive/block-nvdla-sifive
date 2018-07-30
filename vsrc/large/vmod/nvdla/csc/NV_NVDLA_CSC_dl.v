@@ -23,10 +23,10 @@
     //atomK
     //atomK
     //atomK*2
+//notice, for image case, first atom OP within one strip OP must fetch from entry align place, in the middle of an entry is not supported.
+//thus, when atomC/atomK=4, stripe=4*atomK, feature data still keeps atomK*2
     `define CC_ATOMC_DIV_ATOMK_EQUAL_2
-//image stripe keep 2*atomK
 //batch keep 1
-`define CBUF_WEIGHT_COMPRESSED //whether need read WMB
 // ================================================================
 // NVDLA Open Source Project
 // 
@@ -35,9 +35,9 @@
 // this distribution for more information.
 // ================================================================
 // File Name: NV_NVDLA_CBUF.h
-    `define CBUF_BANK_RAM_CASE1
-//ram case could be 0/1/2/3/4  0:1ram/bank; 1:1*2ram/bank; 2:2*1ram/bank; 3:2*2ram/bank  4:4*1ram/bank
-    `define CBUF_WEIGHT_COMPRESSED //whether need read WMB
+    `define CBUF_BANK_RAM_CASE2
+    `define CBUF_NO_SUPPORT_READ_JUMPING
+//ram case could be 0/1/2/3/4/5  0:1ram/bank; 1:1*2ram/bank; 2:2*1ram/bank; 3:2*2ram/bank  4:4*1ram/bank  5:4*2ram/bank
 `define CDMA2CBUF_DEBUG_PRINT //open debug print
 module NV_NVDLA_CSC_dl (
    nvdla_core_clk //|< i
@@ -1149,7 +1149,7 @@ end
 //////////////////////////////////////////////////////////////
 assign layer_st = reg2dp_op_en & is_sg_idle;
 assign is_pixel = (reg2dp_datain_format == 1'h1 );
-`ifdef
+`ifdef NVDLA_WINOGRAD_ENABLE
 assign is_winograd = (reg2dp_conv_mode == 1'h1 );
 `else
 assign is_winograd = 1'b0;
@@ -1157,7 +1157,7 @@ assign is_winograd = 1'b0;
 assign is_conv = (reg2dp_conv_mode == 1'h0 );
 assign is_img = is_conv & is_pixel;
 assign {mon_data_bank_w, data_bank_w} = reg2dp_data_bank + 1'b1;
-`ifdef
+`ifdef NVDLA_BATCH_ENABLE
 assign data_batch_w = (is_winograd | is_img) ? 6'b1 : reg2dp_batches + 1'b1;
 assign batch_cmp_w = (is_winograd | is_img) ? 5'b0 : reg2dp_batches;
 `else
@@ -1179,16 +1179,76 @@ assign conv_x_stride_w = (is_winograd) ? 4'b1 : reg2dp_conv_x_stride_ext + 1'b1;
 assign pixel_x_stride_w = (reg2dp_datain_channel_ext[1:0] == 2'h3) ? {conv_x_stride_w, 2'b0} : //*4, after pre_extension
                           (reg2dp_datain_channel_ext[1:0] == 2'h2) ? ({conv_x_stride_w, 1'b0} + conv_x_stride_w) : //*3
                           {2'b0, conv_x_stride_w}; //*1
+//: my $kk=6;
+//: if ($kk=6) {
+//: print qq (
+//: assign {mon_pixel_x_init_w,pixel_x_init_w} = (reg2dp_y_extension == 2'h2) ? ({pixel_x_stride_w, 1'b0} + pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]) :
+//: (reg2dp_y_extension == 2'h1) ? (pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]):
+//: (reg2dp_weight_channel_ext >= 7'h40) ? {6{1'b1}}: //cut by atomC
+//: {reg2dp_weight_channel_ext[6 -1:0]};
+//: )
+//: }
+//: else {
+//: print qq(
+//: assign {mon_pixel_x_init_w,pixel_x_init_w} = (reg2dp_y_extension == 2'h2) ? ({pixel_x_stride_w, 1'b0} + pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]) :
+//: (reg2dp_y_extension == 2'h1) ? (pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]):
+//: (reg2dp_weight_channel_ext >= 7'h40) ? {6{1'b1}}: //cut by atomC
+//: {{6-6{1'b0}},reg2dp_weight_channel_ext[6 -1:0]};
+//: )
+//: }
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+
 assign {mon_pixel_x_init_w,pixel_x_init_w} = (reg2dp_y_extension == 2'h2) ? ({pixel_x_stride_w, 1'b0} + pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]) :
-                                               (reg2dp_y_extension == 2'h1) ? (pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]):
-                                               (reg2dp_weight_channel_ext >= 7'h40) ? {6{1'b1}}: //cut by atomC
-                                               {{6-6{1'b0}},reg2dp_weight_channel_ext[6 -1:0]};
+(reg2dp_y_extension == 2'h1) ? (pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]):
+(reg2dp_weight_channel_ext >= 7'h40) ? {6{1'b1}}: //cut by atomC
+{reg2dp_weight_channel_ext[6 -1:0]};
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
 assign pixel_x_init_offset_w = (reg2dp_weight_channel_ext[6 -1:0] + 1'b1);
 assign pixel_x_add_w = (reg2dp_y_extension == 2'h2) ? {pixel_x_stride_w, 2'b0} : //*4, after post_extension
                        (reg2dp_y_extension == 2'h1) ? {1'b0, pixel_x_stride_w, 1'b0} : //*2
                        {2'b0, pixel_x_stride_w};
 assign pixel_x_byte_stride_w = {1'b0, pixel_x_stride_w};
-assign pixel_ch_stride_w = {{5-5{1'b0}},pixel_x_stride_w, {5 +1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+//: my $kk=5;
+//: if($kk=5) {
+//: print qq(
+//: `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_1
+//: assign pixel_ch_stride_w = {pixel_x_stride_w, {5 +1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+//: `endif
+//: `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_2
+//: assign pixel_ch_stride_w = {pixel_x_stride_w, {5 +1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+//: `endif
+//: `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_4
+//: assign pixel_ch_stride_w = {pixel_x_stride_w, {5 +2{1'b0}}}; //stick to 4*atomK  no matter which config.  
+//: `endif
+//: )
+//: }
+//: else {
+//: print qq(
+//: `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_1
+//: assign pixel_ch_stride_w = {{5-5{1'b0}},pixel_x_stride_w, {5 +1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+//: `endif
+//: `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_2
+//: assign pixel_ch_stride_w = {{5-5{1'b0}},pixel_x_stride_w, {5 +1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+//: `endif
+//: `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_4
+//: assign pixel_ch_stride_w = {{5-5{1'b0}},pixel_x_stride_w, {5 +2{1'b0}}}; //stick to 4*atomK  no matter which config.  
+//: `endif
+//: )
+//: }
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+
+`ifdef CC_ATOMC_DIV_ATOMK_EQUAL_1
+assign pixel_ch_stride_w = {pixel_x_stride_w, {5 +1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+`endif
+`ifdef CC_ATOMC_DIV_ATOMK_EQUAL_2
+assign pixel_ch_stride_w = {pixel_x_stride_w, {5 +1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+`endif
+`ifdef CC_ATOMC_DIV_ATOMK_EQUAL_4
+assign pixel_ch_stride_w = {pixel_x_stride_w, {5 +2{1'b0}}}; //stick to 4*atomK  no matter which config.  
+`endif
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
 assign conv_y_stride_w = (is_winograd) ? 4'b1 : reg2dp_conv_y_stride_ext + 1'b1;
 assign x_dilate_w = (is_winograd | is_img) ? 6'b1 : reg2dp_x_dilation_ext + 1'b1;
 assign y_dilate_w = (is_winograd | is_img) ? 6'b1 : reg2dp_y_dilation_ext + 1'b1;
@@ -3138,8 +3198,8 @@ assign is_dat_req_addr_wrap = (dat_req_addr_sum >= {1'b0,data_bank, {9{1'b0}}});
 assign {mon_dat_req_addr_wrap,dat_req_addr_wrap} = dat_req_addr_sum[13:0] - {1'b0,data_bank, {9{1'b0}}};
 assign dat_req_addr_w = (layer_st | dat_req_dummy_d1) ? {13{1'b1}} : is_dat_req_addr_wrap ? dat_req_addr_wrap : dat_req_addr_sum[13 -1:0]; //get the adress sends to cbuf
 assign {mon_dat_req_addr_minus1,dat_req_addr_minus1} = dat_req_addr_w-1'b1;
-assign is_dat_req_addr_minus1_wrap = (dat_req_addr_minus1 >= {1'b0,data_bank, {9{1'b0}}}); //only one case: 0-1=ffff would introduce wrap  
-assign dat_req_addr_minus1_wrap = {1'b0,data_bank, {9{1'b1}}};
+assign is_dat_req_addr_minus1_wrap = (dat_req_addr_minus1 >= {data_bank, {9{1'b0}}}); //only one case: 0-1=ffff would introduce wrap  
+assign dat_req_addr_minus1_wrap = {data_bank, {9{1'b1}}};
 assign dat_req_addr_minus1_real = is_dat_req_addr_minus1_wrap ? dat_req_addr_minus1_wrap : dat_req_addr_minus1;
 assign sc2buf_dat_rd_en_w = dat_req_valid_d1 & ((dat_req_addr_last != dat_req_addr_w) | pixel_force_fetch_d1);
 assign dat_req_addr_last = (dat_req_sub_h_d1 == 2'h0) ? dat_req_sub_h_0_addr :
@@ -3150,18 +3210,12 @@ assign dat_req_sub_h_0_addr_en = layer_st | ((dat_req_valid_d1 | dat_req_dummy_d
 assign dat_req_sub_h_1_addr_en = layer_st | ((dat_req_valid_d1 | dat_req_dummy_d1) & (dat_req_sub_h_d1 == 2'h1));
 assign dat_req_sub_h_2_addr_en = layer_st | ((dat_req_valid_d1 | dat_req_dummy_d1) & (dat_req_sub_h_d1 == 2'h2));
 assign dat_req_sub_h_3_addr_en = layer_st | ((dat_req_valid_d1 | dat_req_dummy_d1) & (dat_req_sub_h_d1 == 2'h3));
-`ifdef CBUF_BANK_RAM_CASE0
+`ifdef CBUF_NO_SUPPORT_READ_JUMPING
 wire sc2buf_dat_rd_next1_en = 1'b0;
+wire sc2buf_dat_rd_next1_en_w = 1'b0;
+wire sc2buf_dat_rd_shift = {10{1'b0}};
 `endif
-`ifdef CBUF_BANK_RAM_CASE1
-wire sc2buf_dat_rd_next1_en = 1'b0;
-wire sc2buf_dat_rd_next1_en_w;
-`endif
-`ifdef CBUF_BANK_RAM_CASE4
-wire sc2buf_dat_rd_next1_en = 1'b0;
-wire sc2buf_dat_rd_next1_en_w;
-`endif
-`ifdef CBUF_BANK_RAM_CASE2
+`ifdef CBUF_SUPPORT_READ_JUMPING
 wire [10 -1:0] sc2buf_dat_rd_shift_w;
 wire mon_sc2buf_dat_rd_shift_w;
 wire sc2buf_dat_rd_next1_en_w;
@@ -4313,13 +4367,13 @@ assign rsp_sft_cnt_l3_sub = dat_l3c0_en ? 8'h40   : 8'h0;
 ////: &eperl::retime("-O stripe_begin_disable_jump_7T -i stripe_begin_disable_jump -stage 8 -clk nvdla_core_clk");
 ////: &eperl::flop("-q stripe_begin_disable_jump_8T -d stripe_begin_disable_jump_7T -clk nvdla_core_clk");
 assign {mon_rsp_sft_cnt_l0_w,rsp_sft_cnt_l0_inc} = (pixel_x_byte_stride > 8'h40  ) ? 8'h40   :
-                                                    (rsp_sft_cnt_l0 + pixel_x_byte_stride[3:0] - rsp_sft_cnt_l0_sub);
+                                                    (rsp_sft_cnt_l0 + pixel_x_byte_stride - rsp_sft_cnt_l0_sub);
 assign {mon_rsp_sft_cnt_l1_w,rsp_sft_cnt_l1_inc} = (pixel_x_byte_stride > 8'h40  ) ? 8'h40   :
-                                                    (rsp_sft_cnt_l1 + pixel_x_byte_stride[3:0] - rsp_sft_cnt_l1_sub);
+                                                    (rsp_sft_cnt_l1 + pixel_x_byte_stride - rsp_sft_cnt_l1_sub);
 assign {mon_rsp_sft_cnt_l2_w,rsp_sft_cnt_l2_inc} = (pixel_x_byte_stride > 8'h40  ) ? 8'h40   :
-                                                    (rsp_sft_cnt_l2 + pixel_x_byte_stride[3:0] - rsp_sft_cnt_l2_sub);
+                                                    (rsp_sft_cnt_l2 + pixel_x_byte_stride - rsp_sft_cnt_l2_sub);
 assign {mon_rsp_sft_cnt_l3_w,rsp_sft_cnt_l3_inc} = (pixel_x_byte_stride > 8'h40  ) ? 8'h40   :
-                                                    (rsp_sft_cnt_l3 + pixel_x_byte_stride[3:0] - rsp_sft_cnt_l3_sub);
+                                                    (rsp_sft_cnt_l3 + pixel_x_byte_stride - rsp_sft_cnt_l3_sub);
 //the data frm cbuf's low Bytes is always needed. High Bytes maybe unneeded.
 assign dat_rsp_l0_block_end = dat_rsp_l0_sub_c;
 assign dat_rsp_l1_block_end = dat_rsp_l1_sub_c;
@@ -4481,7 +4535,7 @@ end
 //////////////////////////////////////////////////////////////
 //////////////// data for winograd ////////////////
 //winograd need future update
-`ifdef
+`ifdef NVDLA_WINOGRAD_ENABLE
 //6x6x8byte matrix
 assign dat_wg = ~is_winograd_d1[12] ? 2304'b0 :
                 {dat_l1c0[511:256], dat_l1c1[511:384],
@@ -5541,7 +5595,7 @@ always @(posedge nvdla_core_clk) begin
 end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
-`ifdef
+`ifdef NVDLA_WINOGRAD_ENABLE
 //////////////////////////////////////////////////////////////
 ///// PRA units instance                                 /////
 //////////////////////////////////////////////////////////////

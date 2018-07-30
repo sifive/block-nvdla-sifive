@@ -51,7 +51,7 @@ input [13:0] cq2eg_pd;
 input cq2eg_pvld;
 output cq2eg_prdy;
 output dma_rd_rsp_ram_type;
-input [514 -1:0] dma_rd_rsp_pd;
+input [257 -1:0] dma_rd_rsp_pd;
 input dma_rd_rsp_vld;
 output dma_rd_rsp_rdy;
 output dma_rd_cdt_lat_fifo_pop;
@@ -109,7 +109,7 @@ NV_NVDLA_SDP_MRDMA_EG_din u_din (
   ,.pwrbus_ram_pd (pwrbus_ram_pd[31:0])
   ,.reg2dp_src_ram_type (reg2dp_src_ram_type)
   ,.dma_rd_rsp_ram_type (dma_rd_rsp_ram_type)
-  ,.dma_rd_rsp_pd (dma_rd_rsp_pd[514 -1:0])
+  ,.dma_rd_rsp_pd (dma_rd_rsp_pd[257 -1:0])
   ,.dma_rd_rsp_vld (dma_rd_rsp_vld)
   ,.dma_rd_rsp_rdy (dma_rd_rsp_rdy)
   ,.dma_rd_cdt_lat_fifo_pop (dma_rd_cdt_lat_fifo_pop)

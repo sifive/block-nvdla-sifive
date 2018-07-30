@@ -15,6 +15,14 @@
 // ================================================================
 // File Name: NV_NVDLA_CDP_define.h
 ///////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_CDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_CDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 module NV_NVDLA_CDP_dp (
    nvdla_core_clk //|< i
   ,nvdla_core_rstn //|< i
@@ -141,19 +149,19 @@ input nvdla_core_clk;
 input nvdla_core_rstn;
 input cdp_rdma2dp_valid; /* data valid */
 output cdp_rdma2dp_ready; /* data return handshake */
-input [8*8 +22:0] cdp_rdma2dp_pd;
+input [8*8 +24:0] cdp_rdma2dp_pd;
 output cdp_dp2wdma_valid; /* data valid */
 input cdp_dp2wdma_ready; /* data return handshake */
-output [8*8 +14:0] cdp_dp2wdma_pd;
+output [8*8 +16:0] cdp_dp2wdma_pd;
 input nvdla_core_clk_orig;
 ///////////////////////////////////////////////////////////////////
 reg sqsum_bypass_en;
 //: my $icvto = (8 +1);
 //: my $k = 8;
 //: print qq(
-//: wire [${k}*${icvto}+14:0] bufin_pd;
-//: wire [${k}*${icvto}+14:0] cvt2buf_pd;
-//: wire [${k}*${icvto}+14:0] cvt2sync_pd;
+//: wire [${k}*${icvto}+16:0] bufin_pd;
+//: wire [${k}*${icvto}+16:0] cvt2buf_pd;
+//: wire [${k}*${icvto}+16:0] cvt2sync_pd;
 //: wire [${k}*(${icvto}*2+3)-1:0] cvtin_out_int8_ext;
 //: wire [${k}*(${icvto}*2+3)-1:0] lutctrl_in_pd;
 //: wire [${k}*(${icvto}+16)-1:0] mul2ocvt_pd;
@@ -164,9 +172,9 @@ reg sqsum_bypass_en;
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-wire [8*9+14:0] bufin_pd;
-wire [8*9+14:0] cvt2buf_pd;
-wire [8*9+14:0] cvt2sync_pd;
+wire [8*9+16:0] bufin_pd;
+wire [8*9+16:0] cvt2buf_pd;
+wire [8*9+16:0] cvt2sync_pd;
 wire [8*(9*2+3)-1:0] cvtin_out_int8_ext;
 wire [8*(9*2+3)-1:0] lutctrl_in_pd;
 wire [8*(9+16)-1:0] mul2ocvt_pd;
@@ -318,10 +326,10 @@ wire mul2ocvt_prdy;
 wire mul2ocvt_pvld;
 //: my $icvto = (8 +1);
 //: my $tp = 8;
-//: my $k = (${tp}+8)*${icvto}+15;
+//: my $k = (${tp}+8)*${icvto}+17;
 //: print "wire   [${k}-1:0] normalz_buf_data;  \n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-wire   [159-1:0] normalz_buf_data;  
+wire   [161-1:0] normalz_buf_data;  
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 wire normalz_buf_data_prdy;
@@ -334,7 +342,7 @@ wire sync2itp_prdy;
 wire sync2itp_pvld;
 wire sync2mul_prdy;
 wire sync2mul_pvld;
-wire [14:0] sync2ocvt_pd;
+wire [16:0] sync2ocvt_pd;
 wire sync2ocvt_prdy;
 wire sync2ocvt_pvld;
 ///////////////////////////////////////////////////////
@@ -384,7 +392,7 @@ NV_NVDLA_CDP_DP_syncfifo u_NV_NVDLA_CDP_DP_syncfifo (
   ,.sync2itp_pvld (sync2itp_pvld)
   ,.sync2mul_pd (sync2mul_pd)
   ,.sync2mul_pvld (sync2mul_pvld)
-  ,.sync2ocvt_pd (sync2ocvt_pd[14:0])
+  ,.sync2ocvt_pd (sync2ocvt_pd[16:0])
   ,.sync2ocvt_pvld (sync2ocvt_pvld)
   );
 //===== Buffer_in Instance========
@@ -474,30 +482,29 @@ assign cvtin_out_int8_ext = {
 //: my $k = 8;
 //: my $icvto = (8 +1);
 //: if($k > 1) {
-//: foreach my $m (0..$k-1) {
+//: foreach my $m (0..$k-2) {
+//: my $ss = $k -$m -1;
 //: print qq(
-//: {{(${icvto}+3){cvtin_out_int8_${m}[${icvto}-1]}}, cvtin_out_int8_${m}},
+//: {{(${icvto}+3){cvtin_out_int8_${ss}[${icvto}-1]}}, cvtin_out_int8_${ss}},
 //: );
 //: }
 //: }
 //: print "{{(${icvto}+3){cvtin_out_int8_0[${icvto}-1]}}, cvtin_out_int8_0}};  \n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-{{(9+3){cvtin_out_int8_0[9-1]}}, cvtin_out_int8_0},
-
-{{(9+3){cvtin_out_int8_1[9-1]}}, cvtin_out_int8_1},
-
-{{(9+3){cvtin_out_int8_2[9-1]}}, cvtin_out_int8_2},
-
-{{(9+3){cvtin_out_int8_3[9-1]}}, cvtin_out_int8_3},
-
-{{(9+3){cvtin_out_int8_4[9-1]}}, cvtin_out_int8_4},
-
-{{(9+3){cvtin_out_int8_5[9-1]}}, cvtin_out_int8_5},
+{{(9+3){cvtin_out_int8_7[9-1]}}, cvtin_out_int8_7},
 
 {{(9+3){cvtin_out_int8_6[9-1]}}, cvtin_out_int8_6},
 
-{{(9+3){cvtin_out_int8_7[9-1]}}, cvtin_out_int8_7},
+{{(9+3){cvtin_out_int8_5[9-1]}}, cvtin_out_int8_5},
+
+{{(9+3){cvtin_out_int8_4[9-1]}}, cvtin_out_int8_4},
+
+{{(9+3){cvtin_out_int8_3[9-1]}}, cvtin_out_int8_3},
+
+{{(9+3){cvtin_out_int8_2[9-1]}}, cvtin_out_int8_2},
+
+{{(9+3){cvtin_out_int8_1[9-1]}}, cvtin_out_int8_1},
 {{(9+3){cvtin_out_int8_0[9-1]}}, cvtin_out_int8_0}};  
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
@@ -872,7 +879,7 @@ NV_NVDLA_CDP_DP_cvtout u_NV_NVDLA_CDP_DP_cvtout (
   ,.reg2dp_datout_offset (reg2dp_datout_offset[31:0]) //|< i
   ,.reg2dp_datout_scale (reg2dp_datout_scale[15:0]) //|< i
   ,.reg2dp_datout_shifter (reg2dp_datout_shifter[5:0]) //|< i
-  ,.sync2ocvt_pd (sync2ocvt_pd[14:0]) //|< w
+  ,.sync2ocvt_pd (sync2ocvt_pd[16:0]) //|< w
   ,.sync2ocvt_pvld (sync2ocvt_pvld) //|< w
   ,.cvtout_pd (cdp_dp2wdma_pd) //|> o
   ,.cvtout_pvld (cdp_dp2wdma_valid) //|> o

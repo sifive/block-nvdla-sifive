@@ -25,13 +25,13 @@ module NV_NVDLA_SDP_RDMA_unpack (
   ,out_data
   ,out_prdy
 );
-parameter RATIO = 4*32*8/512;
+parameter RATIO = 4*32*8/256;
 input nvdla_core_clk;
 input nvdla_core_rstn;
 input inp_end;
 input inp_pvld;
 output inp_prdy;
-input [514 -1:0] inp_data;
+input [257 -1:0] inp_data;
 output out_pvld;
 input out_prdy;
 output [4*32*8 +3:0] out_data;
@@ -58,7 +58,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
       pack_pvld <= inp_pvld & is_pack_last;
 end
 assign inp_acc = inp_pvld & inp_prdy;
-wire [3:0] data_mask = {{(4-2){1'b0}},inp_data[514 -1:512]};
+wire [3:0] data_mask = {{(4-1){1'b0}},inp_data[257 -1:256]};
 wire [1:0] data_size = data_mask[0] + data_mask[1] + data_mask[2] + data_mask[3];
 assign pack_cnt_nxt = pack_cnt + data_size;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin

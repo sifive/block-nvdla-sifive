@@ -22,8 +22,6 @@ module NV_NVDLA_SDP_RDMA_EG_ro (
   ,cfg_dp_8 //|< i
   ,cfg_dp_size_1byte //|< i
   ,cfg_mode_per_element //|< i
-  ,cfg_mode_multi_batch //|< i
-  ,reg2dp_batch_number //|< i
   ,reg2dp_channel //|< i
   ,reg2dp_height //|< i
   ,reg2dp_width //|< i
@@ -61,8 +59,6 @@ output roc_wr_rdy;
 input cfg_dp_8;
 input cfg_dp_size_1byte;
 input cfg_mode_per_element;
-input cfg_mode_multi_batch;
-input [4:0] reg2dp_batch_number;
 input [12:0] reg2dp_channel;
 input [12:0] reg2dp_height;
 input [12:0] reg2dp_width;
@@ -73,9 +69,6 @@ wire [13-5:0] size_of_surf;
 reg [1:0] beat_cnt;
 wire [2:0] beat_cnt_nxt;
 reg mon_beat_cnt;
-reg [4:0] count_b;
-wire is_last_b;
-wire is_batch_end;
 reg [12:0] count_h;
 reg [12:0] count_w;
 reg [13-5:0] count_c;
@@ -178,18 +171,9 @@ NV_NVDLA_SDP_RDMA_EG_RO_dfifo u_rod3 (
 //=======================================================
 always @(
   cfg_mode_per_element
-  or cfg_mode_multi_batch
-  or is_last_b
   or is_last_h
   or is_last_w
   ) begin
-   if (cfg_mode_multi_batch) begin
-       if (cfg_mode_per_element) begin
-          rodx_rd_en = is_last_b;
-       end else begin
-          rodx_rd_en = is_last_b & is_last_h & is_last_w;
-       end
-   end else
    begin
        if (cfg_mode_per_element) begin
            rodx_rd_en = 1'b1;
@@ -219,14 +203,9 @@ NV_NVDLA_SDP_RDMA_EG_RO_cfifo u_roc (
   );
 always @(
   cfg_mode_per_element
-  or cfg_mode_multi_batch
-  or is_batch_end
   or is_surf_end
   or is_last_beat
   ) begin
-    if (cfg_mode_multi_batch) begin
-        roc_rd_en = is_batch_end & is_last_beat & (is_surf_end | cfg_mode_per_element);
-    end else
     begin
         roc_rd_en = is_last_beat & (is_surf_end | cfg_mode_per_element);
     end
@@ -236,29 +215,9 @@ assign size_of_beat = roc_rd_pvld ? (roc_rd_pd[1:0] + 1) : 3'b0;
 //==============
 // END
 //==============
-assign is_batch_end = is_last_b;
-assign is_line_end = is_last_w & is_last_b;
+assign is_line_end = is_last_w;
 assign is_surf_end = is_line_end & is_last_h;
 assign is_cube_end = is_surf_end & is_last_c;
-//==============
-//Batch Count
-//==============
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    count_b <= {5{1'b0}};
-  end else begin
-    if (cfg_mode_multi_batch) begin
-        if (out_accept) begin
-            if (is_last_b) begin
-                count_b <= 0;
-            end else begin
-                count_b <= count_b + 1;
-            end
-        end
-    end
-  end
-end
-assign is_last_b = (count_b == reg2dp_batch_number);
 //==============
 // Width Count
 //==============
@@ -268,15 +227,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     count_w <= {13{1'b0}};
   end else begin
     if (out_accept) begin
-        if (cfg_mode_multi_batch) begin
-            if (is_batch_end) begin
-                if (is_line_end) begin
-                    count_w <= 0;
-                end else begin
-                    count_w <= count_w + 1;
-                end
-            end
-        end else
         begin
             if (is_line_end) begin
                 count_w <= 0;

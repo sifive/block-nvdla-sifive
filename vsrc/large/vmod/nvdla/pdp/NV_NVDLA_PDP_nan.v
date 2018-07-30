@@ -16,6 +16,14 @@
 // File Name: NV_NVDLA_PDP_define.h
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_PDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_PDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 module NV_NVDLA_PDP_nan (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -38,7 +46,7 @@ input nvdla_core_clk;
 input nvdla_core_rstn;
 input dp2reg_done;
 input nan_preproc_prdy;
-input [8*8 +11:0] pdp_rdma2dp_pd;
+input [8*8 +13:0] pdp_rdma2dp_pd;
 input pdp_rdma2dp_valid;
 input reg2dp_flying_mode;
 //input [1:0] reg2dp_input_data;
@@ -46,11 +54,11 @@ input reg2dp_nan_to_zero;
 input reg2dp_op_en;
 output [31:0] dp2reg_inf_input_num;
 output [31:0] dp2reg_nan_input_num;
-output [8*8 +11:0] nan_preproc_pd;
+output [8*8 +13:0] nan_preproc_pd;
 output nan_preproc_pvld;
 output pdp_rdma2dp_ready;
 ///////////////////////////////////////////////////////////////////
-reg [8*8 +11:0] datin_d;
+reg [8*8 +13:0] datin_d;
 reg cube_end_d1;
 //reg [11:0] datin_info_d;
 reg din_pvld_d1;
@@ -134,8 +142,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
 end
 assign op_en_load = reg2dp_op_en & (~op_en_d1);
-//assign layer_end = &{pdp_rdma2dp_pd[75],pdp_rdma2dp_pd[71]} & load_din;
-assign layer_end = &{pdp_rdma2dp_pd[8*8 +11],pdp_rdma2dp_pd[8*8 +7]} & load_din;
+assign layer_end = &{pdp_rdma2dp_pd[8*8 +13],pdp_rdma2dp_pd[8*8 +9]} & load_din;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     waiting_for_op_en <= 1'b1;

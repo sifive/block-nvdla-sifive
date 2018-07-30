@@ -15,6 +15,14 @@
 // ================================================================
 // File Name: NV_NVDLA_CDP_define.h
 ///////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_CDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_CDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 module NV_NVDLA_CDP_DP_cvtout (
    nvdla_core_clk //|< i
   ,nvdla_core_rstn //|< i
@@ -40,17 +48,17 @@ input cvtout_prdy;
 //: my $ocvti = $icvto + 16;
 //: my $ocvto = 8;
 //: print "input  [${k}*${ocvti}-1:0] mul2ocvt_pd;  \n";
-//: print "output  [${k}*${ocvto}+14:0] cvtout_pd;  \n";
+//: print "output  [${k}*${ocvto}+16:0] cvtout_pd;  \n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 input  [8*25-1:0] mul2ocvt_pd;  
-output  [8*8+14:0] cvtout_pd;  
+output  [8*8+16:0] cvtout_pd;  
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 input mul2ocvt_pvld;
 input [31:0] reg2dp_datout_offset;
 input [15:0] reg2dp_datout_scale;
 input [5:0] reg2dp_datout_shifter;
-input [14:0] sync2ocvt_pd;
+input [16:0] sync2ocvt_pd;
 input sync2ocvt_pvld;
 output cvtout_pvld;
 output mul2ocvt_prdy;
@@ -108,25 +116,28 @@ wire [8 -1:0] cdp_cvtout_output_rdys;
 wire [8 -1:0] cdp_cvtout_output_vlds;
 wire cdp_cvtout_output_rdy;
 wire cdp_cvtout_output_vld;
-wire [14:0] data_info_in_pd;
-wire [14:0] data_info_in_pd_d0;
-wire [14:0] data_info_in_pd_d1;
-wire [14:0] data_info_in_pd_d2;
-wire [14:0] data_info_in_pd_d3;
-wire [14:0] data_info_in_pd_d4;
+wire [16:0] data_info_in_pd;
+wire [16:0] data_info_in_pd_d0;
+//wire [16:0] data_info_in_pd_d1;
+//wire [16:0] data_info_in_pd_d2;
+//wire [16:0] data_info_in_pd_d3;
+//wire [16:0] data_info_in_pd_d4;
 wire data_info_in_rdy;
-wire data_info_in_rdy_d0;
-wire data_info_in_rdy_d1;
-wire data_info_in_rdy_d2;
-wire data_info_in_rdy_d3;
+//wire data_info_in_rdy_d0;
+//wire data_info_in_rdy_d1;
+//wire data_info_in_rdy_d2;
+//wire data_info_in_rdy_d3;
 wire data_info_in_rdy_d4;
+wire data_info_in_rdy_d1_f;
+wire data_info_in_rdy_d2_f;
+wire data_info_in_rdy_d3_f;
 wire data_info_in_vld;
 wire data_info_in_vld_d0;
-wire data_info_in_vld_d1;
-wire data_info_in_vld_d2;
-wire data_info_in_vld_d3;
-wire data_info_in_vld_d4;
-wire [14:0] data_info_out_pd;
+//wire data_info_in_vld_d1;
+//wire data_info_in_vld_d2;
+//wire data_info_in_vld_d3;
+//wire data_info_in_vld_d4;
+wire [16:0] data_info_out_pd;
 wire data_info_out_rdy;
 wire data_info_out_vld;
 ///////////////////////////////////////////////////////////////////
@@ -143,54 +154,316 @@ assign cdp_cvtout_in_ready = cdp_cvtout_input_rdy & data_info_in_rdy;
 //data info valid in
 assign data_info_in_vld = cdp_cvtout_in_valid & cdp_cvtout_input_rdy;
 //data info data in
-assign data_info_in_pd[14:0] = sync2ocvt_pd[14:0];
+assign data_info_in_pd[16:0] = sync2ocvt_pd[16:0];
 assign data_info_in_vld_d0 = data_info_in_vld;
+//assign data_info_in_rdy = data_info_in_rdy_d0;
+assign data_info_in_pd_d0[16:0] = data_info_in_pd[16:0];
+//: &eperl::pipe(" -wid 17 -is -do data_info_in_pd_d1 -vo data_info_in_vld_d1 -ri data_info_in_rdy_d1_f -di data_info_in_pd_d0  -vi data_info_in_vld_d0 -ro data_info_in_rdy_d0 ");
+//: &eperl::pipe(" -wid 17 -is -do data_info_in_pd_d2 -vo data_info_in_vld_d2 -ri data_info_in_rdy_d2_f -di data_info_in_pd_d1  -vi data_info_in_vld_d1 -ro data_info_in_rdy_d1 ");
+//: &eperl::pipe(" -wid 17 -is -do data_info_in_pd_d3 -vo data_info_in_vld_d3 -ri data_info_in_rdy_d3_f -di data_info_in_pd_d2  -vi data_info_in_vld_d2 -ro data_info_in_rdy_d2 ");
+//: &eperl::pipe(" -wid 17 -is -do data_info_in_pd_d4 -vo data_info_in_vld_d4 -ri data_info_in_rdy_d4 -di data_info_in_pd_d3  -vi data_info_in_vld_d3 -ro data_info_in_rdy_d3 ");
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+// Reg
+reg data_info_in_rdy_d0;
+reg skid_flop_data_info_in_rdy_d0;
+reg skid_flop_data_info_in_vld_d0;
+reg [17-1:0] skid_flop_data_info_in_pd_d0;
+reg pipe_skid_data_info_in_vld_d0;
+reg [17-1:0] pipe_skid_data_info_in_pd_d0;
+// Wire
+wire skid_data_info_in_vld_d0;
+wire [17-1:0] skid_data_info_in_pd_d0;
+wire skid_data_info_in_rdy_d0;
+wire pipe_skid_data_info_in_rdy_d0;
+wire data_info_in_vld_d1;
+wire [17-1:0] data_info_in_pd_d1;
+// Code
+// SKID READY
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       data_info_in_rdy_d0 <= 1'b1;
+       skid_flop_data_info_in_rdy_d0 <= 1'b1;
+   end else begin
+       data_info_in_rdy_d0 <= skid_data_info_in_rdy_d0;
+       skid_flop_data_info_in_rdy_d0 <= skid_data_info_in_rdy_d0;
+   end
+end
+
+// SKID VALID
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+    if (!nvdla_core_rstn) begin
+        skid_flop_data_info_in_vld_d0 <= 1'b0;
+    end else begin
+        if (skid_flop_data_info_in_rdy_d0) begin
+            skid_flop_data_info_in_vld_d0 <= data_info_in_vld_d0;
+        end
+   end
+end
+assign skid_data_info_in_vld_d0 = (skid_flop_data_info_in_rdy_d0) ? data_info_in_vld_d0 : skid_flop_data_info_in_vld_d0;
+
+// SKID DATA
+always @(posedge nvdla_core_clk) begin
+    if (skid_flop_data_info_in_rdy_d0 & data_info_in_vld_d0) begin
+        skid_flop_data_info_in_pd_d0[17-1:0] <= data_info_in_pd_d0[17-1:0];
+    end
+end
+assign skid_data_info_in_pd_d0[17-1:0] = (skid_flop_data_info_in_rdy_d0) ? data_info_in_pd_d0[17-1:0] : skid_flop_data_info_in_pd_d0[17-1:0];
+
+
+// PIPE READY
+assign skid_data_info_in_rdy_d0 = pipe_skid_data_info_in_rdy_d0 || !pipe_skid_data_info_in_vld_d0;
+
+// PIPE VALID
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+    if (!nvdla_core_rstn) begin
+        pipe_skid_data_info_in_vld_d0 <= 1'b0;
+    end else begin
+        if (skid_data_info_in_rdy_d0) begin
+            pipe_skid_data_info_in_vld_d0 <= skid_data_info_in_vld_d0;
+        end
+    end
+end
+
+// PIPE DATA
+always @(posedge nvdla_core_clk) begin
+    if (skid_data_info_in_rdy_d0 && skid_data_info_in_vld_d0) begin
+        pipe_skid_data_info_in_pd_d0[17-1:0] <= skid_data_info_in_pd_d0[17-1:0];
+    end
+end
+
+
+// PIPE OUTPUT
+assign pipe_skid_data_info_in_rdy_d0 = data_info_in_rdy_d1_f;
+assign data_info_in_vld_d1 = pipe_skid_data_info_in_vld_d0;
+assign data_info_in_pd_d1 = pipe_skid_data_info_in_pd_d0;
+// Reg
+reg data_info_in_rdy_d1;
+reg skid_flop_data_info_in_rdy_d1;
+reg skid_flop_data_info_in_vld_d1;
+reg [17-1:0] skid_flop_data_info_in_pd_d1;
+reg pipe_skid_data_info_in_vld_d1;
+reg [17-1:0] pipe_skid_data_info_in_pd_d1;
+// Wire
+wire skid_data_info_in_vld_d1;
+wire [17-1:0] skid_data_info_in_pd_d1;
+wire skid_data_info_in_rdy_d1;
+wire pipe_skid_data_info_in_rdy_d1;
+wire data_info_in_vld_d2;
+wire [17-1:0] data_info_in_pd_d2;
+// Code
+// SKID READY
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       data_info_in_rdy_d1 <= 1'b1;
+       skid_flop_data_info_in_rdy_d1 <= 1'b1;
+   end else begin
+       data_info_in_rdy_d1 <= skid_data_info_in_rdy_d1;
+       skid_flop_data_info_in_rdy_d1 <= skid_data_info_in_rdy_d1;
+   end
+end
+
+// SKID VALID
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+    if (!nvdla_core_rstn) begin
+        skid_flop_data_info_in_vld_d1 <= 1'b0;
+    end else begin
+        if (skid_flop_data_info_in_rdy_d1) begin
+            skid_flop_data_info_in_vld_d1 <= data_info_in_vld_d1;
+        end
+   end
+end
+assign skid_data_info_in_vld_d1 = (skid_flop_data_info_in_rdy_d1) ? data_info_in_vld_d1 : skid_flop_data_info_in_vld_d1;
+
+// SKID DATA
+always @(posedge nvdla_core_clk) begin
+    if (skid_flop_data_info_in_rdy_d1 & data_info_in_vld_d1) begin
+        skid_flop_data_info_in_pd_d1[17-1:0] <= data_info_in_pd_d1[17-1:0];
+    end
+end
+assign skid_data_info_in_pd_d1[17-1:0] = (skid_flop_data_info_in_rdy_d1) ? data_info_in_pd_d1[17-1:0] : skid_flop_data_info_in_pd_d1[17-1:0];
+
+
+// PIPE READY
+assign skid_data_info_in_rdy_d1 = pipe_skid_data_info_in_rdy_d1 || !pipe_skid_data_info_in_vld_d1;
+
+// PIPE VALID
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+    if (!nvdla_core_rstn) begin
+        pipe_skid_data_info_in_vld_d1 <= 1'b0;
+    end else begin
+        if (skid_data_info_in_rdy_d1) begin
+            pipe_skid_data_info_in_vld_d1 <= skid_data_info_in_vld_d1;
+        end
+    end
+end
+
+// PIPE DATA
+always @(posedge nvdla_core_clk) begin
+    if (skid_data_info_in_rdy_d1 && skid_data_info_in_vld_d1) begin
+        pipe_skid_data_info_in_pd_d1[17-1:0] <= skid_data_info_in_pd_d1[17-1:0];
+    end
+end
+
+
+// PIPE OUTPUT
+assign pipe_skid_data_info_in_rdy_d1 = data_info_in_rdy_d2_f;
+assign data_info_in_vld_d2 = pipe_skid_data_info_in_vld_d1;
+assign data_info_in_pd_d2 = pipe_skid_data_info_in_pd_d1;
+// Reg
+reg data_info_in_rdy_d2;
+reg skid_flop_data_info_in_rdy_d2;
+reg skid_flop_data_info_in_vld_d2;
+reg [17-1:0] skid_flop_data_info_in_pd_d2;
+reg pipe_skid_data_info_in_vld_d2;
+reg [17-1:0] pipe_skid_data_info_in_pd_d2;
+// Wire
+wire skid_data_info_in_vld_d2;
+wire [17-1:0] skid_data_info_in_pd_d2;
+wire skid_data_info_in_rdy_d2;
+wire pipe_skid_data_info_in_rdy_d2;
+wire data_info_in_vld_d3;
+wire [17-1:0] data_info_in_pd_d3;
+// Code
+// SKID READY
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       data_info_in_rdy_d2 <= 1'b1;
+       skid_flop_data_info_in_rdy_d2 <= 1'b1;
+   end else begin
+       data_info_in_rdy_d2 <= skid_data_info_in_rdy_d2;
+       skid_flop_data_info_in_rdy_d2 <= skid_data_info_in_rdy_d2;
+   end
+end
+
+// SKID VALID
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+    if (!nvdla_core_rstn) begin
+        skid_flop_data_info_in_vld_d2 <= 1'b0;
+    end else begin
+        if (skid_flop_data_info_in_rdy_d2) begin
+            skid_flop_data_info_in_vld_d2 <= data_info_in_vld_d2;
+        end
+   end
+end
+assign skid_data_info_in_vld_d2 = (skid_flop_data_info_in_rdy_d2) ? data_info_in_vld_d2 : skid_flop_data_info_in_vld_d2;
+
+// SKID DATA
+always @(posedge nvdla_core_clk) begin
+    if (skid_flop_data_info_in_rdy_d2 & data_info_in_vld_d2) begin
+        skid_flop_data_info_in_pd_d2[17-1:0] <= data_info_in_pd_d2[17-1:0];
+    end
+end
+assign skid_data_info_in_pd_d2[17-1:0] = (skid_flop_data_info_in_rdy_d2) ? data_info_in_pd_d2[17-1:0] : skid_flop_data_info_in_pd_d2[17-1:0];
+
+
+// PIPE READY
+assign skid_data_info_in_rdy_d2 = pipe_skid_data_info_in_rdy_d2 || !pipe_skid_data_info_in_vld_d2;
+
+// PIPE VALID
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+    if (!nvdla_core_rstn) begin
+        pipe_skid_data_info_in_vld_d2 <= 1'b0;
+    end else begin
+        if (skid_data_info_in_rdy_d2) begin
+            pipe_skid_data_info_in_vld_d2 <= skid_data_info_in_vld_d2;
+        end
+    end
+end
+
+// PIPE DATA
+always @(posedge nvdla_core_clk) begin
+    if (skid_data_info_in_rdy_d2 && skid_data_info_in_vld_d2) begin
+        pipe_skid_data_info_in_pd_d2[17-1:0] <= skid_data_info_in_pd_d2[17-1:0];
+    end
+end
+
+
+// PIPE OUTPUT
+assign pipe_skid_data_info_in_rdy_d2 = data_info_in_rdy_d3_f;
+assign data_info_in_vld_d3 = pipe_skid_data_info_in_vld_d2;
+assign data_info_in_pd_d3 = pipe_skid_data_info_in_pd_d2;
+// Reg
+reg data_info_in_rdy_d3;
+reg skid_flop_data_info_in_rdy_d3;
+reg skid_flop_data_info_in_vld_d3;
+reg [17-1:0] skid_flop_data_info_in_pd_d3;
+reg pipe_skid_data_info_in_vld_d3;
+reg [17-1:0] pipe_skid_data_info_in_pd_d3;
+// Wire
+wire skid_data_info_in_vld_d3;
+wire [17-1:0] skid_data_info_in_pd_d3;
+wire skid_data_info_in_rdy_d3;
+wire pipe_skid_data_info_in_rdy_d3;
+wire data_info_in_vld_d4;
+wire [17-1:0] data_info_in_pd_d4;
+// Code
+// SKID READY
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       data_info_in_rdy_d3 <= 1'b1;
+       skid_flop_data_info_in_rdy_d3 <= 1'b1;
+   end else begin
+       data_info_in_rdy_d3 <= skid_data_info_in_rdy_d3;
+       skid_flop_data_info_in_rdy_d3 <= skid_data_info_in_rdy_d3;
+   end
+end
+
+// SKID VALID
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+    if (!nvdla_core_rstn) begin
+        skid_flop_data_info_in_vld_d3 <= 1'b0;
+    end else begin
+        if (skid_flop_data_info_in_rdy_d3) begin
+            skid_flop_data_info_in_vld_d3 <= data_info_in_vld_d3;
+        end
+   end
+end
+assign skid_data_info_in_vld_d3 = (skid_flop_data_info_in_rdy_d3) ? data_info_in_vld_d3 : skid_flop_data_info_in_vld_d3;
+
+// SKID DATA
+always @(posedge nvdla_core_clk) begin
+    if (skid_flop_data_info_in_rdy_d3 & data_info_in_vld_d3) begin
+        skid_flop_data_info_in_pd_d3[17-1:0] <= data_info_in_pd_d3[17-1:0];
+    end
+end
+assign skid_data_info_in_pd_d3[17-1:0] = (skid_flop_data_info_in_rdy_d3) ? data_info_in_pd_d3[17-1:0] : skid_flop_data_info_in_pd_d3[17-1:0];
+
+
+// PIPE READY
+assign skid_data_info_in_rdy_d3 = pipe_skid_data_info_in_rdy_d3 || !pipe_skid_data_info_in_vld_d3;
+
+// PIPE VALID
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+    if (!nvdla_core_rstn) begin
+        pipe_skid_data_info_in_vld_d3 <= 1'b0;
+    end else begin
+        if (skid_data_info_in_rdy_d3) begin
+            pipe_skid_data_info_in_vld_d3 <= skid_data_info_in_vld_d3;
+        end
+    end
+end
+
+// PIPE DATA
+always @(posedge nvdla_core_clk) begin
+    if (skid_data_info_in_rdy_d3 && skid_data_info_in_vld_d3) begin
+        pipe_skid_data_info_in_pd_d3[17-1:0] <= skid_data_info_in_pd_d3[17-1:0];
+    end
+end
+
+
+// PIPE OUTPUT
+assign pipe_skid_data_info_in_rdy_d3 = data_info_in_rdy_d4;
+assign data_info_in_vld_d4 = pipe_skid_data_info_in_vld_d3;
+assign data_info_in_pd_d4 = pipe_skid_data_info_in_pd_d3;
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
 assign data_info_in_rdy = data_info_in_rdy_d0;
-assign data_info_in_pd_d0[14:0] = data_info_in_pd[14:0];
-// ::dla_pipe -stages NVDLA_HLS_CDP_OCVT_LATENCY -i data_info_in -o data_info_out -width 15;
-NV_NVDLA_CDP_DP_CVTOUT_pipe_p1 pipe_p1 (
-   .nvdla_core_clk (nvdla_core_clk) //|< i
-  ,.nvdla_core_rstn (nvdla_core_rstn) //|< i
-  ,.data_info_in_pd_d0 (data_info_in_pd_d0[14:0]) //|< w
-  ,.data_info_in_rdy_d1 (data_info_in_rdy_d1) //|< w
-  ,.data_info_in_vld_d0 (data_info_in_vld_d0) //|< w
-  ,.data_info_in_pd_d1 (data_info_in_pd_d1[14:0]) //|> w
-  ,.data_info_in_rdy_d0 (data_info_in_rdy_d0) //|> w
-  ,.data_info_in_vld_d1 (data_info_in_vld_d1) //|> w
-  );
-NV_NVDLA_CDP_DP_CVTOUT_pipe_p2 pipe_p2 (
-   .nvdla_core_clk (nvdla_core_clk) //|< i
-  ,.nvdla_core_rstn (nvdla_core_rstn) //|< i
-  ,.data_info_in_pd_d1 (data_info_in_pd_d1[14:0]) //|< w
-  ,.data_info_in_rdy_d2 (data_info_in_rdy_d2) //|< w
-  ,.data_info_in_vld_d1 (data_info_in_vld_d1) //|< w
-  ,.data_info_in_pd_d2 (data_info_in_pd_d2[14:0]) //|> w
-  ,.data_info_in_rdy_d1 (data_info_in_rdy_d1) //|> w
-  ,.data_info_in_vld_d2 (data_info_in_vld_d2) //|> w
-  );
-NV_NVDLA_CDP_DP_CVTOUT_pipe_p3 pipe_p3 (
-   .nvdla_core_clk (nvdla_core_clk) //|< i
-  ,.nvdla_core_rstn (nvdla_core_rstn) //|< i
-  ,.data_info_in_pd_d2 (data_info_in_pd_d2[14:0]) //|< w
-  ,.data_info_in_rdy_d3 (data_info_in_rdy_d3) //|< w
-  ,.data_info_in_vld_d2 (data_info_in_vld_d2) //|< w
-  ,.data_info_in_pd_d3 (data_info_in_pd_d3[14:0]) //|> w
-  ,.data_info_in_rdy_d2 (data_info_in_rdy_d2) //|> w
-  ,.data_info_in_vld_d3 (data_info_in_vld_d3) //|> w
-  );
-NV_NVDLA_CDP_DP_CVTOUT_pipe_p4 pipe_p4 (
-   .nvdla_core_clk (nvdla_core_clk) //|< i
-  ,.nvdla_core_rstn (nvdla_core_rstn) //|< i
-  ,.data_info_in_pd_d3 (data_info_in_pd_d3[14:0]) //|< w
-  ,.data_info_in_rdy_d4 (data_info_in_rdy_d4) //|< w
-  ,.data_info_in_vld_d3 (data_info_in_vld_d3) //|< w
-  ,.data_info_in_pd_d4 (data_info_in_pd_d4[14:0]) //|> w
-  ,.data_info_in_rdy_d3 (data_info_in_rdy_d3) //|> w
-  ,.data_info_in_vld_d4 (data_info_in_vld_d4) //|> w
-  );
+assign data_info_in_rdy_d1_f = data_info_in_rdy_d1;
+assign data_info_in_rdy_d2_f = data_info_in_rdy_d2;
+assign data_info_in_rdy_d3_f = data_info_in_rdy_d3;
 assign data_info_out_vld = data_info_in_vld_d4;
 assign data_info_in_rdy_d4 = data_info_out_rdy;
-assign data_info_out_pd[14:0] = data_info_in_pd_d4[14:0];
+assign data_info_out_pd[16:0] = data_info_in_pd_d4[16:0];
 //===============================================
 //convertor process
 //-----------------------------------------------
@@ -767,7 +1040,7 @@ assign data_info_out_rdy = cvtout_prdy & cdp_cvtout_output_vld;
 //convertor output
 //-----------------------------------------------
 assign cvtout_pvld = cdp_cvtout_output_vld & data_info_out_vld;
-assign cvtout_pd = {data_info_out_pd[14:0],cdp_cvtout_output_pd};
+assign cvtout_pd = {data_info_out_pd[16:0],cdp_cvtout_output_pd};
 //////////////////////////////////////////////////////////////////////
 endmodule // NV_NVDLA_CDP_DP_cvtout
 // **************************************************************************************************************

@@ -23,8 +23,8 @@ module nvdla_large
     output [64 -1:0] nvdla_core2dbb_aw_awaddr,
     output nvdla_core2dbb_w_wvalid,
     input nvdla_core2dbb_w_wready,
-    output [512 -1:0] nvdla_core2dbb_w_wdata,
-    output [512/8-1:0] nvdla_core2dbb_w_wstrb,
+    output [256 -1:0] nvdla_core2dbb_w_wdata,
+    output [256/8-1:0] nvdla_core2dbb_w_wstrb,
     output nvdla_core2dbb_w_wlast,
     output nvdla_core2dbb_ar_arvalid,
     input nvdla_core2dbb_ar_arready,
@@ -39,7 +39,7 @@ module nvdla_large
     output nvdla_core2dbb_r_rready,
     input [7:0] nvdla_core2dbb_r_rid,
     input nvdla_core2dbb_r_rlast,
-    input [512 -1:0] nvdla_core2dbb_r_rdata,
+    input [256 -1:0] nvdla_core2dbb_r_rdata,
     // cvsram AXI
     output nvdla_core2cvsram_aw_awvalid,
     input nvdla_core2cvsram_aw_awready,
@@ -49,8 +49,8 @@ module nvdla_large
     output [64 -1:0] nvdla_core2cvsram_aw_awaddr,
     output nvdla_core2cvsram_w_wvalid,
     input nvdla_core2cvsram_w_wready,
-    output [512 -1:0] nvdla_core2cvsram_w_wdata,
-    output [512/8-1:0] nvdla_core2cvsram_w_wstrb,
+    output [256 -1:0] nvdla_core2cvsram_w_wdata,
+    output [256/8-1:0] nvdla_core2cvsram_w_wstrb,
     output nvdla_core2cvsram_w_wlast,
     input nvdla_core2cvsram_b_bvalid,
     output nvdla_core2cvsram_b_bready,
@@ -65,7 +65,7 @@ module nvdla_large
     output nvdla_core2cvsram_r_rready,
     input [7:0] nvdla_core2cvsram_r_rid,
     input nvdla_core2cvsram_r_rlast,
-    input [512 -1:0] nvdla_core2cvsram_r_rdata,
+    input [256 -1:0] nvdla_core2cvsram_r_rdata,
     // cfg APB
     input psel,
     input penable,
@@ -181,9 +181,9 @@ NV_nvdla nvdla_top (
   ,.nvdla_pwrbus_ram_a_pd           (32'b0)
 ); // nvdla_top
 
-assign nvdla_core2dbb_aw_awsize = 3'b111;
-assign nvdla_core2dbb_ar_arsize = 3'b111;
-assign nvdla_core2cvsram_aw_awsize = 3'b111;
-assign nvdla_core2cvsram_ar_arsize = 3'b111;
+assign nvdla_core2dbb_aw_awsize = 3'b101;
+assign nvdla_core2dbb_ar_arsize = 3'b101;
+assign nvdla_core2cvsram_aw_awsize = 3'b101;
+assign nvdla_core2cvsram_ar_arsize = 3'b101;
 
 endmodule

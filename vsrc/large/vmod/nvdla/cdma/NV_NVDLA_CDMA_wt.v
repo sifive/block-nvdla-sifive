@@ -17,6 +17,12 @@
 //#define CDMA_SBUF_SDATA_BITS            256
 //DorisL-S----------------
 //
+// #if ( NVDLA_MEMORY_ATOMIC_SIZE  ==  32 )
+//     #define IMG_LARGE
+// #endif
+// #if ( NVDLA_MEMORY_ATOMIC_SIZE == 8 )
+//     #define IMG_SMALL
+// #endif
 //DorisL-E----------------
 //--------------------------------------------------
 module NV_NVDLA_CDMA_wt (
@@ -62,7 +68,7 @@ module NV_NVDLA_CDMA_wt (
   ,sc2cdma_wt_updt //|< i
   ,status2dma_fsm_switch //|< i
   ,cdma2buf_wt_wr_en //|> o
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
 //: print qq(
@@ -89,6 +95,7 @@ module NV_NVDLA_CDMA_wt (
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+,cdma2buf_wt_wr_sel
 ,cdma2buf_wt_wr_addr
 ,cdma2buf_wt_wr_data
 
@@ -120,15 +127,15 @@ input cdma_wt2mcif_rd_req_ready;
 output [( 64 + 15 )-1:0] cdma_wt2mcif_rd_req_pd;
 input mcif2cdma_wt_rd_rsp_valid;
 output mcif2cdma_wt_rd_rsp_ready;
-input [( 512 + (512/8/32) )-1:0] mcif2cdma_wt_rd_rsp_pd;
+input [( 256 + (256/8/32) )-1:0] mcif2cdma_wt_rd_rsp_pd;
 output cdma_wt2cvif_rd_req_valid;
 input cdma_wt2cvif_rd_req_ready;
 output [( 64 + 15 )-1:0] cdma_wt2cvif_rd_req_pd;
 input cvif2cdma_wt_rd_rsp_valid;
 output cvif2cdma_wt_rd_rsp_ready;
-input [( 512 + (512/8/32) )-1:0] cvif2cdma_wt_rd_rsp_pd;
+input [( 256 + (256/8/32) )-1:0] cvif2cdma_wt_rd_rsp_pd;
 output cdma2buf_wt_wr_en;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
 //: my $k = int($atmc/$dmaif);
@@ -156,8 +163,9 @@ output cdma2buf_wt_wr_en;
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
+output [2-1:0] cdma2buf_wt_wr_sel ;
 output [16:0] cdma2buf_wt_wr_addr;
-output [512-1:0] cdma2buf_wt_wr_data;
+output [256-1:0] cdma2buf_wt_wr_data;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 input status2dma_fsm_switch;
@@ -212,45 +220,10 @@ output dp2reg_wt_flush_done;
 output [31:0] dp2reg_wt_rd_stall;
 output [31:0] dp2reg_wt_rd_latency;
 /////////////////////////////////////////////////////
-reg arb_sp_out_back_vld;
-reg arb_sp_out_vld;
-reg [4:0] arb_weight_wmb;
-reg [4:0] arb_weight_wt;
-reg arb_wrr_out_back_vld;
-reg arb_wrr_out_vld;
-reg [11:0] incr_wmb_entries;
-reg [21:0] pre_wmb_fetched_cnt;
-reg [31:0] pre_wmb_required_bits;
-reg [8:0] sc_wmb_entries;
-reg [5:0] wgs_data_onfly;
-reg [11:0] wgs_push_cnt;
-reg wgs_push_req;
-reg [11:0] wgs_req_dword_cnt_d1;
-reg [3:0] wgs_req_dword_d1;
-reg wgs_req_vld_d1;
-reg [12:0] wmb_cbuf_wr_idx;
-reg [14:0] wmb_data_avl;
-reg [10:0] wmb_data_onfly;
-reg [13:0] wmb_data_stored;
-reg [21:0] wmb_fetched_cnt;
-reg wmb_local_data_vld;
-reg [22:0] wmb_req_burst_cnt_d1;
-reg wmb_req_done_d2;
-reg wmb_req_done_d3;
-reg wmb_req_last_d2;
-reg [3:0] wmb_req_size_d1;
-reg [3:0] wmb_req_size_d2;
-reg [3:0] wmb_req_size_d3;
-reg [2:0] wmb_req_size_out_d2;
-reg [2:0] wmb_req_size_out_d3;
-reg wmb_req_stage_vld_d1;
-reg wmb_req_stage_vld_d2;
-reg wmb_req_vld_d3;
-reg [31:0] wmb_required_bits;
 reg [18:0] byte_per_kernel;
 reg [16:0] cdma2buf_wt_wr_addr;
 reg cdma2buf_wt_wr_en;
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: if($dmaif < $atmc) {
 //: my $k = int(log(int($atmc/$dmaif))/log(2));
@@ -261,6 +234,9 @@ reg cdma2buf_wt_wr_en;
 //: );
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
+
+reg [2-1:0] cdma2buf_wt_wr_sel ;
+wire [1-1:0] cdma2buf_wt_wr_sel_w;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //reg cdma2buf_wt_wr_sel;
@@ -273,7 +249,7 @@ reg [31:0] dbg_wmb_kernel_bits;
 reg [31:0] dbg_wt_kernel_bytes;
 wire [3:0] dma_req_size;
 wire [2:0] dma_req_size_out;
-//: my $mask = (512/8/32);
+//: my $mask = (256/8/32);
 //: my $atmm = (32 * 8);
 //: print qq(
 //: wire [${atmm}-1:0] wt_local_data_w;
@@ -297,14 +273,12 @@ reg [256-1:0] wgs_local_data;
 
 wire [256-1:0] dma_rsp_data_p0;
 
-wire [256-1:0] dma_rsp_data_p1;
-
 //| eperl: generated_end (DO NOT EDIT ABOVE)
-wire [512 -1:0] wt_cbuf_wr_data_ori_w;
-wire [512 -1:0] wt_cbuf_wr_data_w;
-reg [512 -1:0] cdma2buf_wt_wr_data;
-wire [512 -1:0] wmb_cbuf_wr_data_w;
-wire [512 -1:0] cdma2buf_wt_wr_data_w;
+wire [256 -1:0] wt_cbuf_wr_data_ori_w;
+wire [256 -1:0] wt_cbuf_wr_data_w;
+reg [256 -1:0] cdma2buf_wt_wr_data;
+wire [256 -1:0] wmb_cbuf_wr_data_w;
+wire [256 -1:0] cdma2buf_wt_wr_data_w;
 wire [3:0] dma_rsp_size;
 reg [3:0] dma_rsp_size_cnt;
 wire [31:0] dp2reg_wt_rd_latency=32'd0;
@@ -405,108 +379,7 @@ reg wt_req_stage_vld_d1;
 reg wt_req_stage_vld_d2;
 reg wt_req_vld_d3;
 reg [31:0] wt_required_bytes;
-wire arb_sp_block;
-wire [1:0] arb_sp_in_rdy;
-wire [1:0] arb_sp_in_vld;
-wire arb_sp_out_back_reg_en;
-wire arb_sp_out_back_vld_w;
-wire arb_sp_out_reg_en;
-wire arb_sp_out_vld_w;
-wire arb_wrr_block;
-wire [1:0] arb_wrr_in_rdy;
-wire [1:0] arb_wrr_in_vld;
-wire arb_wrr_out_back_reg_en;
-wire arb_wrr_out_back_vld_w;
-wire arb_wrr_out_rdy;
-wire arb_wrr_out_reg_en;
-wire arb_wrr_out_vld_w;
-wire [4:0] arb_wrr_weight_0;
-wire [4:0] arb_wrr_weight_1;
-wire dbg_full_wmb;
-wire [31:0] dbg_wmb_kernel_bits_sub;
-wire [31:0] dbg_wmb_kernel_bits_w;
-wire [9:0] incr_wmb_cnt;
-wire [11:0] incr_wmb_entries_d0;
-wire [11:0] incr_wmb_entries_w;
-wire mon_incr_wmb_cnt;
-wire mon_wgs_data_onfly_w;
-wire mon_wgs_push_cnt_inc;
-wire [223:0] mon_wgs_push_data;
-wire mon_wgs_req_addr_inc;
-wire mon_wgs_req_dword_cnt_dec;
-wire mon_wgs_req_sum;
-wire mon_wmb_cbuf_wr_idx_inc;
-wire mon_wmb_data_avl_w;
-wire mon_wmb_data_onfly_w;
-wire mon_wmb_data_stored_w;
-wire mon_wmb_fetched_cnt_inc;
-wire mon_wmb_req_burst_cnt_dec;
-wire mon_wmb_req_sum;
-wire mon_wmb_required_bits_w;
-wire [21:0] pre_wmb_fetched_cnt_w;
-wire [31:0] pre_wmb_required_bits_w;
-wire status_update_wmb;
-wire [4:0] wgs_data_onfly_add;
-wire wgs_data_onfly_reg_en;
-wire wgs_data_onfly_sub;
-wire [5:0] wgs_data_onfly_w;
-wire [31:0] wgs_pop_data;
-wire wgs_pop_ready;
-wire wgs_pop_req;
-wire [11:0] wgs_push_cnt_inc;
-wire [11:0] wgs_push_cnt_w;
-wire [31:0] wgs_push_data;
-wire wgs_push_last;
-wire wgs_push_ready;
-wire wgs_push_req_w;
-wire wgs_req_done;
-wire [11:0] wgs_req_dword_cnt_dec;
-wire [11:0] wgs_req_dword_cnt_w;
-wire [3:0] wgs_req_dword_w;
-wire wgs_req_overflow;
-wire wgs_req_rdy;
-wire wgs_req_reg_en;
-wire [3:0] wgs_req_size_d1;
-wire [2:0] wgs_req_size_out_d1;
-wire [1:0] wgs_req_src_d1;
-wire [5:0] wgs_req_sum;
-wire wgs_req_vld_w;
-wire wgs_rsp_valid;
-wire [8:0] wmb_cbuf_wr_idx_inc;
-wire [12:0] wmb_cbuf_wr_idx_w;
-wire wmb_cbuf_wr_vld_w;
-wire [10:0] wmb_data_avl_sub;
-wire [14:0] wmb_data_avl_w;
-wire [3:0] wmb_data_onfly_add;
-wire wmb_data_onfly_reg_en;
-wire [2:0] wmb_data_onfly_sub;
-wire [10:0] wmb_data_onfly_w;
-wire [13:0] wmb_data_stored_sub;
-wire [13:0] wmb_data_stored_w;
-wire [21:0] wmb_fetched_cnt_inc;
-wire [21:0] wmb_fetched_cnt_w;
-wire [1:0] wmb_local_data_cnt;
-wire wmb_local_data_reg_en;
-wire wmb_local_data_vld_w;
-wire wmb_req_done_w;
-wire wmb_req_last_w;
-wire wmb_req_overflow;
-wire wmb_req_overflow_d3;
-wire wmb_req_rdy;
-wire wmb_req_reg_en;
-wire wmb_req_reg_en_d0;
-wire wmb_req_reg_en_d1;
-wire wmb_req_reg_en_d2;
-wire [3:0] wmb_req_size_addr_limit;
-wire [2:0] wmb_req_size_out_w;
-wire [3:0] wmb_req_size_w;
-wire [1:0] wmb_req_src_d3;
-wire [14:0] wmb_req_sum;
-wire wmb_req_vld_w;
-wire [31:0] wmb_required_bits_w;
-wire wmb_required_en;
-wire wmb_rsp_valid;
-wire wmb_satisfied;
+wire arb_sp_out_vld;
 wire arb_sp_out_rdy;
 wire [16:0] cdma2buf_wt_wr_addr_w;
 wire cdma2buf_wt_wr_en_w;
@@ -526,9 +399,9 @@ wire dma_rd_req_rdy;
 wire [14:0] dma_rd_req_size;
 wire dma_rd_req_type;
 wire dma_rd_req_vld;
-wire [512 -1:0] dma_rd_rsp_data;
-wire [( 512 + (512/8/32) )-512 -1:0] dma_rd_rsp_mask;
-wire [( 512 + (512/8/32) )-1:0] dma_rd_rsp_pd;
+wire [256 -1:0] dma_rd_rsp_data;
+wire [( 256 + (256/8/32) )-256 -1:0] dma_rd_rsp_mask;
+wire [( 256 + (256/8/32) )-1:0] dma_rd_rsp_pd;
 wire dma_rd_rsp_rdy;
 wire dma_rd_rsp_vld;
 wire [5:0] dma_req_fifo_data;
@@ -619,7 +492,7 @@ wire [31:0] wt_fp16_manti_flag_w;
 wire [31:0] wt_fp16_nan_flag_w;
 wire [5:0] wt_fp16_nan_sum;
 wire wt_fp16_nan_vld_w;
-//: my $mask = (512/8/32);
+//: my $mask = (256/8/32);
 //: if($mask == 4) {
 //: print qq(
 //: wire [2:0] wt_local_data_cnt;
@@ -662,13 +535,6 @@ wire wt_local_data_vld_w;
 //: reg [64-${atmbw}-1+9:0] arb_sp_req_package_in_01;
 //: );
 //: my $atmm = 32;
-//: my $atmbw = int(log(${atmm})/log(2));
-//: print qq(
-//: wire [64-${atmbw}-1+9:0] arb_sp_out_package_w;
-//: reg [64-${atmbw}-1+9:0] arb_sp_out_package;
-//: reg [64-${atmbw}-1+9:0] arb_sp_out_back_package;
-//: );
-//: my $atmm = 32;
 //: my $k = int( log(${atmm}) / log(2) );
 //: print qq(
 //: wire [32-${k}-1:0] wt_req_burst_cnt_w;
@@ -698,10 +564,6 @@ reg [64-5-1+9:0] arb_wrr_out_package;
 reg [64-5-1+9:0] arb_wrr_out_back_package;
 reg [64-5-1+9:0] arb_sp_req_package_in_00;
 reg [64-5-1+9:0] arb_sp_req_package_in_01;
-
-wire [64-5-1+9:0] arb_sp_out_package_w;
-reg [64-5-1+9:0] arb_sp_out_package;
-reg [64-5-1+9:0] arb_sp_out_back_package;
 
 wire [32-5-1:0] wt_req_burst_cnt_w;
 reg [32-5-1:0] wt_req_burst_cnt_d1;
@@ -912,8 +774,6 @@ end
 // registers to calculate local values //
 ////////////////////////////////////////////////////////////////////////
 //: &eperl::flop("-nodeclare  -norst -en \"layer_st\" -d \"reg2dp_byte_per_kernel + 1'b1\" -q byte_per_kernel");
-//: &eperl::flop("-nodeclare   -rval \"{5{1'b0}}\"  -en \"layer_st\" -d \"reg2dp_arb_weight + 1'b1\" -q arb_weight_wt");
-//: &eperl::flop("-nodeclare   -rval \"{5{1'b0}}\"  -en \"layer_st\" -d \"reg2dp_arb_wmb + 1'b1\" -q arb_weight_wmb");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 always @(posedge nvdla_core_clk) begin
        if ((layer_st) == 1'b1) begin
@@ -924,34 +784,6 @@ always @(posedge nvdla_core_clk) begin
            byte_per_kernel <= 'bx;
        // VCS coverage on
        end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       arb_weight_wt <= {5{1'b0}};
-   end else begin
-       if ((layer_st) == 1'b1) begin
-           arb_weight_wt <= reg2dp_arb_weight + 1'b1;
-       // VCS coverage off
-       end else if ((layer_st) == 1'b0) begin
-       end else begin
-           arb_weight_wt <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       arb_weight_wmb <= {5{1'b0}};
-   end else begin
-       if ((layer_st) == 1'b1) begin
-           arb_weight_wmb <= reg2dp_arb_wmb + 1'b1;
-       // VCS coverage off
-       end else if ((layer_st) == 1'b0) begin
-       end else begin
-           arb_weight_wmb <= 'bx;
-       // VCS coverage on
-       end
-   end
 end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
@@ -968,7 +800,7 @@ assign data_bank_w = reg2dp_data_bank + 1'b1;
 assign weight_bank_w = reg2dp_weight_bank + 1'b1;
 assign weight_bank_end_w = weight_bank_w + data_bank_w;
 assign nan_pass_w = ~reg2dp_nan_to_zero | ~is_fp16;
-assign is_compressed = (reg2dp_weight_format == 1'h1 );
+assign is_compressed = 1'b0;
 //: &eperl::flop("-nodeclare   -rval \"{12{1'b1}}\"  -en \"layer_st\" -d \"group_w\" -q group");
 //: &eperl::flop("-nodeclare   -rval \"{6{1'b1}}\"  -en \"layer_st\" -d \"weight_bank_w\" -q weight_bank");
 //: &eperl::flop("-nodeclare   -rval \"{7{1'b1}}\"  -en \"layer_st\" -d \"weight_bank_end_w\" -q weight_bank_end");
@@ -1285,526 +1117,14 @@ assign wt_req_overflow = is_running && (wt_req_sum > ({weight_bank, 10'b0} + 4))
 assign wt_req_overflow_d3 = wt_req_overflow;
 /////////////////// pipeline control logic ///////////////////
 assign wt_req_reg_en = layer_st | (is_running & (~wt_req_vld_d3 | wt_req_rdy));
-////////////////////////////////////////////////////////////////////////
-// generate address for WMB data //
-////////////////////////////////////////////////////////////////////////
-/////////////////// stage 1 ///////////////////
-assign wmb_req_reg_en_d0 = wmb_req_reg_en;
-assign {mon_wmb_req_burst_cnt_dec, wmb_req_burst_cnt_dec} = wmb_req_burst_cnt_d1 - {{19{1'b0}}, wmb_req_size_d1};
-//assign wmb_req_burst_cnt_w = layer_st ? {reg2dp_wmb_bytes, 2'b0} : wmb_req_burst_cnt_dec;
-//: my $atmm = 32;
-//: my $k = int(log($atmm)/log(2));
-//: print qq( assign wmb_req_burst_cnt_w = layer_st ? reg2dp_wmb_bytes[27:${k}] : wmb_req_burst_cnt_dec; );
-//| eperl: generated_beg (DO NOT EDIT BELOW)
- assign wmb_req_burst_cnt_w = layer_st ? reg2dp_wmb_bytes[27:5] : wmb_req_burst_cnt_dec; 
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-assign wmb_req_size_addr_limit = layer_st ? (4'h8 - reg2dp_wmb_addr_low[2:0]) : 4'h8;
-assign wmb_req_size_w = ( {{19{1'b0}}, wmb_req_size_addr_limit} > wmb_req_burst_cnt_w) ? wmb_req_burst_cnt_w[3:0] : wmb_req_size_addr_limit;
-//: &eperl::flop("-nodeclare   -rval \"{4{1'b0}}\"  -en \"wmb_req_reg_en_d0\" -d \"wmb_req_size_w\" -q wmb_req_size_d1");
-//: &eperl::flop("-nodeclare   -rval \"{23{1'b0}}\"  -en \"wmb_req_reg_en_d0\" -d \"wmb_req_burst_cnt_w\" -q wmb_req_burst_cnt_d1");
-//: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"is_nxt_running & is_compressed\" -q wmb_req_stage_vld_d1");
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_size_d1 <= {4{1'b0}};
-   end else begin
-       if ((wmb_req_reg_en_d0) == 1'b1) begin
-           wmb_req_size_d1 <= wmb_req_size_w;
-       // VCS coverage off
-       end else if ((wmb_req_reg_en_d0) == 1'b0) begin
-       end else begin
-           wmb_req_size_d1 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_burst_cnt_d1 <= {23{1'b0}};
-   end else begin
-       if ((wmb_req_reg_en_d0) == 1'b1) begin
-           wmb_req_burst_cnt_d1 <= wmb_req_burst_cnt_w;
-       // VCS coverage off
-       end else if ((wmb_req_reg_en_d0) == 1'b0) begin
-       end else begin
-           wmb_req_burst_cnt_d1 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_stage_vld_d1 <= 1'b0;
-   end else begin
-       wmb_req_stage_vld_d1 <= is_nxt_running & is_compressed;
-   end
-end
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-/////////////////// stage 2 ///////////////////
-assign wmb_req_reg_en_d1 = wmb_req_reg_en;
-assign wmb_req_last_w = is_running & (wmb_req_burst_cnt_d1 == {{19{1'b0}}, wmb_req_size_d1});
-//: my $atmm = 32;
-//: my $atmbw = int(log(${atmm})/log(2));
-//: print qq(
-//: assign wmb_req_addr_inc = wmb_req_addr_d2[64-${atmbw}-1:3] + 1'b1;
-//: );
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-
-assign wmb_req_addr_inc = wmb_req_addr_d2[64-5-1:3] + 1'b1;
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-//assign wmb_req_addr_inc = wmb_req_addr_d2[58:3] + 56'b1;
-assign wmb_req_addr_w = (~wmb_req_stage_vld_d2) ? {reg2dp_wmb_addr_high, reg2dp_wmb_addr_low} : {wmb_req_addr_inc, 3'b0};
-assign wmb_req_size_out_w = wmb_req_size_d1[2:0] - 3'b1;
-assign wmb_req_done_w = (layer_st & is_compressed) ? 1'b0 :
-                        (layer_st & ~is_compressed) ? 1'b1 :
-                        wmb_req_last_d2 ? 1'b1 : wmb_req_done_d2;
-//: &eperl::flop("-nodeclare   -rval \"0\"          -en \"wmb_req_reg_en_d1\" -d \"wmb_req_addr_w\" -q wmb_req_addr_d2");
-//: &eperl::flop("-nodeclare   -rval \"{4{1'b0}}\"  -en \"wmb_req_reg_en_d1\" -d \"wmb_req_size_d1\" -q wmb_req_size_d2");
-//: &eperl::flop("-nodeclare   -rval \"{3{1'b0}}\"  -en \"wmb_req_reg_en_d1\" -d \"wmb_req_size_out_w\" -q wmb_req_size_out_d2");
-//: &eperl::flop("-nodeclare   -rval \"1'b0\"  -en \"wmb_req_reg_en_d1\" -d \"wmb_req_last_w\" -q wmb_req_last_d2");
-//: &eperl::flop("-nodeclare   -rval \"1'b1\"  -en \"wmb_req_reg_en_d1\" -d \"wmb_req_done_w\" -q wmb_req_done_d2");
-//: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"wmb_req_stage_vld_d1 & is_nxt_running\" -q wmb_req_stage_vld_d2");
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_addr_d2 <= 'b0;
-   end else begin
-       if ((wmb_req_reg_en_d1) == 1'b1) begin
-           wmb_req_addr_d2 <= wmb_req_addr_w;
-       // VCS coverage off
-       end else if ((wmb_req_reg_en_d1) == 1'b0) begin
-       end else begin
-           wmb_req_addr_d2 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_size_d2 <= {4{1'b0}};
-   end else begin
-       if ((wmb_req_reg_en_d1) == 1'b1) begin
-           wmb_req_size_d2 <= wmb_req_size_d1;
-       // VCS coverage off
-       end else if ((wmb_req_reg_en_d1) == 1'b0) begin
-       end else begin
-           wmb_req_size_d2 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_size_out_d2 <= {3{1'b0}};
-   end else begin
-       if ((wmb_req_reg_en_d1) == 1'b1) begin
-           wmb_req_size_out_d2 <= wmb_req_size_out_w;
-       // VCS coverage off
-       end else if ((wmb_req_reg_en_d1) == 1'b0) begin
-       end else begin
-           wmb_req_size_out_d2 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_last_d2 <= 1'b0;
-   end else begin
-       if ((wmb_req_reg_en_d1) == 1'b1) begin
-           wmb_req_last_d2 <= wmb_req_last_w;
-       // VCS coverage off
-       end else if ((wmb_req_reg_en_d1) == 1'b0) begin
-       end else begin
-           wmb_req_last_d2 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_done_d2 <= 1'b1;
-   end else begin
-       if ((wmb_req_reg_en_d1) == 1'b1) begin
-           wmb_req_done_d2 <= wmb_req_done_w;
-       // VCS coverage off
-       end else if ((wmb_req_reg_en_d1) == 1'b0) begin
-       end else begin
-           wmb_req_done_d2 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_stage_vld_d2 <= 1'b0;
-   end else begin
-       wmb_req_stage_vld_d2 <= wmb_req_stage_vld_d1 & is_nxt_running;
-   end
-end
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-/////////////////// stage 3 ///////////////////
-assign wmb_req_reg_en_d2 = wmb_req_reg_en;
-assign wmb_req_vld_w = is_nxt_running & wmb_req_stage_vld_d2;
-//: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"wmb_req_vld_w\" -q wmb_req_vld_d3");
-//: &eperl::flop("-nodeclare   -rval \"0\"          -en \"wmb_req_reg_en_d2\" -d \"wmb_req_addr_d2\" -q wmb_req_addr_d3");
-//: &eperl::flop("-nodeclare   -rval \"{4{1'b0}}\"  -en \"wmb_req_reg_en_d2\" -d \"wmb_req_size_d2\" -q wmb_req_size_d3");
-//: &eperl::flop("-nodeclare   -rval \"{3{1'b0}}\"  -en \"wmb_req_reg_en_d2\" -d \"wmb_req_size_out_d2\" -q wmb_req_size_out_d3");
-//: &eperl::flop("-nodeclare   -rval \"1'b1\"  -en \"wmb_req_reg_en_d2\" -d \"(is_running & wmb_req_done_d2)\" -q wmb_req_done_d3");
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_vld_d3 <= 1'b0;
-   end else begin
-       wmb_req_vld_d3 <= wmb_req_vld_w;
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_addr_d3 <= 'b0;
-   end else begin
-       if ((wmb_req_reg_en_d2) == 1'b1) begin
-           wmb_req_addr_d3 <= wmb_req_addr_d2;
-       // VCS coverage off
-       end else if ((wmb_req_reg_en_d2) == 1'b0) begin
-       end else begin
-           wmb_req_addr_d3 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_size_d3 <= {4{1'b0}};
-   end else begin
-       if ((wmb_req_reg_en_d2) == 1'b1) begin
-           wmb_req_size_d3 <= wmb_req_size_d2;
-       // VCS coverage off
-       end else if ((wmb_req_reg_en_d2) == 1'b0) begin
-       end else begin
-           wmb_req_size_d3 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_size_out_d3 <= {3{1'b0}};
-   end else begin
-       if ((wmb_req_reg_en_d2) == 1'b1) begin
-           wmb_req_size_out_d3 <= wmb_req_size_out_d2;
-       // VCS coverage off
-       end else if ((wmb_req_reg_en_d2) == 1'b0) begin
-       end else begin
-           wmb_req_size_out_d3 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_req_done_d3 <= 1'b1;
-   end else begin
-       if ((wmb_req_reg_en_d2) == 1'b1) begin
-           wmb_req_done_d3 <= (is_running & wmb_req_done_d2);
-       // VCS coverage off
-       end else if ((wmb_req_reg_en_d2) == 1'b0) begin
-       end else begin
-           wmb_req_done_d3 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-assign wmb_req_src_d3 = SRC_ID_WMB;
-/////////////////// overflow control logic ///////////////////
-assign {mon_wmb_req_sum,
-        wmb_req_sum} = wmb_data_onfly + wmb_data_stored + wmb_data_avl;
-//: my $atmm8 = ((8*32)/64);
-//: my $Cbuf_bank_size = 64 * 512;
-//: my $cdma_addr_align = 32;
-//: my $Cbuf_bank_fetch_bits = int( log($Cbuf_bank_size/$cdma_addr_align)/log(2) );
-//: print qq(
-//: assign wmb_req_overflow = is_running && (wmb_req_sum > {1'b1, ${Cbuf_bank_fetch_bits}'b0});
-//: );
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-
-assign wmb_req_overflow = is_running && (wmb_req_sum > {1'b1, 10'b0});
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-//assign wmb_req_overflow = is_running && (wmb_req_sum > {1'b1, 10'b0});
-assign wmb_req_overflow_d3 = wmb_req_overflow;
-/////////////////// pipeline control logic ///////////////////
-assign wmb_req_reg_en = layer_st | (is_running & (~wmb_req_vld_d3 | wmb_req_rdy));
-////////////////////////////////////////////////////////////////////////
-// generate address for WGS data //
-////////////////////////////////////////////////////////////////////////
-/////////////////// stage 1 ///////////////////
-assign {mon_wgs_req_dword_cnt_dec,
-        wgs_req_dword_cnt_dec} = wgs_req_dword_cnt_d1 - wgs_req_dword_d1;
-assign wgs_req_dword_cnt_w = layer_st ? group_w : wgs_req_dword_cnt_dec;
-//assign wgs_req_dword_w = (10'h8 <= wgs_req_dword_cnt_w) ? 4'h8 : wgs_req_dword_cnt_w[3:0];
-//: my $atmm = 32;
-//: my $k = (($atmm * 8 )/32); ##32bits per kernel
-//: my $m = int(log($k)/log(2));
-//: if($m == 3) {
-//: print qq(
-//: assign wgs_req_dword_w = (12'h${k} <= wgs_req_dword_cnt_w) ? 4'h${k} : wgs_req_dword_cnt_w[${m}:0];
-//: );
-//: } else {
-//: print qq(
-//: assign wgs_req_dword_w = (12'h${k} <= wgs_req_dword_cnt_w) ? 4'h${k} : {{(3-${m}){1'b0}},wgs_req_dword_cnt_w[${m}:0]};
-//: );
-//: }
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-
-assign wgs_req_dword_w = (12'h8 <= wgs_req_dword_cnt_w) ? 4'h8 : wgs_req_dword_cnt_w[3:0];
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-assign wgs_req_done = (wgs_req_dword_cnt_d1 == {{8{1'b0}}, wgs_req_dword_d1});
-assign wgs_req_vld_w = (~is_running & is_nxt_running) ? is_compressed :
-                       (is_running & wgs_req_done & wgs_req_rdy) ? 1'b0 : wgs_req_vld_d1;
-assign {mon_wgs_req_addr_inc,
-        wgs_req_addr_inc} = wgs_req_addr_d1 + 1'b1;
-assign wgs_req_addr_w = layer_st ? {reg2dp_wgs_addr_high,reg2dp_wgs_addr_low} : wgs_req_addr_inc;
-assign wgs_req_reg_en = layer_st | (is_running & wgs_req_vld_d1 & wgs_req_rdy & ~wgs_req_done);
-//: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"wgs_req_vld_w\" -q wgs_req_vld_d1");
-//: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"wgs_req_reg_en\" -d \"wgs_req_dword_cnt_w\" -q wgs_req_dword_cnt_d1");
-//: &eperl::flop("-nodeclare   -rval \"{4{1'b0}}\"  -en \"wgs_req_reg_en\" -d \"wgs_req_dword_w\" -q wgs_req_dword_d1");
-//: &eperl::flop("-nodeclare   -rval \"0\"  -en \"wgs_req_reg_en\" -d \"wgs_req_addr_w\" -q wgs_req_addr_d1");
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wgs_req_vld_d1 <= 1'b0;
-   end else begin
-       wgs_req_vld_d1 <= wgs_req_vld_w;
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wgs_req_dword_cnt_d1 <= {12{1'b0}};
-   end else begin
-       if ((wgs_req_reg_en) == 1'b1) begin
-           wgs_req_dword_cnt_d1 <= wgs_req_dword_cnt_w;
-       // VCS coverage off
-       end else if ((wgs_req_reg_en) == 1'b0) begin
-       end else begin
-           wgs_req_dword_cnt_d1 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wgs_req_dword_d1 <= {4{1'b0}};
-   end else begin
-       if ((wgs_req_reg_en) == 1'b1) begin
-           wgs_req_dword_d1 <= wgs_req_dword_w;
-       // VCS coverage off
-       end else if ((wgs_req_reg_en) == 1'b0) begin
-       end else begin
-           wgs_req_dword_d1 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wgs_req_addr_d1 <= 'b0;
-   end else begin
-       if ((wgs_req_reg_en) == 1'b1) begin
-           wgs_req_addr_d1 <= wgs_req_addr_w;
-       // VCS coverage off
-       end else if ((wgs_req_reg_en) == 1'b0) begin
-       end else begin
-           wgs_req_addr_d1 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-assign wgs_req_size_d1 = 4'h1;
-assign wgs_req_size_out_d1 = 3'h0;
-assign wgs_req_src_d1 = SRC_ID_WGS;
-/////////////////// overflow control logic ///////////////////
-assign {mon_wgs_req_sum,
-        wgs_req_sum} = wgs_data_onfly + wgs_req_dword_d1;
-assign wgs_req_overflow = is_running & (wgs_req_sum > 6'h20);//Note 6'h20 is the depth of NV_NVDLA_CDMA_WT_wgs_fifo
-////////////////////////////////////////////////////////////////////////
-// CDMA WT read request arbiter //
-////////////////////////////////////////////////////////////////////////
-NV_NVDLA_CDMA_WT_wrr_arb u_wrr_arb (
-   .req0 (arb_wrr_in_vld[0]) //|< w
-  ,.req1 (arb_wrr_in_vld[1]) //|< w
-  ,.wt0 (arb_wrr_weight_0[4:0]) //|< w
-  ,.wt1 (arb_wrr_weight_1[4:0]) //|< w
-  ,.gnt_busy (arb_wrr_block) //|< w
-  ,.clk (nvdla_core_clk) //|< i
-  ,.reset_ (nvdla_core_rstn) //|< i
-  ,.gnt0 (arb_wrr_in_rdy[0]) //|> w
-  ,.gnt1 (arb_wrr_in_rdy[1]) //|> w
-  );
-assign arb_wrr_block = arb_wrr_out_back_vld;
-///////////////////////////// WRR request package logic ////////////////////////////////
-//: my $atmm = 32;
-//: my $atmbw = int(log(${atmm})/log(2));
-//: print qq(
-//: assign arb_wrr_out_package_w = ({(64-${atmbw}+9){arb_wrr_in_rdy[0]}} & arb_wrr_req_package_in_00) |
-//: ({(64-${atmbw}+9){arb_wrr_in_rdy[1]}} & arb_wrr_req_package_in_01) |
-//: ({(64-${atmbw}+9){arb_wrr_out_back_vld}} & arb_wrr_out_back_package);
-//: );
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-
-assign arb_wrr_out_package_w = ({(64-5+9){arb_wrr_in_rdy[0]}} & arb_wrr_req_package_in_00) |
-({(64-5+9){arb_wrr_in_rdy[1]}} & arb_wrr_req_package_in_01) |
-({(64-5+9){arb_wrr_out_back_vld}} & arb_wrr_out_back_package);
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-assign arb_wrr_out_reg_en = (~arb_wrr_out_vld | arb_wrr_out_rdy) & (arb_wrr_out_back_vld | (|arb_wrr_in_vld));
-assign arb_wrr_out_back_reg_en = arb_wrr_out_vld & ~arb_wrr_out_rdy & ~arb_wrr_out_back_vld & (|arb_wrr_in_vld);
-assign arb_wrr_out_vld_w = ((|arb_wrr_in_vld) | arb_wrr_out_back_vld) ? 1'b1 :
-                           arb_wrr_out_rdy ? 1'b0 : arb_wrr_out_vld;
-assign arb_wrr_out_back_vld_w = arb_wrr_out_rdy ? 1'b0 :
-                                (arb_wrr_out_vld & (|arb_wrr_in_vld)) ? 1'b1 : arb_wrr_out_back_vld;
-//: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"arb_wrr_out_vld_w\" -q arb_wrr_out_vld");
-//: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"arb_wrr_out_back_vld_w\" -q arb_wrr_out_back_vld");
-//: &eperl::flop("-nodeclare  -norst -en \"arb_wrr_out_reg_en\" -d \"arb_wrr_out_package_w\" -q arb_wrr_out_package");
-//: &eperl::flop("-nodeclare  -norst -en \"arb_wrr_out_back_reg_en\" -d \"arb_wrr_out_package_w\" -q arb_wrr_out_back_package");
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       arb_wrr_out_vld <= 1'b0;
-   end else begin
-       arb_wrr_out_vld <= arb_wrr_out_vld_w;
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       arb_wrr_out_back_vld <= 1'b0;
-   end else begin
-       arb_wrr_out_back_vld <= arb_wrr_out_back_vld_w;
-   end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((arb_wrr_out_reg_en) == 1'b1) begin
-           arb_wrr_out_package <= arb_wrr_out_package_w;
-       // VCS coverage off
-       end else if ((arb_wrr_out_reg_en) == 1'b0) begin
-       end else begin
-           arb_wrr_out_package <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((arb_wrr_out_back_reg_en) == 1'b1) begin
-           arb_wrr_out_back_package <= arb_wrr_out_package_w;
-       // VCS coverage off
-       end else if ((arb_wrr_out_back_reg_en) == 1'b0) begin
-       end else begin
-           arb_wrr_out_back_package <= 'bx;
-       // VCS coverage on
-       end
-end
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-///////////////////////////// Connect to WRR Logic ////////////////////////////////
-assign arb_wrr_in_vld[0] = wmb_req_vld_d3 & ~wmb_req_overflow_d3 & ~wmb_req_done_d3;
-assign arb_wrr_in_vld[1] = wt_req_vld_d3 & ~wt_req_overflow_d3 & ~wt_req_done_d3;
-assign arb_wrr_weight_0 = arb_weight_wmb;
-assign arb_wrr_weight_1 = arb_weight_wt;
-assign wmb_req_rdy = arb_wrr_in_rdy[0];
-assign wt_req_rdy = arb_wrr_in_rdy[1];
-assign arb_wrr_req_package_in_00 = {wmb_req_src_d3, wmb_req_size_d3, wmb_req_size_out_d3, wmb_req_addr_d3};
-assign arb_wrr_req_package_in_01 = {wt_req_src_d3, wt_req_size_d3, wt_req_size_out_d3, wt_req_addr_d3};
-///////////////////////////// Static Arbiter ////////////////////////////////
-///////////////////////////// SP Control logic ////////////////////////////////
-NV_NVDLA_CDMA_WT_sp_arb u_sp_arb (
-   .req0 (arb_sp_in_vld[0]) //|< w
-  ,.req1 (arb_sp_in_vld[1]) //|< w
-  ,.gnt_busy (arb_sp_block) //|< w
-  ,.gnt0 (arb_sp_in_rdy[0]) //|> w
-  ,.gnt1 (arb_sp_in_rdy[1]) //|> w
-  );
-assign arb_sp_block = arb_sp_out_back_vld;
-///////////////////////////// SP request package logic ////////////////////////////////
-//: my $atmm = 32;
-//: my $atmbw = int(log(${atmm})/log(2));
-//: print qq(
-//: assign arb_sp_out_package_w = ({(64-${atmbw}+9){arb_sp_in_rdy[0]}} & arb_sp_req_package_in_00) |
-//: ({(64-${atmbw}+9){arb_sp_in_rdy[1]}} & arb_sp_req_package_in_01) |
-//: ({(64-${atmbw}+9){arb_sp_out_back_vld}} & arb_sp_out_back_package);
-//: );
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-
-assign arb_sp_out_package_w = ({(64-5+9){arb_sp_in_rdy[0]}} & arb_sp_req_package_in_00) |
-({(64-5+9){arb_sp_in_rdy[1]}} & arb_sp_req_package_in_01) |
-({(64-5+9){arb_sp_out_back_vld}} & arb_sp_out_back_package);
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-assign arb_sp_out_reg_en = (~arb_sp_out_vld | arb_sp_out_rdy) & (arb_sp_out_back_vld | (|arb_sp_in_vld));
-assign arb_sp_out_back_reg_en = arb_sp_out_vld & ~arb_sp_out_rdy & ~arb_sp_out_back_vld & (|arb_sp_in_vld);
-assign arb_sp_out_vld_w = ((|arb_sp_in_rdy) | arb_sp_out_back_vld) ? 1'b1 :
-                          arb_sp_out_rdy ? 1'b0 :
-                          arb_sp_out_vld;
-assign arb_sp_out_back_vld_w = arb_sp_out_rdy ? 1'b0 :
-                               (arb_sp_out_vld & (|arb_sp_in_vld)) ? 1'b1 :
-                               arb_sp_out_back_vld;
-//: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"arb_sp_out_vld_w\" -q arb_sp_out_vld");
-//: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"arb_sp_out_back_vld_w\" -q arb_sp_out_back_vld");
-//: &eperl::flop("-nodeclare  -norst -en \"arb_sp_out_reg_en\" -d \"arb_sp_out_package_w\" -q arb_sp_out_package");
-//: &eperl::flop("-nodeclare  -norst -en \"arb_sp_out_back_reg_en\" -d \"arb_sp_out_package_w\" -q arb_sp_out_back_package");
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       arb_sp_out_vld <= 1'b0;
-   end else begin
-       arb_sp_out_vld <= arb_sp_out_vld_w;
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       arb_sp_out_back_vld <= 1'b0;
-   end else begin
-       arb_sp_out_back_vld <= arb_sp_out_back_vld_w;
-   end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((arb_sp_out_reg_en) == 1'b1) begin
-           arb_sp_out_package <= arb_sp_out_package_w;
-       // VCS coverage off
-       end else if ((arb_sp_out_reg_en) == 1'b0) begin
-       end else begin
-           arb_sp_out_package <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((arb_sp_out_back_reg_en) == 1'b1) begin
-           arb_sp_out_back_package <= arb_sp_out_package_w;
-       // VCS coverage off
-       end else if ((arb_sp_out_back_reg_en) == 1'b0) begin
-       end else begin
-           arb_sp_out_back_package <= 'bx;
-       // VCS coverage on
-       end
-end
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-///////////////////////////// Connect to Static Arbiter ////////////////////////////////
-assign arb_sp_in_vld[0] = wgs_req_vld_d1 & ~wgs_req_overflow;
-assign arb_sp_in_vld[1] = arb_wrr_out_vld;
-assign wgs_req_rdy = arb_sp_in_rdy[0];
-assign arb_wrr_out_rdy = arb_sp_in_rdy[1];
-assign arb_sp_req_package_in_00 = {wgs_req_src_d1, wgs_req_size_d1, wgs_req_size_out_d1, wgs_req_addr_d1};
-assign arb_sp_req_package_in_01 = arb_wrr_out_package;
-///////////////////////////// connect to dma ////////////////////////////////
 assign arb_sp_out_rdy = dma_rd_req_rdy & dma_req_fifo_ready;
-assign {dma_req_src, dma_req_size, dma_req_size_out, dma_req_addr} = arb_sp_out_package;
+assign arb_sp_out_vld = wt_req_vld_d3 & ~wt_req_overflow_d3 & ~wt_req_done_d3;
+//assign wt_req_rdy = arb_sp_out_rdy;
+assign wt_req_rdy = arb_sp_out_rdy & arb_sp_out_vld;
+assign dma_req_src = wt_req_src_d3;
+assign dma_req_size = wt_req_size_d3;
+assign dma_req_size_out = wt_req_size_out_d3;
+assign dma_req_addr = wt_req_addr_d3;
 ////////////////////////////////////////////////////////////////////////
 // CDMA WT read request interface //
 ////////////////////////////////////////////////////////////////////////
@@ -1828,7 +1148,7 @@ NV_NVDLA_DMAIF_rdreq NV_NVDLA_PDP_RDMA_rdreq(
 );
 wire dmaif_rd_rsp_prdy;
 wire dmaif_rd_rsp_pvld;
-wire [( 512 + (512/8/32) )-1:0] dmaif_rd_rsp_pd;
+wire [( 256 + (256/8/32) )-1:0] dmaif_rd_rsp_pd;
 // rd Channel: Response
 NV_NVDLA_DMAIF_rdrsp NV_NVDLA_PDP_RDMA_rdrsp(
    .nvdla_core_clk (nvdla_core_clk )
@@ -1850,23 +1170,29 @@ NV_NVDLA_DMAIF_rdrsp NV_NVDLA_PDP_RDMA_rdrsp(
 //DorisLei: adding a 8*atmm fifo here for data buffering.
 //use case: Cbuf has empty entries, but empty entry number < 8*atmm
 //continue reading 8*atmm data from memory and then Cbuf can be fully written
-//: my $dmaif = 512;
+//: my $dmaif = 256;
 //: my $atmm8 = 8 * (32 * 8);
 //: my $fifo_depth = int( $atmm8/$dmaif );
-//: my $fifo_width = $dmaif;
+//: my $fifo_width = ( 256 + (256/8/32) );
+//: print " NV_NVDLA_CDMA_WT_8ATMM_fifo_${fifo_width}x${fifo_depth} u_8atmm_fifo(   \n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
+ NV_NVDLA_CDMA_WT_8ATMM_fifo_257x8 u_8atmm_fifo(   
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
-//
-NV_NVDLA_CDMA_WT_8ATMM_fifo u_8atmm_fifo(
      .nvdla_core_clk (nvdla_core_clk )
     ,.nvdla_core_rstn (nvdla_core_rstn )
-    ,.atmm8_wr_prdy (dmaif_rd_rsp_prdy)
-    ,.atmm8_wr_pvld (dmaif_rd_rsp_pvld)
-    ,.atmm8_wr_pd (dmaif_rd_rsp_pd)
-    ,.atmm8_rd_prdy (dma_rd_rsp_rdy )
-    ,.atmm8_rd_pvld (dma_rd_rsp_vld )
-    ,.atmm8_rd_pd (dma_rd_rsp_pd )
+    ,.lat_wr_prdy (dmaif_rd_rsp_prdy)
+    ,.lat_wr_pvld (dmaif_rd_rsp_pvld)
+    ,.lat_wr_pd (dmaif_rd_rsp_pd)
+    ,.lat_rd_prdy (dma_rd_rsp_rdy )
+    ,.lat_rd_pvld (dma_rd_rsp_vld )
+    ,.lat_rd_pd (dma_rd_rsp_pd )
+//,.atmm8_wr_prdy (dmaif_rd_rsp_prdy)
+//,.atmm8_wr_pvld (dmaif_rd_rsp_pvld)
+//,.atmm8_wr_pd (dmaif_rd_rsp_pd)
+//,.atmm8_rd_prdy (dma_rd_rsp_rdy )
+//,.atmm8_rd_pvld (dma_rd_rsp_vld )
+//,.atmm8_rd_pd (dma_rd_rsp_pd )
     ,.pwrbus_ram_pd (32'd0)
     );
 ///////////////////////////////////////////
@@ -1885,7 +1211,120 @@ assign dma_rd_req_addr = {dma_req_addr, 5'b0};
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign dma_rd_req_size = {{12{1'b0}}, dma_req_size_out};
 assign dma_rd_req_type = reg2dp_weight_ram_type;
-assign dma_rd_rsp_rdy = ~wgs_push_req;
+// assign dma_rd_rsp_rdy = 1'b1;
+///////////////////////////////////
+//DorisLei redefine dma_rd_rsp_rdy to block reading process when cbuf is full
+///////////////////////////////////
+//: my $atmc=64;
+//: my $dmaif=256 / 8;
+//: if($dmaif < $atmc) {
+//: my $k = $atmc/$dmaif - 1;
+//: print qq(
+//: reg [3:0] dmaif_within_atmc_cnt;
+//: always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+//: if (!nvdla_core_rstn)
+//: dmaif_within_atmc_cnt <= 4'd0;
+//: else if(wt_cbuf_wr_vld_w) begin
+//: if(dmaif_within_atmc_cnt == ${k})
+//: dmaif_within_atmc_cnt <= 4'd0;
+//: else
+//: dmaif_within_atmc_cnt <= dmaif_within_atmc_cnt + 1'b1;
+//: end
+//: end
+//: );
+//: }
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+
+reg [3:0] dmaif_within_atmc_cnt;
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+if (!nvdla_core_rstn)
+dmaif_within_atmc_cnt <= 4'd0;
+else if(wt_cbuf_wr_vld_w) begin
+if(dmaif_within_atmc_cnt == 1)
+dmaif_within_atmc_cnt <= 4'd0;
+else
+dmaif_within_atmc_cnt <= dmaif_within_atmc_cnt + 1'b1;
+end
+end
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
+reg [16:0] wt_wr_dmatx_cnt;
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+    if (!nvdla_core_rstn) begin
+        wt_wr_dmatx_cnt <= 17'd0;
+    end else if(wt_cbuf_wr_vld_w & (!sc_wt_updt)) begin
+//: my $atmc=64;
+//: my $dmaif=256 / 8;
+//: if($dmaif == $atmc) {
+//: print qq(
+//: wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + 1'b1;
+//: );
+//: } elsif($dmaif < $atmc) {
+//: my $k = $atmc/$dmaif - 1;
+//: print qq(
+//: if(dmaif_within_atmc_cnt == ${k}) begin
+//: wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + 1'b1;
+//: end
+//: );
+//: } elsif($dmaif > $atmc) {
+//: my $m = $dmaif/$atmc;
+//: print qq(
+//: wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + ${m};
+//: );
+//: }
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+
+if(dmaif_within_atmc_cnt == 1) begin
+wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + 1'b1;
+end
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
+    end else if(wt_cbuf_wr_vld_w & sc_wt_updt) begin
+//: my $atmc=64;
+//: my $dmaif=256 / 8;
+//: if($dmaif == $atmc) {
+//: print qq(
+//: wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + 1'b1 - sc_wt_entries;
+//: );
+//: } elsif($dmaif < $atmc) {
+//: my $k = $atmc/$dmaif - 1;
+//: print qq(
+//: if(dmaif_within_atmc_cnt == ${k}) begin
+//: wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + 1'b1 - sc_wt_entries;
+//: end else begin
+//: wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt - sc_wt_entries;
+//: end
+//: );
+//: } elsif($dmaif > $atmc) {
+//: my $m = $dmaif/$atmc;
+//: print qq(
+//: wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + ${m} - sc_wt_entries;
+//: );
+//: }
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+
+if(dmaif_within_atmc_cnt == 1) begin
+wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + 1'b1 - sc_wt_entries;
+end else begin
+wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt - sc_wt_entries;
+end
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
+    end else if(!wt_cbuf_wr_vld_w & sc_wt_updt) begin
+        wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt - sc_wt_entries;
+//end else if(wt_cbuf_wr_vld_w & sc_wt_updt) begin
+// wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + 1'b1 - sc_wt_entries;
+    end
+end
+//: my $bank_depth = int( log(512)/log(2) );
+//: print qq(
+//: assign dma_rd_rsp_rdy = wt_wr_dmatx_cnt < {weight_bank, ${bank_depth}'b0};
+//: );
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+
+assign dma_rd_rsp_rdy = wt_wr_dmatx_cnt < {weight_bank, 9'b0};
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
 NV_NVDLA_CDMA_WT_fifo u_fifo (
    .clk (nvdla_core_clk) //|< i
   ,.reset_ (nvdla_core_rstn) //|< i
@@ -1959,11 +1398,11 @@ end
 ////////////////////////////////////////////////////////////////////////
 // CDMA read response connection //
 ////////////////////////////////////////////////////////////////////////
-assign dma_rd_rsp_data[512 -1:0] = dma_rd_rsp_pd[512 -1:0];
-assign dma_rd_rsp_mask[( 512 + (512/8/32) )-512 -1:0] = dma_rd_rsp_pd[( 512 + (512/8/32) )-1:512];
+assign dma_rd_rsp_data[256 -1:0] = dma_rd_rsp_pd[256 -1:0];
+assign dma_rd_rsp_mask[( 256 + (256/8/32) )-256 -1:0] = dma_rd_rsp_pd[( 256 + (256/8/32) )-1:256];
 assign {dma_rsp_src, dma_rsp_size} = dma_rsp_fifo_data;
 assign {mon_dma_rsp_size_cnt_inc, dma_rsp_size_cnt_inc} = dma_rsp_size_cnt
-//: my $mask = (512/8/32);
+//: my $mask = (256/8/32);
 //: foreach my $i(0..$mask-1) {
 //: print qq(
 //: + dma_rd_rsp_mask[$i]
@@ -1973,17 +1412,13 @@ assign {mon_dma_rsp_size_cnt_inc, dma_rsp_size_cnt_inc} = dma_rsp_size_cnt
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
 + dma_rd_rsp_mask[0]
-
-+ dma_rd_rsp_mask[1]
  ; 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign dma_rsp_size_cnt_w = (dma_rsp_size_cnt_inc == dma_rsp_size) ? 4'b0 : dma_rsp_size_cnt_inc;
 assign dma_rsp_fifo_ready = (dma_rd_rsp_vld & dma_rd_rsp_rdy & (dma_rsp_size_cnt_inc == dma_rsp_size));
 assign wt_rsp_valid = (dma_rd_rsp_vld & dma_rd_rsp_rdy & (dma_rsp_src == SRC_ID_WT));
-assign wmb_rsp_valid = (dma_rd_rsp_vld & dma_rd_rsp_rdy & (dma_rsp_src == SRC_ID_WMB));
-assign wgs_rsp_valid = (dma_rd_rsp_vld & dma_rd_rsp_rdy & (dma_rsp_src == SRC_ID_WGS));
 assign {
-//: my $mask = (512/8/32);
+//: my $mask = (256/8/32);
 //: if($mask > 1) {
 //: foreach my $i(0..$mask-2) {
 //: my $j = $mask -$i -1;
@@ -1991,7 +1426,7 @@ assign {
 //: }
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
- dma_rsp_data_p1 , 
+
 //| eperl: generated_end (DO NOT EDIT ABOVE)
  dma_rsp_data_p0} = dma_rd_rsp_data;
 //: &eperl::flop("-nodeclare   -rval \"{4{1'b0}}\"  -en \"dma_rd_rsp_vld & dma_rd_rsp_rdy\" -d \"dma_rsp_size_cnt_w\" -q dma_rsp_size_cnt");
@@ -2016,14 +1451,14 @@ end
 // WT read data //
 ////////////////////////////////////////////////////////////////////////
 assign wt_local_data_cnt = wt_local_data_vld
-//: my $mask = (512/8/32);
+//: my $mask = (256/8/32);
 //: foreach my $i(0..$mask-1) {
 //: print qq(
 //: + dma_rd_rsp_mask[$i]
 //: );
 //: }
 //: print qq( ; );
-//: my $mask = (512/8/32);
+//: my $mask = (256/8/32);
 //: if($mask == 1) {
 //: print qq(
 //: assign wt_local_data_vld_w = 1'b0;
@@ -2054,19 +1489,17 @@ assign wt_local_data_cnt = wt_local_data_vld
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
 + dma_rd_rsp_mask[0]
-
-+ dma_rd_rsp_mask[1]
  ; 
-assign wt_local_data_vld_w = wt_local_data_cnt[0];
-assign wt_local_data_reg_en = wt_rsp_valid & wt_local_data_cnt[0];
-assign wt_cbuf_wr_vld_w = wt_rsp_valid & wt_local_data_cnt[1];
-assign wt_local_data_w = dma_rd_rsp_mask[1] ? dma_rsp_data_p1 : dma_rsp_data_p0;
-assign wt_cbuf_wr_data_ori_w = wt_local_data_vld ? {dma_rsp_data_p0, wt_local_data} : dma_rd_rsp_data;
+assign wt_local_data_vld_w = 1'b0;
+assign wt_local_data_reg_en = 1'b0;
+assign wt_cbuf_wr_vld_w = wt_rsp_valid;
+assign wt_local_data_w = 0;// bw
+assign wt_cbuf_wr_data_ori_w = dma_rsp_data_p0;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign wt_cbuf_wr_idx_inc = wt_cbuf_wr_idx + 1'b1;
 assign wt_cbuf_wr_idx_set = (layer_st & ~(|wt_cbuf_wr_idx));
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: my $k;
 //: if($dmaif < $atmc) {
@@ -2082,8 +1515,8 @@ assign wt_cbuf_wr_idx_set = (layer_st & ~(|wt_cbuf_wr_idx));
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign wt_cbuf_wr_idx_wrap = (wt_cbuf_wr_idx_inc == {2'd0, weight_bank_end, 9'b0});
-assign wt_cbuf_wr_idx_w = (clear_all | wt_cbuf_wr_idx_set | wt_cbuf_wr_idx_wrap) ? {2'd0, data_bank_w, 9'b0} : wt_cbuf_wr_idx_inc[(1 + 16 ) -1:0];
+assign wt_cbuf_wr_idx_wrap = (wt_cbuf_wr_idx_inc == {2'd0, weight_bank_end, 10'b0});
+assign wt_cbuf_wr_idx_w = (clear_all | wt_cbuf_wr_idx_set | wt_cbuf_wr_idx_wrap) ? {2'd0, data_bank_w, 10'b0} : wt_cbuf_wr_idx_inc[(1 + 16 ) -1:0];
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //assign wt_cbuf_wr_data_w = nan_pass ? wt_cbuf_wr_data_ori_w : (wt_cbuf_wr_data_ori_w & wt_nan_mask);
@@ -2133,165 +1566,6 @@ end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////////////////////////////////////////////////////////////////////////
-// WMB read data //
-////////////////////////////////////////////////////////////////////////
-assign wmb_local_data_cnt = wmb_local_data_vld
-//: my $mask = (512/8/32);
-//: foreach my $i(0..$mask-1) {
-//: print qq(
-//: + dma_rd_rsp_mask[$i]
-//: );
-//: }
-//: print qq( ; );
-//: my $mask = (512/8/32);
-//: if($mask == 1) {
-//: print qq(
-//: assign wmb_local_data_vld_w = 1'b0;
-//: assign wmb_cbuf_wr_vld_w = wmb_rsp_valid;
-//: assign wmb_cbuf_wr_data_w = dma_rsp_data_p0;
-//: assign wmb_local_data_w = 0;
-//: );
-//: } elsif($mask == 2) {
-//: print qq(
-//: assign wmb_local_data_vld_w = wmb_local_data_cnt[0];
-//: assign wmb_cbuf_wr_vld_w = wmb_rsp_valid & wmb_local_data_cnt[1];
-//: assign wmb_cbuf_wr_data_w = wmb_local_data_vld ? {dma_rsp_data_p0, wmb_local_data} : {dma_rsp_data_p1, dma_rsp_data_p0};
-//: assign wmb_local_data_w = dma_rd_rsp_mask[1] ? dma_rsp_data_p1 : dma_rsp_data_p0;
-//: );
-//: } elsif($mask == 4) {
-//: print qq(
-//: assign wmb_local_data_vld_w = |wmb_local_data_cnt[1:0];
-//: assign wmb_cbuf_wr_vld_w = wmb_rsp_valid & wmb_local_data_cnt[2];
-//: assign wmb_cbuf_wr_data_w = wmb_local_data_vld ? {dma_rsp_data_p0, wmb_local_data} : {dma_rsp_data_p1, dma_rsp_data_p0};//
-//: assign wmb_local_data_w = dma_rd_rsp_mask[1] ? dma_rsp_data_p1 : dma_rsp_data_p0;//##
-//: );
-//: }
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-
-+ dma_rd_rsp_mask[0]
-
-+ dma_rd_rsp_mask[1]
- ; 
-assign wmb_local_data_vld_w = wmb_local_data_cnt[0];
-assign wmb_cbuf_wr_vld_w = wmb_rsp_valid & wmb_local_data_cnt[1];
-assign wmb_cbuf_wr_data_w = wmb_local_data_vld ? {dma_rsp_data_p0, wmb_local_data} : {dma_rsp_data_p1, dma_rsp_data_p0};
-assign wmb_local_data_w = dma_rd_rsp_mask[1] ? dma_rsp_data_p1 : dma_rsp_data_p0;
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-assign wmb_local_data_reg_en = wmb_rsp_valid & wmb_local_data_vld_w;
-assign {mon_wmb_cbuf_wr_idx_inc,wmb_cbuf_wr_idx_inc} = wmb_cbuf_wr_idx[(1 + 8 ) -1:0] + 1'b1;
-assign wmb_cbuf_wr_idx_w = (clear_all) ? {~{4'b0}, 9'b0} : {~{4'b0}, wmb_cbuf_wr_idx_inc};
-//: &eperl::flop("-nodeclare  -norst -en \"wmb_local_data_reg_en\" -d \"wmb_local_data_w\" -q wmb_local_data");
-//: &eperl::flop("-nodeclare   -rval \"1'b0\"  -en \"wmb_rsp_valid\" -d \"wmb_local_data_vld_w\" -q wmb_local_data_vld");
-//: &eperl::flop("-nodeclare   -rval \"{~{4'b0}, 9'b0}\"  -en \"clear_all | wmb_cbuf_wr_vld_w\" -d \"wmb_cbuf_wr_idx_w\" -q wmb_cbuf_wr_idx");
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-always @(posedge nvdla_core_clk) begin
-       if ((wmb_local_data_reg_en) == 1'b1) begin
-           wmb_local_data <= wmb_local_data_w;
-       // VCS coverage off
-       end else if ((wmb_local_data_reg_en) == 1'b0) begin
-       end else begin
-           wmb_local_data <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_local_data_vld <= 1'b0;
-   end else begin
-       if ((wmb_rsp_valid) == 1'b1) begin
-           wmb_local_data_vld <= wmb_local_data_vld_w;
-       // VCS coverage off
-       end else if ((wmb_rsp_valid) == 1'b0) begin
-       end else begin
-           wmb_local_data_vld <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_cbuf_wr_idx <= {~{4'b0}, 9'b0};
-   end else begin
-       if ((clear_all | wmb_cbuf_wr_vld_w) == 1'b1) begin
-           wmb_cbuf_wr_idx <= wmb_cbuf_wr_idx_w;
-       // VCS coverage off
-       end else if ((clear_all | wmb_cbuf_wr_vld_w) == 1'b0) begin
-       end else begin
-           wmb_cbuf_wr_idx <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-////////////////////////////////////////////////////////////////////////
-// WGS read data //
-////////////////////////////////////////////////////////////////////////
-assign {mon_wgs_push_cnt_inc, wgs_push_cnt_inc} = wgs_push_cnt + 1'b1;
-assign wgs_push_last = (wgs_push_cnt_inc == group);
-assign wgs_push_cnt_w = layer_st ? 12'b0 : wgs_push_cnt_inc;
-//assign wgs_push_req_w = wgs_rsp_valid ? 1'b1 : ((wgs_push_cnt[2:0] == 3'h7) | wgs_push_last) ? 1'b0 : wgs_push_req;
-//: my $atmm = (32 * 8);
-//: my $atmm_num = ($atmm / 32);
-//: my $k = int (log($atmm_num)/log(2));
-//: print qq(
-//: assign wgs_push_req_w = wgs_rsp_valid ? 1'b1 : ((&wgs_push_cnt[${k}-1:0]) | wgs_push_last) ? 1'b0 : wgs_push_req;
-//: assign {mon_wgs_push_data,wgs_push_data} = (wgs_local_data >> {wgs_push_cnt[${k}-1:0], 5'b0});
-//: );
-//: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"layer_st | wgs_push_req\" -d \"wgs_push_cnt_w\" -q wgs_push_cnt");
-//: &eperl::flop("-nodeclare  -norst -en \"wgs_rsp_valid\" -d \"dma_rsp_data_p0\" -q wgs_local_data");
-//: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"wgs_push_req_w\" -q wgs_push_req");
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-
-assign wgs_push_req_w = wgs_rsp_valid ? 1'b1 : ((&wgs_push_cnt[3-1:0]) | wgs_push_last) ? 1'b0 : wgs_push_req;
-assign {mon_wgs_push_data,wgs_push_data} = (wgs_local_data >> {wgs_push_cnt[3-1:0], 5'b0});
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wgs_push_cnt <= {12{1'b0}};
-   end else begin
-       if ((layer_st | wgs_push_req) == 1'b1) begin
-           wgs_push_cnt <= wgs_push_cnt_w;
-       // VCS coverage off
-       end else if ((layer_st | wgs_push_req) == 1'b0) begin
-       end else begin
-           wgs_push_cnt <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk) begin
-       if ((wgs_rsp_valid) == 1'b1) begin
-           wgs_local_data <= dma_rsp_data_p0;
-       // VCS coverage off
-       end else if ((wgs_rsp_valid) == 1'b0) begin
-       end else begin
-           wgs_local_data <= 'bx;
-       // VCS coverage on
-       end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wgs_push_req <= 1'b0;
-   end else begin
-       wgs_push_req <= wgs_push_req_w;
-   end
-end
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-NV_NVDLA_CDMA_WT_wgs_fifo u_wgs_fifo (
-   .clk (nvdla_core_clk) //|< i
-  ,.reset_ (nvdla_core_rstn) //|< i
-  ,.wr_ready (wgs_push_ready) //|> w *
-  ,.wr_req (wgs_push_req) //|< r
-  ,.wr_data (wgs_push_data[31:0]) //|< r
-  ,.rd_ready (wgs_pop_ready) //|< r
-  ,.rd_req (wgs_pop_req) //|> w
-  ,.rd_data (wgs_pop_data[31:0]) //|> w
-  ,.pwrbus_ram_pd (pwrbus_ram_pd[31:0]) //|< i
-  );
-assign wgs_pop_ready = is_compressed & status_update;
-////////////////////////////////////////////////////////////////////////
 // weight buffer flushing logic //
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -2300,7 +1574,7 @@ assign wgs_pop_ready = is_compressed & status_update;
 assign {mon_wt_cbuf_flush_idx_w, wt_cbuf_flush_idx_w} = wt_cbuf_flush_idx + 1'b1;
 //: my $bank_entry = 16 * 512;
 //: my $bank_entry_bw = int( log( $bank_entry)/log(2) );
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: my $k;
 //: if($dmaif < $atmc) {
@@ -2315,8 +1589,8 @@ assign {mon_wt_cbuf_flush_idx_w, wt_cbuf_flush_idx_w} = wt_cbuf_flush_idx + 1'b1
 //: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{18{1'b0}}\"  -en \"wt_cbuf_flush_vld_w\" -d \"wt_cbuf_flush_idx_w\" -q wt_cbuf_flush_idx");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign wt_cbuf_flush_vld_w = ~wt_cbuf_flush_idx[13+0-1];//max value = half bank entry * 2^0
-assign dp2reg_wt_flush_done = wt_cbuf_flush_idx[13+0-1];
+assign wt_cbuf_flush_vld_w = ~wt_cbuf_flush_idx[13+1-1];//max value = half bank entry * 2^1
+assign dp2reg_wt_flush_done = wt_cbuf_flush_idx[13+1-1];
 always @(posedge nvdla_core_ng_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
        wt_cbuf_flush_idx <= {18{1'b0}};
@@ -2336,55 +1610,71 @@ end
 ////////////////////////////////////////////////////////////////////////
 // WT and WMB write to convolution buffer //
 ////////////////////////////////////////////////////////////////////////
-assign cdma2buf_wt_wr_en_w = wt_cbuf_wr_vld_w | wmb_cbuf_wr_vld_w | wt_cbuf_flush_vld_w;
-//: my $dmaif=512;
+assign cdma2buf_wt_wr_en_w = wt_cbuf_wr_vld_w | wt_cbuf_flush_vld_w;
+//: my $dmaif=256;
 //: my $atmc=64*8;
 //: my $half_bank_entry_num = 16 * 512 / 2;
 //: if($dmaif < $atmc) {
 //: my $k = int(log(int($atmc/$dmaif))/log(2));
 //: print qq(
-//: assign cdma2buf_wt_wr_addr_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_idx[16:${k}] :
-//: wmb_cbuf_wr_vld_w ? wmb_cbuf_wr_idx[(1 + 12 ) -1:${k}] :
+//: assign cdma2buf_wt_wr_addr_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_idx[(1 + 16 ) -1:${k}] :
 //: ${half_bank_entry_num} + wt_cbuf_flush_idx[16:${k}];
 //: assign cdma2buf_wt_wr_sel_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_idx[${k}-1:0] :
-//: wmb_cbuf_wr_vld_w ? wmb_cbuf_wr_idx[${k}-1:0] : wt_cbuf_flush_idx[${k}-1:0];
+//: wt_cbuf_flush_idx[${k}-1:0];
 //: assign cdma2buf_wt_wr_data_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_data_w :
-//: wmb_cbuf_wr_vld_w ? wmb_cbuf_wr_data_w : 0;
+//: 0;
 //: );
 //:
 //: my $dmanum = int($atmc/$dmaif);
 //: foreach my $s (0..${dmanum}-1) {
-//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk -rval \"1'b0\"  -en \"cdma2buf_wt_wr_en_w\" -d \"cdma2buf_wt_wr_sel_w===${k}'d${s}\" -q cdma2buf_wt_wr_sel[${s}]");
+//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk -rval \"1'b0\"  -en \"cdma2buf_wt_wr_en_w\" -d \"cdma2buf_wt_wr_sel_w==${k}'d${s}\" -q cdma2buf_wt_wr_sel[${s}]");
 //: }
+//: ## &eperl::flop("-nodeclare -clk nvdla_core_ng_clk -rval \"1'b0\"  -en \"cdma2buf_wt_wr_en_w\" -d \"cdma2buf_wt_wr_sel_w\" -q cdma2buf_wt_wr_sel");
 //: } elsif($dmaif > $atmc) {
-//: ## my $k = int(log(int($dmaif/$atmc))/log(2));
-//: ## print qq(
-//: ## output [${k}-1:0] cdma2buf_wt_wr_mask;
-//: ## );
-//: ## foreach my $i (0..$k-1) {
-//: ## print qq(
-//: ## output [16:0] cdma2buf_wt_wr_addr${i};
-//: ## output [${dmaif}-1:0] cdma2buf_wt_wr_data${i};
-//: ## );
-//: ## }
 //: } else {
 //: print qq(
-//: assign cdma2buf_wt_wr_addr_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_idx :
-//: wmb_cbuf_wr_vld_w ? wmb_cbuf_wr_idx :
-//: ${half_bank_entry_num} + wt_cbuf_flush_idx;
-//: assign cdma2buf_wt_wr_data_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_data_w :
-//: wmb_cbuf_wr_vld_w ? wmb_cbuf_wr_data_w : 0;
+//: assign cdma2buf_wt_wr_addr_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_idx : ${half_bank_entry_num} + wt_cbuf_flush_idx[16:0];
+//: assign cdma2buf_wt_wr_data_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_data_w : 0;
 //: );
 //: }
 //: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk -rval \"1'b0\"   -d \"cdma2buf_wt_wr_en_w\" -q cdma2buf_wt_wr_en");
 //: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk -rval \"{17{1'b0}}\"  -en \"cdma2buf_wt_wr_en_w\" -d \"cdma2buf_wt_wr_addr_w\" -q cdma2buf_wt_wr_addr");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign cdma2buf_wt_wr_addr_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_idx :
-wmb_cbuf_wr_vld_w ? wmb_cbuf_wr_idx :
-4096 + wt_cbuf_flush_idx;
+assign cdma2buf_wt_wr_addr_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_idx[(1 + 16 ) -1:1] :
+4096 + wt_cbuf_flush_idx[16:1];
+assign cdma2buf_wt_wr_sel_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_idx[1-1:0] :
+wt_cbuf_flush_idx[1-1:0];
 assign cdma2buf_wt_wr_data_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_data_w :
-wmb_cbuf_wr_vld_w ? wmb_cbuf_wr_data_w : 0;
+0;
+always @(posedge nvdla_core_ng_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       cdma2buf_wt_wr_sel[0] <= 1'b0;
+   end else begin
+       if ((cdma2buf_wt_wr_en_w) == 1'b1) begin
+           cdma2buf_wt_wr_sel[0] <= cdma2buf_wt_wr_sel_w==1'd0;
+       // VCS coverage off
+       end else if ((cdma2buf_wt_wr_en_w) == 1'b0) begin
+       end else begin
+           cdma2buf_wt_wr_sel[0] <= 'bx;
+       // VCS coverage on
+       end
+   end
+end
+always @(posedge nvdla_core_ng_clk or negedge nvdla_core_rstn) begin
+   if (!nvdla_core_rstn) begin
+       cdma2buf_wt_wr_sel[1] <= 1'b0;
+   end else begin
+       if ((cdma2buf_wt_wr_en_w) == 1'b1) begin
+           cdma2buf_wt_wr_sel[1] <= cdma2buf_wt_wr_sel_w==1'd1;
+       // VCS coverage off
+       end else if ((cdma2buf_wt_wr_en_w) == 1'b0) begin
+       end else begin
+           cdma2buf_wt_wr_sel[1] <= 'bx;
+       // VCS coverage on
+       end
+   end
+end
 always @(posedge nvdla_core_ng_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
        cdma2buf_wt_wr_en <= 1'b0;
@@ -2411,12 +1701,12 @@ end
 ////////////////////////////////////////////////////////////////////////
 // Non-SLCG clock domain end //
 ////////////////////////////////////////////////////////////////////////
-//: my $dmaif=512;
+//: my $dmaif=256;
 //: &eperl::flop("-nodeclare   -rval \"{${dmaif}{1'b0}}\"  -en \"cdma2buf_wt_wr_en_w\" -d \"cdma2buf_wt_wr_data_w\" -q cdma2buf_wt_wr_data");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       cdma2buf_wt_wr_data <= {512{1'b0}};
+       cdma2buf_wt_wr_data <= {256{1'b0}};
    end else begin
        if ((cdma2buf_wt_wr_en_w) == 1'b1) begin
            cdma2buf_wt_wr_data <= cdma2buf_wt_wr_data_w;
@@ -2440,7 +1730,6 @@ assign dp2reg_inf_weight_num = 32'b0;
 //retiming
 //: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"1'b0\"   -d \"sc2cdma_wt_updt\" -q sc_wt_updt");
 //: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{15{1'b0}}\"  -en \"sc2cdma_wt_updt\" -d \"sc2cdma_wt_entries\" -q sc_wt_entries");
-//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{9{1'b0}}\"  -en \"sc2cdma_wt_updt\" -d \"sc2cdma_wmb_entries\" -q sc_wmb_entries");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 always @(posedge nvdla_core_ng_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
@@ -2463,26 +1752,12 @@ always @(posedge nvdla_core_ng_clk or negedge nvdla_core_rstn) begin
        end
    end
 end
-always @(posedge nvdla_core_ng_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       sc_wmb_entries <= {9{1'b0}};
-   end else begin
-       if ((sc2cdma_wt_updt) == 1'b1) begin
-           sc_wmb_entries <= sc2cdma_wmb_entries;
-       // VCS coverage off
-       end else if ((sc2cdma_wt_updt) == 1'b0) begin
-       end else begin
-           sc_wmb_entries <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //cation: the basic unit of data_stored, data_onfly and data_avl is atomic_m bytes, 32 bytes in Xavier
 assign wt_data_onfly_add = (wt_req_reg_en_d2 & wt_req_stage_vld_d2 & ~wt_req_done_d2) ? wt_req_size_d2 : 4'b0;
 //atom_m num per cbuf write, =dmaif/atom_m
-//: my $dmaif = (512 / 8);
+//: my $dmaif = (256 / 8);
 //: my $atmc=64;
 //: my $atmm = 32;
 //: my $atmm_dmaif = int($dmaif / $atmm);
@@ -2508,7 +1783,7 @@ assign wt_data_onfly_add = (wt_req_reg_en_d2 & wt_req_stage_vld_d2 & ~wt_req_don
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign wt_data_onfly_sub = wt_cbuf_wr_vld_w ? 3'd2 : 3'b0;
+assign wt_data_onfly_sub = wt_cbuf_wr_vld_w ? 3'd1 : 3'b0;
 
 assign wt_data_stored_sub = status_update ? {1'b0,incr_wt_entries_w, 1'd0} : 17'b0;
 assign wt_data_avl_sub = sc_wt_updt ? {1'b0,sc_wt_entries, 1'b0} : 17'b0;
@@ -2569,129 +1844,6 @@ end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////////////////////////////////////////////////////////////////////////
-// WMB data status monitor //
-////////////////////////////////////////////////////////////////////////
-//atom_m num per cbuf write, =dmaif/atom_m
-//: my $dmaif = (512 / 8);
-//: my $atmc=64;
-//: my $atmm = 32;
-//: my $atmm_dmaif = int($dmaif / $atmm);
-//: my $atmm_atmc = int($atmc / $atmm);
-//: print qq(
-//: assign wmb_data_onfly_sub = wmb_cbuf_wr_vld_w ? 3'd${atmm_dmaif} : 3'b0;
-//: );
-//: if($atmm_atmc == 4) {
-//: print qq(
-//: assign wmb_data_stored_sub = status_update_wmb ? {incr_wmb_entries_w, 2'b0} : 11'b0;
-//: assign wmb_data_avl_sub = sc_wt_updt ? {sc_wmb_entries, 2'b0} : 11'b0;
-//: );
-//: } elsif($atmm_atmc == 2) {
-//: print qq(
-//: assign wmb_data_stored_sub = status_update_wmb ? {1'b0,incr_wmb_entries_w, 1'b0} : 11'b0;
-//: assign wmb_data_avl_sub = sc_wt_updt ? {1'b0,sc_wmb_entries, 1'b0} : 11'b0;
-//: );
-//: } elsif($atmm_atmc == 1) {
-//: print qq(
-//: assign wmb_data_stored_sub = status_update_wmb ? {2'b0,incr_wmb_entries_w} : 11'b0;
-//: assign wmb_data_avl_sub = sc_wt_updt ? {2'b0,sc_wmb_entries} : 11'b0;
-//: );
-//: }
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-
-assign wmb_data_onfly_sub = wmb_cbuf_wr_vld_w ? 3'd2 : 3'b0;
-
-assign wmb_data_stored_sub = status_update_wmb ? {1'b0,incr_wmb_entries_w, 1'b0} : 11'b0;
-assign wmb_data_avl_sub = sc_wt_updt ? {1'b0,sc_wmb_entries, 1'b0} : 11'b0;
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-assign wmb_data_onfly_add = (wmb_req_reg_en_d2 & wmb_req_stage_vld_d2 & ~wmb_req_done_d2) ? wmb_req_size_d2 : 4'b0;
-//assign wmb_data_onfly_sub = wmb_cbuf_wr_vld_w ? 2'b10 : 2'b0;
-assign {mon_wmb_data_onfly_w,
-        wmb_data_onfly_w} = wmb_data_onfly + wmb_data_onfly_add - wmb_data_onfly_sub;
-//assign wmb_data_stored_sub = status_update_wmb ? {incr_wmb_entries_w, 2'b0} : 11'b0;
-assign {mon_wmb_data_stored_w,
-        wmb_data_stored_w} = wmb_data_stored + wmb_data_onfly_sub - wmb_data_stored_sub;
-//assign wmb_data_avl_sub = sc_wt_updt ? {sc_wmb_entries, 2'b0} : 11'b0;
-assign {mon_wmb_data_avl_w,
-        wmb_data_avl_w} = (clear_all) ? 15'b0 :
-                         wmb_data_avl + wmb_data_stored_sub - wmb_data_avl_sub;
-assign wmb_data_onfly_reg_en = ((wmb_req_reg_en_d2 & wmb_req_stage_vld_d2) | wmb_cbuf_wr_vld_w);
-//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{11{1'b0}}\"  -en \"wmb_data_onfly_reg_en\" -d \"wmb_data_onfly_w\" -q wmb_data_onfly");
-//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{14{1'b0}}\"  -en \"wmb_cbuf_wr_vld_w | status_update_wmb\" -d \"wmb_data_stored_w\" -q wmb_data_stored");
-//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{15{1'b0}}\"  -en \"status_update_wmb | sc_wt_updt | clear_all\" -d \"wmb_data_avl_w\" -q wmb_data_avl");
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-always @(posedge nvdla_core_ng_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_data_onfly <= {11{1'b0}};
-   end else begin
-       if ((wmb_data_onfly_reg_en) == 1'b1) begin
-           wmb_data_onfly <= wmb_data_onfly_w;
-       // VCS coverage off
-       end else if ((wmb_data_onfly_reg_en) == 1'b0) begin
-       end else begin
-           wmb_data_onfly <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_ng_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_data_stored <= {14{1'b0}};
-   end else begin
-       if ((wmb_cbuf_wr_vld_w | status_update_wmb) == 1'b1) begin
-           wmb_data_stored <= wmb_data_stored_w;
-       // VCS coverage off
-       end else if ((wmb_cbuf_wr_vld_w | status_update_wmb) == 1'b0) begin
-       end else begin
-           wmb_data_stored <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_ng_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_data_avl <= {15{1'b0}};
-   end else begin
-       if ((status_update_wmb | sc_wt_updt | clear_all) == 1'b1) begin
-           wmb_data_avl <= wmb_data_avl_w;
-       // VCS coverage off
-       end else if ((status_update_wmb | sc_wt_updt | clear_all) == 1'b0) begin
-       end else begin
-           wmb_data_avl <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-//================ Non-SLCG clock domain end ================//
-////////////////////////////////////////////////////////////////////////
-// WGS data status monitor //
-////////////////////////////////////////////////////////////////////////
-//csm is stand for consume
-assign wgs_data_onfly_add = (wgs_req_rdy) ? wgs_req_dword_d1 : 5'b0;
-assign wgs_data_onfly_sub = (wgs_pop_req & wgs_pop_ready) ? 1'b1 : 1'b0;
-assign {mon_wgs_data_onfly_w, wgs_data_onfly_w} = wgs_data_onfly + wgs_data_onfly_add - wgs_data_onfly_sub;
-assign wgs_data_onfly_reg_en = (wgs_req_rdy | (wgs_pop_req & wgs_pop_ready));
-//: &eperl::flop("-nodeclare   -rval \"{6{1'b0}}\"  -en \"wgs_data_onfly_reg_en\" -d \"wgs_data_onfly_w\" -q wgs_data_onfly");
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wgs_data_onfly <= {6{1'b0}};
-   end else begin
-       if ((wgs_data_onfly_reg_en) == 1'b1) begin
-           wgs_data_onfly <= wgs_data_onfly_w;
-       // VCS coverage off
-       end else if ((wgs_data_onfly_reg_en) == 1'b0) begin
-       end else begin
-           wgs_data_onfly <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-////////////////////////////////////////////////////////////////////////
 // status update logic //
 ////////////////////////////////////////////////////////////////////////
 assign status_group_cnt_inc = status_group_cnt + 1'b1;
@@ -2712,28 +1864,12 @@ assign normal_bpg = {2'd0, byte_per_kernel, 5'b0};
 assign {mon_wt_required_bytes_w,
         wt_required_bytes_w} = layer_st ? 33'b0 :
                                status_last_group ? {1'b0, reg2dp_weight_bytes} :
-                               is_compressed ? pre_wt_required_bytes + wgs_pop_data :
                                pre_wt_required_bytes + normal_bpg;
 assign wt_required_en = ~required_valid & required_valid_w;
 assign pre_wt_required_bytes_w = (layer_st) ? 32'b0 : wt_required_bytes;
-assign {mon_wmb_required_bits_w,
-        wmb_required_bits_w} = layer_st ? 33'b0 :
-//
-//: my $k = int(log(8)/log(2));
-//: my $b = int(log(8/8)/log(2)); ##8 bits per byte
-//: print qq( status_last_group ? {2'b0, reg2dp_wmb_bytes, ${k}'d0} : );
-//: print qq( pre_wmb_required_bits + normal_bpg[23:${b}]; );
-//| eperl: generated_beg (DO NOT EDIT BELOW)
- status_last_group ? {2'b0, reg2dp_wmb_bytes, 3'd0} :  pre_wmb_required_bits + normal_bpg[23:0]; 
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-//status_last_group ? { {{2{1'b0}}, reg2dp_wmb_bytes}, 10'b0} :
-//pre_wmb_required_bits + normal_bpg[23:0];
-assign wmb_required_en = ~required_valid & required_valid_w & is_compressed;
-assign pre_wmb_required_bits_w = layer_st ? 31'b0 : wmb_required_bits;
-assign required_valid_w = is_running & ~status_update & (~is_compressed | wgs_pop_req);
+assign required_valid_w = is_running & ~status_update;
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"required_valid_w\" -q required_valid");
 //: &eperl::flop("-nodeclare   -rval \"{32{1'b0}}\"  -en \"layer_st | wt_required_en\" -d \"wt_required_bytes_w\" -q wt_required_bytes");
-//: &eperl::flop("-nodeclare   -rval \"{32{1'b0}}\"  -en \"layer_st | wmb_required_en\" -d \"wmb_required_bits_w\" -q wmb_required_bits");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
@@ -2756,62 +1892,37 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        end
    end
 end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_required_bits <= {32{1'b0}};
-   end else begin
-       if ((layer_st | wmb_required_en) == 1'b1) begin
-           wmb_required_bits <= wmb_required_bits_w;
-       // VCS coverage off
-       end else if ((layer_st | wmb_required_en) == 1'b0) begin
-       end else begin
-           wmb_required_bits <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //////// caution: one in fetched_cnt refers to 64 bytes ////////
 assign {mon_wt_fetched_cnt_inc, wt_fetched_cnt_inc} = wt_fetched_cnt + 1'b1;
 assign wt_fetched_cnt_w = layer_st ? 26'b0 : wt_fetched_cnt_inc;
-//////// caution: one in fetched_cnt refers to 64 bytes ////////
-assign {mon_wmb_fetched_cnt_inc, wmb_fetched_cnt_inc} = wmb_fetched_cnt + 1'b1;
-assign wmb_fetched_cnt_w = layer_st ? 22'b0 : wmb_fetched_cnt_inc;
-//
 //: my $m = int(log(8)/log(2));
-//: my $dmaif=512/8; ## byte number per dmaif tx
-//: my $atmc=64 * 8;
-//: my $dmaifbw=512;
+//: my $dmaif=256/8; ##byte number per dmaif tx
 //: my $k = int(log($dmaif)/log(2));
+//: my $atmc=64 * 8;
+//: my $dmaifbw=256;
 //: if($atmc > $dmaifbw) {
 //: my $j = int( log( ${atmc}/${dmaifbw} )/log(2) );
 //: print qq(
-//: assign wt_satisfied = is_running & ({3'd0, wt_fetched_cnt, ${k}'b0} >= wt_required_bytes) & ~(|wt_fetched_cnt[${j}-1:0]); // wt_fetched_cnt[0] means a complete entry 
-//: assign wmb_satisfied = is_running & ({{{1{1'b0}}, wmb_fetched_cnt}, ${k}'d0, ${m}'b0} >= wmb_required_bits) & ~(|wmb_fetched_cnt[${j}-1:0]);// wmb_fetched_cnt[0] 
+//: assign wt_satisfied = is_running & ({wt_fetched_cnt, ${k}'b0} >= wt_required_bytes) & ~(|wt_fetched_cnt[${j}-1:0]);
 //: );
 //: } else {
 //: print qq(
-//: assign wt_satisfied = is_running & ({3'd0,wt_fetched_cnt, ${k}'b0} >= wt_required_bytes);
-//: assign wmb_satisfied = is_running & ({{{1{1'b0}}, wmb_fetched_cnt}, ${k}'d0, ${m}'b0} >= wmb_required_bits);
+//: assign wt_satisfied = is_running & ({3'd0, wt_fetched_cnt, ${k}'b0} >= wt_required_bytes); // wt_fetched_cnt[0]
 //: );
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign wt_satisfied = is_running & ({3'd0,wt_fetched_cnt, 6'b0} >= wt_required_bytes);
-assign wmb_satisfied = is_running & ({{{1{1'b0}}, wmb_fetched_cnt}, 6'd0, 3'b0} >= wmb_required_bits);
+assign wt_satisfied = is_running & ({wt_fetched_cnt, 5'b0} >= wt_required_bytes) & ~(|wt_fetched_cnt[1-1:0]);
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
-assign status_update = (~required_valid) ? 1'b0 :
-                       (~is_compressed) ? wt_satisfied : wt_satisfied & wmb_satisfied;
-assign status_update_wmb = (~required_valid) ? 1'b0 :
-                           (~is_compressed) ? 1'b0 : wt_satisfied & wmb_satisfied;
+//assign wt_satisfied = is_running & ({wt_fetched_cnt, 6'b0} >= wt_required_bytes) & ~wt_fetched_cnt[0];
+assign status_update = (~required_valid) ? 1'b0 : wt_satisfied;
 //: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"layer_st | status_update\" -d \"status_group_cnt_w\" -q status_group_cnt");
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"  -en \"layer_st | status_update\" -d \"status_done_w\" -q status_done");
 //: &eperl::flop("-nodeclare   -rval \"{32{1'b0}}\"  -en \"layer_st | status_update\" -d \"pre_wt_required_bytes_w\" -q pre_wt_required_bytes");
 //: &eperl::flop("-nodeclare   -rval \"{26{1'b0}}\"  -en \"layer_st | wt_cbuf_wr_vld_w\" -d \"wt_fetched_cnt_w\" -q wt_fetched_cnt");
-//: &eperl::flop("-nodeclare   -rval \"{32{1'b0}}\"  -en \"layer_st | status_update\" -d \"pre_wmb_required_bits_w\" -q pre_wmb_required_bits");
-//: &eperl::flop("-nodeclare   -rval \"{22{1'b0}}\"  -en \"layer_st | wmb_cbuf_wr_vld_w\" -d \"wmb_fetched_cnt_w\" -q wmb_fetched_cnt");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
@@ -2869,34 +1980,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        end
    end
 end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       pre_wmb_required_bits <= {32{1'b0}};
-   end else begin
-       if ((layer_st | status_update) == 1'b1) begin
-           pre_wmb_required_bits <= pre_wmb_required_bits_w;
-       // VCS coverage off
-       end else if ((layer_st | status_update) == 1'b0) begin
-       end else begin
-           pre_wmb_required_bits <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       wmb_fetched_cnt <= {22{1'b0}};
-   end else begin
-       if ((layer_st | wmb_cbuf_wr_vld_w) == 1'b1) begin
-           wmb_fetched_cnt <= wmb_fetched_cnt_w;
-       // VCS coverage off
-       end else if ((layer_st | wmb_cbuf_wr_vld_w) == 1'b0) begin
-       end else begin
-           wmb_fetched_cnt <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 ////////////////////////////////////////////////////////////////////////
@@ -2909,7 +1992,7 @@ end
 assign pre_wt_fetched_cnt_w = status_last_group ? 26'b0 : wt_fetched_cnt;
 assign {mon_incr_wt_cnt, incr_wt_cnt} = wt_fetched_cnt - pre_wt_fetched_cnt;
 // dmaif vs atom_c
-//: my $dmaif=512/8;
+//: my $dmaif=256/8;
 //: my $atmc=64;
 //: if($dmaif == $atmc){
 //: print qq(
@@ -2918,46 +2001,20 @@ assign {mon_incr_wt_cnt, incr_wt_cnt} = wt_fetched_cnt - pre_wt_fetched_cnt;
 //: } elsif($dmaif > $atmc) {
 //: my $k = int(log($dmaif/$atmc)/log(2));
 //: print qq(
-//: assign incr_wt_entries_w = {incr_wt_cnt[12:0],{${k}{1'b0}}};
+//: assign incr_wt_entries_w = {incr_wt_cnt[15-${k}-1:0],{${k}{1'b0}}};
 //: );
 //: } elsif($dmaif < $atmc) {
 //: my $k = int(log($atmc/$dmaif)/log(2));
 //: print qq(
-//: assign incr_wt_entries_w = {{(2+${k}){1'b0}},incr_wt_cnt[12:${k}]};
+//: assign incr_wt_entries_w = {incr_wt_cnt[15+${k}-1:${k}]};
 //: );
 //: }
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
-assign incr_wt_entries_w = incr_wt_cnt[14:0];
+assign incr_wt_entries_w = {incr_wt_cnt[15+1-1:1]};
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 //assign incr_wt_entries_w = incr_wt_cnt[12 :1];
-assign pre_wmb_fetched_cnt_w = status_last_group ? 22'b0 : wmb_fetched_cnt;
-assign {mon_incr_wmb_cnt, incr_wmb_cnt} = wmb_fetched_cnt[8 +1:0] - pre_wmb_fetched_cnt[8 +1:0];
-// dmaif vs atom_c
-//: my $dmaif=512/8;
-//: my $atmc=64;
-//: if($dmaif == $atmc){
-//: print qq(
-//: assign incr_wmb_entries_w = {2'd0,incr_wmb_cnt[8 +1:0]};
-//: );
-//: } elsif($dmaif > $atmc) {
-//: my $k = int(log($dmaif/$atmc)/log(2));
-//: print qq(
-//: assign incr_wmb_entries_w = {incr_wmb_cnt[8 +1:0],{${k}{1'b0}}};
-//: );
-//: } elsif($dmaif > $atmc) {
-//: my $k = int(log($atmc/$dmaif)/log(2));
-//: print qq(
-//: assign incr_wmb_entries_w = {{(2+${k}){1'b0}},incr_wmb_cnt[8 +1:0]};
-//: );
-//: }
-//| eperl: generated_beg (DO NOT EDIT BELOW)
-
-assign incr_wmb_entries_w = {2'd0,incr_wmb_cnt[8 +1:0]};
-
-//| eperl: generated_end (DO NOT EDIT ABOVE)
-//assign incr_wmb_entries_w = incr_wmb_cnt[8 +1:1];
 //: my $atmk = 32;
 //: my $atmkbw = int(log($atmk)/log(2));
 //: print qq(
@@ -2966,8 +2023,6 @@ assign incr_wmb_entries_w = {2'd0,incr_wmb_cnt[8 +1:0]};
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"status_update\" -q incr_wt_updt");
 //: &eperl::flop("-nodeclare   -rval \"{26{1'b0}}\"  -en \"status_update\" -d \"pre_wt_fetched_cnt_w\" -q pre_wt_fetched_cnt");
 //: &eperl::flop("-nodeclare   -rval \"{15{1'b0}}\"  -en \"status_update\" -d \"incr_wt_entries_w\" -q incr_wt_entries");
-//: &eperl::flop("-nodeclare   -rval \"{22{1'b0}}\"  -en \"status_update\" -d \"pre_wmb_fetched_cnt_w\" -q pre_wmb_fetched_cnt");
-//: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"status_update\" -d \"incr_wmb_entries_w\" -q incr_wmb_entries");
 //: &eperl::flop("-nodeclare   -rval \"{6{1'b0}}\"  -en \"status_update\" -d \"incr_wt_kernels_w\" -q incr_wt_kernels");
 //: my $i;
 //: my $j;
@@ -2975,8 +2030,8 @@ assign incr_wmb_entries_w = {2'd0,incr_wmb_cnt[8 +1:0]};
 //: my $name;
 //: my $wid;
 //: my $cbuf_wr_delay = 3;
-//: my @list = ("wt_kernels", "wt_entries", "wmb_entries");
-//: my @width = (6, 15, 12);
+//: my @list = ("wt_kernels", "wt_entries");
+//: my @width = (6, 15);
 //:
 //: for($i = 0; $i < @list; $i ++) {
 //: $name = $list[$i];
@@ -2999,7 +2054,7 @@ assign incr_wmb_entries_w = {2'd0,incr_wmb_cnt[8 +1:0]};
 //: $j = $cbuf_wr_delay;
 //: print "assign cdma2sc_wt_kernels[5:0] = incr_wt_kernels_d${j};\n";
 //: print "assign cdma2sc_wt_entries = incr_wt_entries_d${j};\n";
-//: print "assign cdma2sc_wmb_entries = incr_wmb_entries_d${j};\n";
+//: print "assign cdma2sc_wmb_entries = 12'b0;  \n";
 //: print "assign cdma2sc_wt_updt = incr_wt_updt_d${j};\n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 
@@ -3041,34 +2096,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
-       pre_wmb_fetched_cnt <= {22{1'b0}};
-   end else begin
-       if ((status_update) == 1'b1) begin
-           pre_wmb_fetched_cnt <= pre_wmb_fetched_cnt_w;
-       // VCS coverage off
-       end else if ((status_update) == 1'b0) begin
-       end else begin
-           pre_wmb_fetched_cnt <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       incr_wmb_entries <= {12{1'b0}};
-   end else begin
-       if ((status_update) == 1'b1) begin
-           incr_wmb_entries <= incr_wmb_entries_w;
-       // VCS coverage off
-       end else if ((status_update) == 1'b0) begin
-       end else begin
-           incr_wmb_entries <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
        incr_wt_kernels <= {6{1'b0}};
    end else begin
        if ((status_update) == 1'b1) begin
@@ -3083,7 +2110,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 assign incr_wt_kernels_d0 = incr_wt_kernels;
 assign incr_wt_entries_d0 = incr_wt_entries;
-assign incr_wmb_entries_d0 = incr_wmb_entries;
 assign incr_wt_updt_d0 = incr_wt_updt;
 
 
@@ -3113,21 +2139,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        end else if ((incr_wt_updt_d0) == 1'b0) begin
        end else begin
            incr_wt_entries_d1 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-reg [11:0] incr_wmb_entries_d1;
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       incr_wmb_entries_d1 <= 'b0;
-   end else begin
-       if ((incr_wt_updt_d0) == 1'b1) begin
-           incr_wmb_entries_d1 <= incr_wmb_entries_d0;
-       // VCS coverage off
-       end else if ((incr_wt_updt_d0) == 1'b0) begin
-       end else begin
-           incr_wmb_entries_d1 <= 'bx;
        // VCS coverage on
        end
    end
@@ -3170,21 +2181,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        end
    end
 end
-reg [11:0] incr_wmb_entries_d2;
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       incr_wmb_entries_d2 <= 'b0;
-   end else begin
-       if ((incr_wt_updt_d1) == 1'b1) begin
-           incr_wmb_entries_d2 <= incr_wmb_entries_d1;
-       // VCS coverage off
-       end else if ((incr_wt_updt_d1) == 1'b0) begin
-       end else begin
-           incr_wmb_entries_d2 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
 reg  incr_wt_updt_d2;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
@@ -3223,21 +2219,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        end
    end
 end
-reg [11:0] incr_wmb_entries_d3;
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       incr_wmb_entries_d3 <= 'b0;
-   end else begin
-       if ((incr_wt_updt_d2) == 1'b1) begin
-           incr_wmb_entries_d3 <= incr_wmb_entries_d2;
-       // VCS coverage off
-       end else if ((incr_wt_updt_d2) == 1'b0) begin
-       end else begin
-           incr_wmb_entries_d3 <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
 reg  incr_wt_updt_d3;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
@@ -3250,21 +2231,16 @@ end
 
 assign cdma2sc_wt_kernels[5:0] = incr_wt_kernels_d3;
 assign cdma2sc_wt_entries = incr_wt_entries_d3;
-assign cdma2sc_wmb_entries = incr_wmb_entries_d3;
+assign cdma2sc_wmb_entries = 12'b0;  
 assign cdma2sc_wt_updt = incr_wt_updt_d3;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 assign cdma2sc_wt_kernels[13:6] = 8'b0;
 `ifndef SYNTHESIS
 assign dbg_wt_kernel_bytes_w[31:0] = layer_st ? 32'b0 : wt_required_bytes_w - wt_required_bytes;
-assign dbg_wmb_kernel_bits_sub[31:0] = wmb_required_bits_w - wmb_required_bits;
-assign dbg_wmb_kernel_bits_w[31:0] = layer_st ? 32'b0 :
-                                     ((dbg_wmb_kernel_bits_sub > dbg_wmb_kernel_bits) && (dbg_wmb_kernel_bits != 0)) ? dbg_wmb_kernel_bits : dbg_wmb_kernel_bits_sub;
-assign dbg_full_wmb = (reg2dp_wmb_bytes <= 9'h100);//9'h100
 //assign dbg_full_weight = (reg2dp_weight_bytes <= {weight_bank, 8'h0});
 assign dbg_full_weight = (reg2dp_weight_bytes <= {weight_bank, 9'h0});
 //: &eperl::flop("-nodeclare   -rval \"{32{1'b0}}\"  -en \"layer_st |  wt_required_en\" -d \"dbg_wt_kernel_bytes_w\" -q dbg_wt_kernel_bytes");
-//: &eperl::flop("-nodeclare   -rval \"{32{1'b0}}\"  -en \"layer_st | wmb_required_en\" -d \"dbg_wmb_kernel_bits_w\" -q dbg_wmb_kernel_bits");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    if (!nvdla_core_rstn) begin
@@ -3276,20 +2252,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
        end else if ((layer_st |  wt_required_en) == 1'b0) begin
        end else begin
            dbg_wt_kernel_bytes <= 'bx;
-       // VCS coverage on
-       end
-   end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-   if (!nvdla_core_rstn) begin
-       dbg_wmb_kernel_bits <= {32{1'b0}};
-   end else begin
-       if ((layer_st | wmb_required_en) == 1'b1) begin
-           dbg_wmb_kernel_bits <= dbg_wmb_kernel_bits_w;
-       // VCS coverage off
-       end else if ((layer_st | wmb_required_en) == 1'b0) begin
-       end else begin
-           dbg_wmb_kernel_bits <= 'bx;
        // VCS coverage on
        end
    end
@@ -3435,32 +2397,6 @@ end
   `endif
 `endif
 //VCS coverage on
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-    property cdma_wt__wt_satisfy_when_wmb_not__1_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        (is_compressed & wt_satisfied & ~wmb_satisfied);
-    endproperty
-// Cover 1 : "(is_compressed & wt_satisfied & ~wmb_satisfied)"
-    FUNCPOINT_cdma_wt__wt_satisfy_when_wmb_not__1_COV : cover property (cdma_wt__wt_satisfy_when_wmb_not__1_cov);
-  `endif
-`endif
-//VCS coverage on
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-    property cdma_wt__wrr_wt_ahead_wmb__2_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        (arb_wrr_in_vld[0] & arb_wrr_in_vld[1] & ~arb_wrr_in_rdy[0] & arb_wrr_in_rdy[1]);
-    endproperty
-// Cover 2 : "(arb_wrr_in_vld[0] & arb_wrr_in_vld[1] & ~arb_wrr_in_rdy[0] & arb_wrr_in_rdy[1])"
-    FUNCPOINT_cdma_wt__wrr_wt_ahead_wmb__2_COV : cover property (cdma_wt__wrr_wt_ahead_wmb__2_cov);
-  `endif
-`endif
-//VCS coverage on
 ////////////////////////////////////////////////////////////////////////
 // Assertion //
 ////////////////////////////////////////////////////////////////////////
@@ -3493,19 +2429,6 @@ end
 `endif // FV_ASSERT_ON
 `ifndef SYNTHESIS
 // VCS coverage off
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_32x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(wmb_req_reg_en_d0))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_35x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(wmb_req_reg_en_d1))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_40x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(wmb_req_reg_en_d2))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_62x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(wmb_rsp_valid))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_63x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(clear_all | wmb_cbuf_wr_vld_w))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_85x (nvdla_core_ng_clk, `ASSERT_RESET, 1'd1, (^(wmb_data_onfly_reg_en))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_86x (nvdla_core_ng_clk, `ASSERT_RESET, 1'd1, (^(wmb_cbuf_wr_vld_w | status_update_wmb))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_87x (nvdla_core_ng_clk, `ASSERT_RESET, 1'd1, (^(status_update_wmb | sc_wt_updt | clear_all))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_96x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(layer_st | wmb_required_en))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_102x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(layer_st | wmb_cbuf_wr_vld_w))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_120x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(layer_st | wmb_required_en))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_48x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(wgs_req_reg_en))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_64x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(layer_st | wgs_push_req))); // spyglass disable W504 SelfDeterminedExpr-ML 
   nv_assert_no_x #(0,2,0,"No Xs allowed on cur_state") zzz_assert_no_x_1x (nvdla_core_clk, `ASSERT_RESET, 1'd1, cur_state); // spyglass disable W504 SelfDeterminedExpr-ML 
   nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_2x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(layer_st | is_running))); // spyglass disable W504 SelfDeterminedExpr-ML 
   nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_3x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(layer_end))); // spyglass disable W504 SelfDeterminedExpr-ML 
@@ -3537,26 +2460,6 @@ end
   nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_110x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(incr_wt_updt_d0))); // spyglass disable W504 SelfDeterminedExpr-ML 
   nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_113x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(incr_wt_updt_d1))); // spyglass disable W504 SelfDeterminedExpr-ML 
   nv_assert_no_x #(0,1,0,"No X's allowed on control signals") zzz_assert_no_x_116x (nvdla_core_clk, `ASSERT_RESET, 1'd1, (^(incr_wt_updt_d2))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Config error! wmb bytes is not match the require size!") zzz_assert_never_10x (nvdla_core_clk, `ASSERT_RESET, (layer_st_d1 & is_compressed & (reg2dp_wmb_bytes != (((byte_per_kernel * (reg2dp_weight_kernel + 1) / (reg2dp_proc_precision == 2'b0 ? 1 : 2)) + 1023)/1024)))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error!, wmb_req_burst_cnt_dec is overflow!") zzz_assert_never_34x (nvdla_core_clk, `ASSERT_RESET, (reg2dp_op_en && mon_wmb_req_burst_cnt_dec)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! FSM done when wmb fetch is not!") zzz_assert_never_44x (nvdla_core_clk, `ASSERT_RESET, (is_running & ~is_nxt_running & ~wmb_req_done_d3)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! wmb_req_sum is overflow!") zzz_assert_never_45x (nvdla_core_clk, `ASSERT_RESET, (reg2dp_op_en & mon_wmb_req_sum)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! wmb_data_onfly is not zero when idle") zzz_assert_never_46x (nvdla_core_clk, `ASSERT_RESET, (~is_running & (|wmb_data_onfly))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! wmb_data_onfly is not zero when idle") zzz_assert_never_47x (nvdla_core_clk, `ASSERT_RESET, (~is_running & (|wmb_data_stored))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"WT and WMB write hazard") zzz_assert_never_70x (nvdla_core_clk, `ASSERT_RESET, (wt_cbuf_wr_vld_w & wmb_cbuf_wr_vld_w)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"WMB and FLUSH write hazard") zzz_assert_never_72x (nvdla_core_clk, `ASSERT_RESET, (wt_cbuf_flush_vld_w & wmb_cbuf_wr_vld_w)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! wmb_data_onfly_w is overflow") zzz_assert_never_88x (nvdla_core_ng_clk, `ASSERT_RESET, (reg2dp_op_en && mon_wmb_data_onfly_w)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! wmb_data_stored_w is overflow") zzz_assert_never_89x (nvdla_core_ng_clk, `ASSERT_RESET, (reg2dp_op_en && mon_wmb_data_stored_w)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! wmb_data_onfly is not zero when idle") zzz_assert_never_90x (nvdla_core_ng_clk, `ASSERT_RESET, (~is_running & (|wmb_data_onfly))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! wmb_data_stored is not zero when idle") zzz_assert_never_91x (nvdla_core_ng_clk, `ASSERT_RESET, (~is_running & (|wmb_data_stored))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! wmb_data_avl_w is overflow") zzz_assert_never_92x (nvdla_core_ng_clk, `ASSERT_RESET, (reg2dp_op_en && mon_wmb_data_avl_w)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! wmb_fetched_cnt_w is overflow") zzz_assert_never_104x (nvdla_core_clk, `ASSERT_RESET, ((layer_st | wmb_cbuf_wr_vld_w) & mon_wmb_fetched_cnt_inc)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! wgs_data_onfly is not zero when idle") zzz_assert_never_51x (nvdla_core_clk, `ASSERT_RESET, (~is_running & (|wgs_data_onfly))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"WGS FIFO overflow") zzz_assert_never_65x (nvdla_core_clk, `ASSERT_RESET, (wgs_push_req & ~wgs_push_ready)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Error! wgs_data_onfly_w is overflow") zzz_assert_never_94x (nvdla_core_clk, `ASSERT_RESET, (reg2dp_op_en && mon_wgs_data_onfly_w)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Config error! Run out of weight buffer: compressed weight!") zzz_assert_never_122x (nvdla_core_clk, `ASSERT_RESET, (is_running & ~reg2dp_skip_weight_rls & ~dbg_full_weight & is_compressed & ~status_done & wgs_pop_req & ((wgs_pop_data + 128) > {weight_bank, 15'b0}))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Config error! Run out of weight buffer: WMB!") zzz_assert_never_123x (nvdla_core_clk, `ASSERT_RESET, (is_running & ~reg2dp_skip_weight_rls & ~dbg_full_wmb & is_compressed & ~status_done & (dbg_wmb_kernel_bits > 32'h3fc00))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  nv_assert_never #(0,0,"Config error! Run out of weight buffer: full WMB!") zzz_assert_never_125x (nvdla_core_clk, `ASSERT_RESET, (is_running & reg2dp_skip_weight_rls & is_compressed & ~dbg_full_wmb)); // spyglass disable W504 SelfDeterminedExpr-ML 
 // nv_assert_never #(0,0,"Config error! Data banks is more than 15!") zzz_assert_never_6x (nvdla_core_clk, `ASSERT_RESET, (reg2dp_op_en && (reg2dp_data_bank == 4'hf))); // spyglass disable W504 SelfDeterminedExpr-ML 
 // nv_assert_never #(0,0,"Config error! Weight banks is more than 15!") zzz_assert_never_7x (nvdla_core_clk, `ASSERT_RESET, (reg2dp_op_en && (reg2dp_weight_bank == 4'hf))); // spyglass disable W504 SelfDeterminedExpr-ML 
 // nv_assert_never #(0,0,"Config error! Sum of data & weight banks is more than 16 when weight uncompressed") zzz_assert_never_8x (nvdla_core_clk, `ASSERT_RESET, (reg2dp_op_en && ~is_compressed && (weight_bank_end_w > 16))); // spyglass disable W504 SelfDeterminedExpr-ML 

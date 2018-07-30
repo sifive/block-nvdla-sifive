@@ -16,6 +16,14 @@
 // File Name: NV_NVDLA_PDP_define.h
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_PDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_PDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 module NV_NVDLA_PDP_core (
    nvdla_core_clk //|< i
   ,nvdla_core_rstn //|< i
@@ -81,7 +89,7 @@ module NV_NVDLA_PDP_core (
  input [2:0] padding_h_cfg;
  input [2:0] padding_v_cfg;
  input pdp_dp2wdma_ready;
- input [8*8 +11:0] pdp_rdma2dp_pd;
+ input [8*8 +13:0] pdp_rdma2dp_pd;
  input pdp_rdma2dp_valid;
  input [12:0] pooling_channel_cfg;
  input [9:0] pooling_fwidth_cfg;
@@ -135,7 +143,7 @@ module NV_NVDLA_PDP_core (
  wire [8*(8 +6)-1:0] pooling1d_pd;
  wire pooling1d_prdy;
  wire pooling1d_pvld;
- wire [8*8 +11:0] pre2cal1d_pd;
+ wire [8*8 +13:0] pre2cal1d_pd;
  wire pre2cal1d_prdy;
  wire pre2cal1d_pvld;
 //reg

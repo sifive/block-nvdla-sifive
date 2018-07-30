@@ -60,7 +60,7 @@ input nvdla_core_clk;
 input nvdla_core_rstn;
 input op_load;
 input dma_wr_req_rdy;
-output [515 -1:0] dma_wr_req_pd;
+output [258 -1:0] dma_wr_req_pd;
 output dma_wr_req_vld;
 input cmd2dat_dma_pvld;
 output cmd2dat_dma_prdy;
@@ -102,7 +102,7 @@ reg dfifo0_unequal;
 reg dfifo1_unequal;
 reg dfifo2_unequal;
 reg dfifo3_unequal;
-reg [515 -1:0] dma_wr_req_pd;
+reg [258 -1:0] dma_wr_req_pd;
 reg dp2reg_done;
 wire cfg_di_int8;
 wire cfg_do_int16;
@@ -127,9 +127,9 @@ wire [64 +13:0] dma_wr_cmd_pd;
 wire dma_wr_cmd_require_ack;
 wire [12:0] dma_wr_cmd_size;
 wire dma_wr_cmd_vld;
-wire [512 -1:0] dma_wr_dat_data;
+wire [256 -1:0] dma_wr_dat_data;
 wire [3:0] dma_wr_dat_mask;
-wire [515 -2:0] dma_wr_dat_pd;
+wire [258 -2:0] dma_wr_dat_pd;
 wire dma_wr_dat_vld;
 wire dma_wr_rdy;
 wire is_last_beat;
@@ -475,7 +475,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     end
   end
 end
-wire [2:0] size_of_atom = 2;
+wire [2:0] size_of_atom = 1;
 assign size_of_beat = cmd_size[12:0] + 1;
 assign beat_count_nxt = beat_count + size_of_atom;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -526,22 +526,26 @@ assign dma_wr_cmd_pd[64 +12:64] = dma_wr_cmd_size[12:0];
 assign dma_wr_cmd_pd[64 +13] = dma_wr_cmd_require_ack ;
 assign dma_wr_dat_vld = dat_en & dat_vld;
 assign dma_wr_dat_mask[3:0] = dfifo_rd_size == 3'h4 ? 4'hf : dfifo_rd_size == 3'h3 ? 4'h7 : dfifo_rd_size == 3'h2 ? 4'h3 : dfifo_rd_size;
-assign dma_wr_dat_data = dat_pd[512 -1:0];
-assign dma_wr_dat_pd[512 -1:0] = dma_wr_dat_data[512 -1:0];
-assign dma_wr_dat_pd[515 -2:512] = dma_wr_dat_mask[2 -1:0];
+assign dma_wr_dat_data = dat_pd[256 -1:0];
+assign dma_wr_dat_pd[256 -1:0] = dma_wr_dat_data[256 -1:0];
+assign dma_wr_dat_pd[258 -2:256] = dma_wr_dat_mask[1 -1:0];
 assign dma_wr_req_vld = (dma_wr_cmd_vld | dma_wr_dat_vld) & !cfg_mode_quite;
 always @(
   cmd_en
   or dma_wr_cmd_pd
   or dma_wr_dat_pd
   ) begin
-    dma_wr_req_pd[515 -2:0] = 0;
+    dma_wr_req_pd[258 -2:0] = 0;
     if (cmd_en) begin
-        dma_wr_req_pd[515 -2:0] = {{(515 -78 -1){1'b0}},dma_wr_cmd_pd};
+        dma_wr_req_pd[258 -2:0] = {{(258 -78 -1){1'b0}},dma_wr_cmd_pd};
     end else begin
-        dma_wr_req_pd[515 -2:0] = dma_wr_dat_pd;
+//#if (NVDLA_DMA_WR_DAT < 258 -1)
+// dma_wr_req_pd[258 -2:0] = {{(258 -NVDLA_DMA_WR_DAT-1){1'b0}},dma_wr_dat_pd};
+//#else
+        dma_wr_req_pd[258 -2:0] = dma_wr_dat_pd;
+//#endif
     end
-    dma_wr_req_pd[515 -1] = cmd_en ? 1'd0 : 1'd1 ;
+        dma_wr_req_pd[258 -1] = cmd_en ? 1'd0 : 1'd1 ;
 end
 //=================================================
 // Count the Equal Bit in EQ Mode

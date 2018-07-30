@@ -15,6 +15,14 @@
 // ================================================================
 // File Name: NV_NVDLA_CDP_define.h
 ///////////////////////////////////////////////////
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_CDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_CDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
 `include "simulate_x_tick.vh"
 module NV_NVDLA_CDP_DP_bufferin (
    nvdla_core_clk
@@ -29,12 +37,12 @@ module NV_NVDLA_CDP_DP_bufferin (
 /////////////////////////////////////////////////////////////
 input nvdla_core_clk;
 input nvdla_core_rstn;
-input [8*(8 +1)+14:0] cdp_rdma2dp_pd;
+input [8*(8 +1)+16:0] cdp_rdma2dp_pd;
 input cdp_rdma2dp_valid;
 input normalz_buf_data_prdy;
 output cdp_rdma2dp_ready;
 //output [8*(8 +1)*3+14:0] normalz_buf_data;
-output [(8 +8)*(8 +1)+14:0] normalz_buf_data;
+output [(8 +8)*(8 +1)+16:0] normalz_buf_data;
 output normalz_buf_data_pvld;
 /////////////////////////////////////////////////////////////
 reg NormalC2CubeEnd;
@@ -42,12 +50,12 @@ reg b_sync_align;
 reg b_sync_dly1;
 reg buf_dat_vld;
 reg buffer_b_sync;
-reg [8*(8 +1)*3:0] buffer_data;
+reg [8*(8 +1)*3-1:0] buffer_data;
 reg buffer_data_vld;
 reg buffer_last_c;
 reg buffer_last_h;
 reg buffer_last_w;
-reg [2:0] buffer_pos_c;
+reg [4:0] buffer_pos_c;
 reg [3:0] buffer_pos_w;
 //reg buffer_ready;
 reg [3:0] buffer_width;
@@ -100,8 +108,8 @@ reg [3:0] last_width;
 reg less2more_dly;
 reg less2more_dly2;
 reg more2less_dly;
-reg [2:0] pos_c_align;
-reg [2:0] pos_c_dly1;
+reg [4:0] pos_c_align;
+reg [4:0] pos_c_dly1;
 reg [3:0] pos_w_align;
 reg [3:0] pos_w_dly1;
 reg [2:0] stat_cur;
@@ -122,10 +130,10 @@ wire FIRST_C_end;
 wire buf_dat_rdy;
 //: my $icvto = (8 +1);
 //: my $tp = 8;
-//: my $k = (${tp}+8)*${icvto}+15;
+//: my $k = (${tp}+8)*${icvto}+17;
 //: print "wire    [${k}-1:0] buffer_pd;   \n";
 //| eperl: generated_beg (DO NOT EDIT BELOW)
-wire    [159-1:0] buffer_pd;   
+wire    [161-1:0] buffer_pd;   
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 wire buffer_valid;
@@ -138,14 +146,14 @@ wire [8*(8 +1):0] dp_data;
 wire dp_last_c;
 wire dp_last_h;
 wire dp_last_w;
-wire [2:0] dp_pos_c;
+wire [4:0] dp_pos_c;
 wire [3:0] dp_pos_w;
 wire [3:0] dp_width;
 wire is_b_sync;
 wire is_last_c;
 wire is_last_h;
 wire is_last_w;
-wire [2:0] is_pos_c;
+wire [4:0] is_pos_c;
 wire [3:0] is_pos_w;
 wire [3:0] is_width;
 wire [3:0] is_width_f;
@@ -159,29 +167,30 @@ wire rdma2dp_ready_normal;
 wire rdma2dp_valid_rebuild;
 wire vld;
 wire [3:0] width_cur;
+wire is_last_pos_c;
 /////////////////////////////////////////////////////////////
 //
 parameter cvt2buf_data_bw = 8*(8 +1);
 parameter cvt2buf_info_bw = 15;
 parameter cvt2buf_dp_bw = cvt2buf_data_bw + cvt2buf_info_bw;
 /////////////////////////////////////////////////////////////
-//: my $k = 8*(8 +1)+15;
+//: my $k = 8*(8 +1)+17;
 //: &eperl::pipe(" -is -wid $k -do nvdla_cdp_rdma2dp_pd -vo nvdla_cdp_rdma2dp_valid -ri nvdla_cdp_rdma2dp_ready -di cdp_rdma2dp_pd -vi cdp_rdma2dp_valid -ro cdp_rdma2dp_ready ");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 // Reg
 reg cdp_rdma2dp_ready;
 reg skid_flop_cdp_rdma2dp_ready;
 reg skid_flop_cdp_rdma2dp_valid;
-reg [87-1:0] skid_flop_cdp_rdma2dp_pd;
+reg [89-1:0] skid_flop_cdp_rdma2dp_pd;
 reg pipe_skid_cdp_rdma2dp_valid;
-reg [87-1:0] pipe_skid_cdp_rdma2dp_pd;
+reg [89-1:0] pipe_skid_cdp_rdma2dp_pd;
 // Wire
 wire skid_cdp_rdma2dp_valid;
-wire [87-1:0] skid_cdp_rdma2dp_pd;
+wire [89-1:0] skid_cdp_rdma2dp_pd;
 wire skid_cdp_rdma2dp_ready;
 wire pipe_skid_cdp_rdma2dp_ready;
 wire nvdla_cdp_rdma2dp_valid;
-wire [87-1:0] nvdla_cdp_rdma2dp_pd;
+wire [89-1:0] nvdla_cdp_rdma2dp_pd;
 // Code
 // SKID READY
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -209,10 +218,10 @@ assign skid_cdp_rdma2dp_valid = (skid_flop_cdp_rdma2dp_ready) ? cdp_rdma2dp_vali
 // SKID DATA
 always @(posedge nvdla_core_clk) begin
     if (skid_flop_cdp_rdma2dp_ready & cdp_rdma2dp_valid) begin
-        skid_flop_cdp_rdma2dp_pd[87-1:0] <= cdp_rdma2dp_pd[87-1:0];
+        skid_flop_cdp_rdma2dp_pd[89-1:0] <= cdp_rdma2dp_pd[89-1:0];
     end
 end
-assign skid_cdp_rdma2dp_pd[87-1:0] = (skid_flop_cdp_rdma2dp_ready) ? cdp_rdma2dp_pd[87-1:0] : skid_flop_cdp_rdma2dp_pd[87-1:0];
+assign skid_cdp_rdma2dp_pd[89-1:0] = (skid_flop_cdp_rdma2dp_ready) ? cdp_rdma2dp_pd[89-1:0] : skid_flop_cdp_rdma2dp_pd[89-1:0];
 
 
 // PIPE READY
@@ -232,7 +241,7 @@ end
 // PIPE DATA
 always @(posedge nvdla_core_clk) begin
     if (skid_cdp_rdma2dp_ready && skid_cdp_rdma2dp_valid) begin
-        pipe_skid_cdp_rdma2dp_pd[87-1:0] <= skid_cdp_rdma2dp_pd[87-1:0];
+        pipe_skid_cdp_rdma2dp_pd[89-1:0] <= skid_cdp_rdma2dp_pd[89-1:0];
     end
 end
 
@@ -249,11 +258,11 @@ assign nvdla_cdp_rdma2dp_pd = pipe_skid_cdp_rdma2dp_pd;
 assign dp_data[8*(8 +1)-1:0] = nvdla_cdp_rdma2dp_pd[8*(8 +1)-1:0];
 assign dp_pos_w[3:0] = nvdla_cdp_rdma2dp_pd[8*(8 +1)+3:8*(8 +1)];
 assign dp_width[3:0] = nvdla_cdp_rdma2dp_pd[8*(8 +1)+7:8*(8 +1)+4];
-assign dp_pos_c[2:0] = nvdla_cdp_rdma2dp_pd[8*(8 +1)+10:8*(8 +1)+8];
-assign dp_b_sync = nvdla_cdp_rdma2dp_pd[8*(8 +1)+11];
-assign dp_last_w = nvdla_cdp_rdma2dp_pd[8*(8 +1)+12];
-assign dp_last_h = nvdla_cdp_rdma2dp_pd[8*(8 +1)+13];
-assign dp_last_c = nvdla_cdp_rdma2dp_pd[8*(8 +1)+14];
+assign dp_pos_c[4:0] = nvdla_cdp_rdma2dp_pd[8*(8 +1)+12:8*(8 +1)+8];
+assign dp_b_sync = nvdla_cdp_rdma2dp_pd[8*(8 +1)+13];
+assign dp_last_w = nvdla_cdp_rdma2dp_pd[8*(8 +1)+14];
+assign dp_last_h = nvdla_cdp_rdma2dp_pd[8*(8 +1)+15];
+assign dp_last_c = nvdla_cdp_rdma2dp_pd[8*(8 +1)+16];
 assign is_pos_w = dp_pos_w;
 assign is_width_f = dp_width[3:0];
 assign is_width[3:0] = is_width_f - 1'b1;
@@ -269,6 +278,17 @@ assign vld = rdma2dp_valid_rebuild;
 assign load_din = vld & nvdla_cdp_rdma2dp_ready;
 assign load_din_full = rdma2dp_valid_rebuild & rdma2dp_ready_normal;
 ///////////////////////////////////////////////////
+//: my $atmm = 32;
+//: my $tp = 8;
+//: my $tp_num = ($atmm/$tp)-1;
+//: print qq(
+//: assign is_last_pos_c = (is_pos_c == ${tp_num});
+//: );
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+
+assign is_last_pos_c = (is_pos_c == 3);
+
+//| eperl: generated_end (DO NOT EDIT ABOVE)
 localparam WAIT = 3'b000;
 localparam NORMAL_C = 3'b001;
 localparam FIRST_C = 3'b010;
@@ -280,28 +300,48 @@ localparam CUBE_END = 3'b100;
     begin
       casez (stat_cur)
         WAIT: begin
-          if ((is_b_sync & (is_pos_c==3'd0) & load_din)) begin
+//if ((is_b_sync & (is_pos_c==3'd0) & load_din)) begin
+// stat_nex = NORMAL_C;
+          if (is_b_sync & (is_pos_c==5'd0) & is_last_pos_c & is_last_h & is_last_w & load_din)
+            stat_nex = CUBE_END;
+          else if ((is_b_sync & (is_pos_c==5'd0) & (!is_last_pos_c) & load_din))
             stat_nex = NORMAL_C;
-          end
+          else if ((is_b_sync & is_last_c & (is_pos_c==5'd0) & is_last_pos_c & (~(is_last_h & is_last_w)) & load_din))
+            stat_nex = FIRST_C;
         end
         NORMAL_C: begin
-          if ((is_b_sync & (is_pos_c==3'd3) & is_last_c & is_last_h & is_last_w & load_din)) begin
+          if ((is_b_sync & is_last_pos_c/*(is_pos_c==5'd3)*/ & is_last_c & is_last_h & is_last_w & load_din)) begin
             NormalC2CubeEnd = 1;
             stat_nex = CUBE_END;
           end
-          else if ((is_b_sync & (is_pos_c==3'd3) & is_last_c) & (~(is_last_h & is_last_w) & load_din)) begin
+          else if ((is_b_sync & is_last_pos_c/*(is_pos_c==5'd3)*/ & is_last_c) & (~(is_last_h & is_last_w) & load_din)) begin
             stat_nex = FIRST_C;
           end
         end
         FIRST_C: begin
+//if (((is_pos_w == is_width) & (~more2less) & load_din)
+// ||(more2less & (width_pre_cnt == width_pre) & hold_here & rdma2dp_ready_normal)) begin
+// stat_nex = SECOND_C;
           if (((is_pos_w == is_width) & (~more2less) & load_din)
                   ||(more2less & (width_pre_cnt == width_pre) & hold_here & rdma2dp_ready_normal)) begin
-            stat_nex = SECOND_C;
+              if(is_last_c & is_last_h & is_last_w & is_last_pos_c)
+                    stat_nex = CUBE_END;
+              else if(is_last_c & (!(is_last_h & is_last_w)) & is_last_pos_c)
+                    stat_nex = FIRST_C;
+              else
+                    stat_nex = SECOND_C;
           end
         end
         SECOND_C: begin
+//if (is_b_sync & load_din) begin
+// stat_nex = NORMAL_C;
           if (is_b_sync & load_din) begin
-            stat_nex = NORMAL_C;
+                if(is_last_c & is_last_h & is_last_w & is_last_pos_c)
+                    stat_nex = CUBE_END;
+                else if(is_last_c & (!(is_last_h & is_last_w)) & is_last_pos_c)
+                    stat_nex = FIRST_C;
+                else
+                    stat_nex = NORMAL_C;
           end
         end
         CUBE_END: begin
@@ -706,7 +746,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     width_pre <= {4{1'b0}};
   end else begin
-    if((stat_cur==NORMAL_C) & is_last_c & is_b_sync & (is_pos_c==3'd3) & load_din)
+    if((stat_cur==NORMAL_C) & is_last_c & is_b_sync & is_last_pos_c/*(is_pos_c==3'd3)*/ & load_din)
         width_pre <= is_width;
   end
 end
@@ -1772,10 +1812,10 @@ end
 `endif // SPYGLASS_ASSERT_ON
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    pos_c_align <= {3{1'b0}};
+    pos_c_align <= {5{1'b0}};
   end else begin
     if(FIRST_C_end)
-        pos_c_align <= 3'd0;
+        pos_c_align <= 5'd0;
     else if(is_b_sync & load_din & (~FIRST_C_bf_end))
         pos_c_align <= is_pos_c;
   end
@@ -1824,7 +1864,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     pos_w_dly1 <= {4{1'b0}};
     width_dly1 <= {4{1'b0}};
-    pos_c_dly1 <= {3{1'b0}};
+    pos_c_dly1 <= {5{1'b0}};
     b_sync_dly1 <= 1'b0;
     last_w_dly1 <= 1'b0;
     last_h_dly1 <= 1'b0;
@@ -2004,7 +2044,7 @@ end
 `endif // SPYGLASS_ASSERT_ON
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    buffer_pos_c <= {3{1'b0}};
+    buffer_pos_c <= {5{1'b0}};
   end else begin
   if ((data_shift_load_all) == 1'b1) begin
     buffer_pos_c <= pos_c_dly1;
@@ -2311,26 +2351,30 @@ end
 //: my $icvto = (8 +1);
 //: my $tp = 8;
 //: my $k = (${tp}+8)*${icvto};
+//: if($tp ==4) {
+//: print "  assign buffer_pd[${k}-1:0] = buffer_data;    \n";
+//: } else {
+//: print "  assign buffer_pd[${k}-1:0] = buffer_data[${k}-1+4*${icvto}:4*${icvto}];    \n";
+//: }
 //: print qq(
-//: assign buffer_pd[${k}-1:0] = buffer_data[${k}-1+4*${icvto}:4*${icvto}];
 //: assign buffer_pd[${k}+3:${k}] = buffer_pos_w[3:0];
 //: assign buffer_pd[${k}+7:${k}+4] = buffer_width[3:0];
-//: assign buffer_pd[${k}+10:${k}+8] = buffer_pos_c[2:0];
-//: assign buffer_pd[${k}+11] = buffer_b_sync ;
-//: assign buffer_pd[${k}+12] = buffer_last_w ;
-//: assign buffer_pd[${k}+13] = buffer_last_h ;
-//: assign buffer_pd[${k}+14] = buffer_last_c ;
+//: assign buffer_pd[${k}+12:${k}+8] = buffer_pos_c[4:0];
+//: assign buffer_pd[${k}+13] = buffer_b_sync ;
+//: assign buffer_pd[${k}+14] = buffer_last_w ;
+//: assign buffer_pd[${k}+15] = buffer_last_h ;
+//: assign buffer_pd[${k}+16] = buffer_last_c ;
 //: );
 //| eperl: generated_beg (DO NOT EDIT BELOW)
+  assign buffer_pd[144-1:0] = buffer_data[144-1+4*9:4*9];    
 
-assign buffer_pd[144-1:0] = buffer_data[144-1+4*9:4*9];
 assign buffer_pd[144+3:144] = buffer_pos_w[3:0];
 assign buffer_pd[144+7:144+4] = buffer_width[3:0];
-assign buffer_pd[144+10:144+8] = buffer_pos_c[2:0];
-assign buffer_pd[144+11] = buffer_b_sync ;
-assign buffer_pd[144+12] = buffer_last_w ;
-assign buffer_pd[144+13] = buffer_last_h ;
-assign buffer_pd[144+14] = buffer_last_c ;
+assign buffer_pd[144+12:144+8] = buffer_pos_c[4:0];
+assign buffer_pd[144+13] = buffer_b_sync ;
+assign buffer_pd[144+14] = buffer_last_w ;
+assign buffer_pd[144+15] = buffer_last_h ;
+assign buffer_pd[144+16] = buffer_last_c ;
 
 //| eperl: generated_end (DO NOT EDIT ABOVE)
 /////////////////////////////////////////
@@ -2339,23 +2383,23 @@ assign buffer_valid = buffer_data_vld;
 //output data pipe for register out
 //: my $icvto = (8 +1);
 //: my $tp = 8;
-//: my $k = (${tp}+8)*${icvto}+15;
+//: my $k = (${tp}+8)*${icvto}+17;
 //: &eperl::pipe(" -is -wid $k -do normalz_buf_data -vo normalz_buf_data_pvld -ri normalz_buf_data_prdy -di buffer_pd -vi buffer_valid -ro buffer_ready ");
 //| eperl: generated_beg (DO NOT EDIT BELOW)
 // Reg
 reg buffer_ready;
 reg skid_flop_buffer_ready;
 reg skid_flop_buffer_valid;
-reg [159-1:0] skid_flop_buffer_pd;
+reg [161-1:0] skid_flop_buffer_pd;
 reg pipe_skid_buffer_valid;
-reg [159-1:0] pipe_skid_buffer_pd;
+reg [161-1:0] pipe_skid_buffer_pd;
 // Wire
 wire skid_buffer_valid;
-wire [159-1:0] skid_buffer_pd;
+wire [161-1:0] skid_buffer_pd;
 wire skid_buffer_ready;
 wire pipe_skid_buffer_ready;
 wire normalz_buf_data_pvld;
-wire [159-1:0] normalz_buf_data;
+wire [161-1:0] normalz_buf_data;
 // Code
 // SKID READY
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -2383,10 +2427,10 @@ assign skid_buffer_valid = (skid_flop_buffer_ready) ? buffer_valid : skid_flop_b
 // SKID DATA
 always @(posedge nvdla_core_clk) begin
     if (skid_flop_buffer_ready & buffer_valid) begin
-        skid_flop_buffer_pd[159-1:0] <= buffer_pd[159-1:0];
+        skid_flop_buffer_pd[161-1:0] <= buffer_pd[161-1:0];
     end
 end
-assign skid_buffer_pd[159-1:0] = (skid_flop_buffer_ready) ? buffer_pd[159-1:0] : skid_flop_buffer_pd[159-1:0];
+assign skid_buffer_pd[161-1:0] = (skid_flop_buffer_ready) ? buffer_pd[161-1:0] : skid_flop_buffer_pd[161-1:0];
 
 
 // PIPE READY
@@ -2406,7 +2450,7 @@ end
 // PIPE DATA
 always @(posedge nvdla_core_clk) begin
     if (skid_buffer_ready && skid_buffer_valid) begin
-        pipe_skid_buffer_pd[159-1:0] <= skid_buffer_pd[159-1:0];
+        pipe_skid_buffer_pd[161-1:0] <= skid_buffer_pd[161-1:0];
     end
 end
 
