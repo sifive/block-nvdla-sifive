@@ -31,15 +31,12 @@ class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
       AXI4MasterPortParameters(
         masters = Seq(AXI4MasterParameters(
           name    = "NVDLA DBB",
-          id      = IdRange(0, 256)))
-      )
-    )
-  )
+          id      = IdRange(0, 256))))))
 
   // TL <-> AXI
   (dbb_tl_node
     := TLBuffer()
-    := TLWidthWidget(8)
+    := TLWidthWidget(if (params.config=="large") 256/8 else 64/8)
     := AXI4ToTL()
     := AXI4UserYanker(capMaxFlight=Some(8))
     := AXI4Fragmenter()
