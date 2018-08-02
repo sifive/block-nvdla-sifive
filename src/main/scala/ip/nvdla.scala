@@ -5,13 +5,9 @@ import Chisel._
 
 //scalastyle:off
 //turn off linter: blackbox name must match verilog module
-class nvdla(config : String) extends BlackBox {
+class nvdla(blackboxName: String, hasSecondAXI: Boolean, dataWidthAXI: Int) extends BlackBox {
 
-  override def desiredName = config match {
-    case "small"      => "nvdla_small"
-    case "small_256"  => "nvdla_small_256"
-    case "large"      => "nvdla_large"
-  }
+  override def desiredName = blackboxName
 
   val io = new Bundle {
 
@@ -31,8 +27,8 @@ class nvdla(config : String) extends BlackBox {
 
     val nvdla_core2dbb_w_wvalid = Bool(OUTPUT)
     val nvdla_core2dbb_w_wready = Bool(INPUT)
-    val nvdla_core2dbb_w_wdata = Bits(OUTPUT,if(config=="large") 256 else 64)
-    val nvdla_core2dbb_w_wstrb = Bits(OUTPUT,if(config=="large") 32 else 8)
+    val nvdla_core2dbb_w_wdata = Bits(OUTPUT,dataWidthAXI)
+    val nvdla_core2dbb_w_wstrb = Bits(OUTPUT,dataWidthAXI/8)
     val nvdla_core2dbb_w_wlast = Bool(OUTPUT)
 
     val nvdla_core2dbb_ar_arvalid = Bool(OUTPUT)
@@ -50,9 +46,9 @@ class nvdla(config : String) extends BlackBox {
     val nvdla_core2dbb_r_rready = Bool(OUTPUT)
     val nvdla_core2dbb_r_rid = Bits(INPUT,8)
     val nvdla_core2dbb_r_rlast = Bool(INPUT)
-    val nvdla_core2dbb_r_rdata = Bits(INPUT,if(config=="large") 256 else 64)
+    val nvdla_core2dbb_r_rdata = Bits(INPUT,dataWidthAXI)
     // cvsram AXI
-    val nvdla_core2cvsram = if (config == "large") Some(new Bundle {
+    val nvdla_core2cvsram = if (hasSecondAXI) Some(new Bundle {
 
       val aw_awvalid = Bool(OUTPUT)
       val aw_awready = Bool(INPUT)
@@ -63,8 +59,8 @@ class nvdla(config : String) extends BlackBox {
 
       val w_wvalid = Bool(OUTPUT)
       val w_wready = Bool(INPUT)
-      val w_wdata = Bits(OUTPUT,256)
-      val w_wstrb = Bits(OUTPUT,32)
+      val w_wdata = Bits(OUTPUT,dataWidthAXI)
+      val w_wstrb = Bits(OUTPUT,dataWidthAXI/8)
       val w_wlast = Bool(OUTPUT)
 
       val ar_arvalid = Bool(OUTPUT)
@@ -82,7 +78,7 @@ class nvdla(config : String) extends BlackBox {
       val r_rready = Bool(OUTPUT)
       val r_rid = Bits(INPUT,8)
       val r_rlast = Bool(INPUT)
-      val r_rdata = Bits(INPUT,256)
+      val r_rdata = Bits(INPUT,dataWidthAXI)
     }) else None
     // cfg APB
     val psel = Bool(INPUT)

@@ -19,6 +19,10 @@ case class NVDLAParams(
 
 class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
 
+  val blackboxName = "nvdla_" + params.config
+  val hasSecondAXI = params.config == "large"
+  val dataWidthAXI = if (params.config == "large") 256 else 64
+
   // DTS
   val dtsdevice = new SimpleDevice("nvdla",Seq("nvidia,nvdla_2"))
 
@@ -36,7 +40,7 @@ class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
   // TL <-> AXI
   (dbb_tl_node
     := TLBuffer()
-    := TLWidthWidget(if (params.config=="large") 256/8 else 64/8)
+    := TLWidthWidget(dataWidthAXI/8)
     := AXI4ToTL()
     := AXI4UserYanker(capMaxFlight=Some(8))
     := AXI4Fragmenter()
@@ -45,7 +49,7 @@ class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
     := dbb_axi_node)
 
   // cvsram AXI
-  val cvsram_axi_node = if (params.config == "large") Some(AXI4MasterNode(
+  val cvsram_axi_node = if (hasSecondAXI) Some(AXI4MasterNode(
     Seq(
       AXI4MasterPortParameters(
         masters = Seq(AXI4MasterParameters(
@@ -54,9 +58,9 @@ class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
   else None
 
   cvsram_axi_node.foreach {
-    val sram = if (params.config == "large") Some(LazyModule(new AXI4RAM(
+    val sram = if (hasSecondAXI) Some(LazyModule(new AXI4RAM(
       address = AddressSet(0, 1*1024-1),
-      beatBytes = 256/8)))
+      beatBytes = dataWidthAXI/8)))
     else None
       sram.get.node := _
   }
@@ -80,7 +84,7 @@ class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
 
   lazy val module = new LazyModuleImp(this) {
 
-    val u_nvdla = Module(new nvdla(params.config))
+    val u_nvdla = Module(new nvdla(blackboxName, hasSecondAXI, dataWidthAXI))
 
     u_nvdla.io.core_clk    := clock
     u_nvdla.io.csb_clk     := clock
