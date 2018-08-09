@@ -17,7 +17,7 @@ case class NVDLAParams(
   raddress: BigInt
 )
 
-class NVDLA(params: NVDLAParams)(implicit p: Parameters) extends LazyModule() {
+class NVDLA(params: NVDLAParams, val crossing: ClockCrossingType = AsynchronousCrossing(8, 3))(implicit p: Parameters) extends LazyModule with HasCrossing {
 
   val blackboxName = "nvdla_" + params.config
   val hasSecondAXI = params.config == "large"
