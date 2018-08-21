@@ -1,0 +1,3 @@
+[submodule "hw"]
+	path = hw
+	url = git@github.com:nvdla/hw.git
