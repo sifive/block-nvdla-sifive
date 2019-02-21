@@ -1,0 +1,5 @@
+global def nvdlaProject =
+  def deps = rocketchipProject, Nil
+  millScalaProject "NVDLA" here deps "nvidia-dla-blocks" "NVDLABase"
+
+publish scalaProjects = nvdlaProject
