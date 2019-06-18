@@ -1,0 +1,12 @@
+[
+    {
+        "commit": "7cf6ad5a6e75f01aac1b0041288612e63a5999ac",
+        "name": "nvdla-hw",
+        "source": "git@github.com:nvdla/hw.git"
+    },
+    {
+        "commit": "2096d7034d18b3c86cdd3166a585e8a50d40a5ac",
+        "name": "rocket-chip-wake",
+        "source": "git@github.com:sifive/rocket-chip-wake.git"
+    }
+]
