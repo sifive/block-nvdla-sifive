@@ -1,0 +1,14 @@
+def scalacOpts =
+  "-deprecation",
+  "-feature",
+  "-unchecked",
+  "-language:reflectiveCalls",
+  "-Xsource:2.11",
+  Nil
+
+global def nvdlaScalaModule =
+  def scalaVersion = rocketchipScalaModule.getScalaModuleScalaVersion
+  makeScalaModule "nvdla" here scalaVersion
+  | setScalaModuleDeps (rocketchipScalaModule, Nil)
+  | setScalaModuleScalacOptions scalacOpts
+  | addMacrosParadiseCompilerPlugin
