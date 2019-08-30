@@ -8,7 +8,7 @@ import freechips.rocketchip.diplomacy.{LazyModule,BufferParams}
 import freechips.rocketchip.tilelink.{TLBuffer, TLIdentityNode}
 
 case object NVDLAKey extends Field[Option[NVDLAParams]](None)
-case object NVDLAFrontBusExtraBuffers extends Field[Int]
+case object NVDLAFrontBusExtraBuffers extends Field[Int](0)
 
 trait HasPeripheryNVDLA { this: BaseSubsystem =>
   p(NVDLAKey).map { params =>
