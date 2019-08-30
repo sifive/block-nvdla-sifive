@@ -8,14 +8,14 @@ import freechips.rocketchip.diplomacy.{LazyModule,BufferParams}
 import freechips.rocketchip.tilelink.{TLBuffer, TLIdentityNode}
 
 case object NVDLAKey extends Field[Option[NVDLAParams]](None)
-//case object NVDLAFrontBusExtraBuffers extends Field[Int]
+case object NVDLAFrontBusExtraBuffers extends Field[Int]
 
 trait HasPeripheryNVDLA { this: BaseSubsystem =>
   p(NVDLAKey).map { params =>
     val nvdla = LazyModule(new NVDLA(params))
 
     fbus.fromMaster(name = Some("nvdla_dbb"), buffer = BufferParams.default) {
-      TLBuffer.chainNode(0)
+      TLBuffer.chainNode(p(NVDLAFrontBusExtraBuffers))
     } := nvdla.dbb_tl_node
 
     sbus.control_bus.toFixedWidthSingleBeatSlave(4, Some("nvdla_cfg")) { nvdla.cfg_tl_node }
